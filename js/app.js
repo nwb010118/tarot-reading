@@ -1,4 +1,15 @@
 (function () {
+  function getStorage() {
+    try {
+      localStorage.setItem('__tarot_probe__', '1');
+      localStorage.removeItem('__tarot_probe__');
+      return localStorage;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  const storage = getStorage();
   const deck = getFullDeck();
   let selectedSpread = 1;
   let flippedCount = 0;
@@ -90,7 +101,7 @@
   }
 
   function saveCurrentReading(draw) {
-    if (typeof localStorage === 'undefined') return;
+    if (!storage) return;
     const entry = {
       date: new Date().toISOString(),
       question: questionInput.value.trim(),
@@ -99,7 +110,7 @@
         return { name: item.card.name, orientation: item.orientation };
       })
     };
-    saveReading(localStorage, entry);
+    saveReading(storage, entry);
   }
 
   newReadingButton.addEventListener('click', function () {
@@ -118,18 +129,18 @@
   });
 
   clearHistoryButton.addEventListener('click', function () {
-    if (typeof localStorage === 'undefined') return;
-    clearHistory(localStorage);
+    if (!storage) return;
+    clearHistory(storage);
     renderHistory();
   });
 
   function renderHistory() {
-    if (typeof localStorage === 'undefined') {
+    if (!storage) {
       historyList.innerHTML = '<p>이 브라우저에서는 기록 저장을 사용할 수 없습니다.</p>';
       return;
     }
 
-    const history = getHistory(localStorage);
+    const history = getHistory(storage);
 
     if (history.length === 0) {
       historyList.innerHTML = '<p>저장된 기록이 없습니다.</p>';
@@ -153,7 +164,7 @@
 
     historyList.querySelectorAll('.history-delete-button').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        deleteReading(localStorage, Number(btn.dataset.index));
+        deleteReading(storage, Number(btn.dataset.index));
         renderHistory();
       });
     });
