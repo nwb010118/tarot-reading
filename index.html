@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>타로 리딩</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>타로 리딩</h1>
+  </header>
+
+  <section id="screen-start">
+    <label for="question-input">무엇이 궁금하신가요? (선택)</label>
+    <input type="text" id="question-input" placeholder="예: 이번 달 연애운은?">
+
+    <div id="spread-select">
+      <button type="button" class="spread-btn selected" data-spread="1">오늘의 카드 1장</button>
+      <button type="button" class="spread-btn" data-spread="3">3장 스프레드</button>
+    </div>
+
+    <button type="button" id="draw-button">카드 뽑기</button>
+    <button type="button" id="history-open-button">지난 기록</button>
+  </section>
+
+  <section id="screen-reading" class="hidden">
+    <div id="cards-container"></div>
+    <div id="summary" class="hidden"></div>
+    <button type="button" id="new-reading-button" class="hidden">새 리딩 시작</button>
+  </section>
+
+  <div id="history-modal" class="hidden">
+    <div class="modal-content">
+      <h2>지난 기록</h2>
+      <div id="history-list"></div>
+      <div class="modal-actions">
+        <button type="button" id="clear-history-button">전체 삭제</button>
+        <button type="button" id="history-close-button">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="data/tarot-data.js"></script>
+<script src="js/deck-logic.js"></script>
+<script src="js/history-store.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
