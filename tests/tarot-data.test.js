@@ -1,4 +1,6 @@
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 const { getFullDeck } = require('../data/tarot-data.js');
 
 const deck = getFullDeck();
@@ -13,6 +15,11 @@ deck.forEach(function (card) {
   assert.ok(card.upright, 'Card ' + card.cardId + ' missing upright text');
   assert.ok(card.reversed, 'Card ' + card.cardId + ' missing reversed text');
   assert.ok(card.image.indexOf('images/') === 0, 'Card ' + card.cardId + ' has bad image path: ' + card.image);
+});
+
+deck.forEach(function (card) {
+  const imagePath = path.join(__dirname, '..', card.image);
+  assert.ok(fs.existsSync(imagePath), 'Card ' + card.cardId + ' image file missing: ' + card.image);
 });
 
 // Test that major arcana "The" prefix is stripped from filenames

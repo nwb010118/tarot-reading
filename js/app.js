@@ -1,4 +1,10 @@
 (function () {
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
   function getStorage() {
     try {
       localStorage.setItem('__tarot_probe__', '1');
@@ -152,7 +158,7 @@
         return c.name + '(' + (c.orientation === 'upright' ? '정' : '역') + ')';
       }).join(', ');
       const dateText = new Date(entry.date).toLocaleString('ko-KR');
-      const questionText = entry.question ? entry.question : '(질문 없음)';
+      const questionText = entry.question ? escapeHtml(entry.question) : '(질문 없음)';
 
       return '<div class="history-item">' +
         '<p class="history-date">' + dateText + '</p>' +
