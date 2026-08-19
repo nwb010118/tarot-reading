@@ -99,7 +99,7 @@ const MINOR_RANK_NUMBER = {
 const SUIT_LABEL = { wands: 'Wands', cups: 'Cups', swords: 'Swords', pentacles: 'Pentacles' };
 
 function getMajorImageFilename(card) {
-  const slug = card.name_en.replace(/\s+/g, '_');
+  const slug = card.name_en.replace(/^The\s+/, '').replace(/\s+/g, '_');
   return 'RWS_Tarot_' + String(card.id).padStart(2, '0') + '_' + slug + '.jpg';
 }
 
