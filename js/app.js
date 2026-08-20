@@ -55,6 +55,7 @@
   const modeButtons = document.querySelectorAll('#mode-select .mode-btn');
   const zodiacSelect = document.getElementById('zodiac-select');
   const zodiacButtons = document.querySelectorAll('#zodiac-select .zodiac-btn');
+  const zodiacResultEl = document.getElementById('zodiac-result');
   const ddiSelect = document.getElementById('ddi-select');
   const birthYearInput = document.getElementById('birth-year-input');
   const ddiResultEl = document.getElementById('ddi-result');
@@ -84,13 +85,21 @@
     });
   });
 
+  function updateZodiacResult() {
+    const zodiac = getZodiacByKey(selectedZodiac);
+    zodiacResultEl.textContent = zodiac.name_kr + ' (' + zodiac.dateRange + ')';
+  }
+
   zodiacButtons.forEach(function (btn) {
     btn.addEventListener('click', function () {
       zodiacButtons.forEach(function (b) { b.classList.remove('selected'); });
       btn.classList.add('selected');
       selectedZodiac = btn.dataset.zodiac;
+      updateZodiacResult();
     });
   });
+
+  updateZodiacResult();
 
   birthYearInput.addEventListener('input', function () {
     const year = Number(birthYearInput.value);
@@ -332,6 +341,7 @@
     zodiacButtons.forEach(function (b) { b.classList.remove('selected'); });
     zodiacButtons[0].classList.add('selected');
     selectedZodiac = 'aries';
+    updateZodiacResult();
     birthYearInput.value = '';
     ddiResultEl.classList.add('hidden');
     selectedBirthYear = null;

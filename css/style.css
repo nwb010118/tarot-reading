@@ -28,7 +28,7 @@ label { display: block; margin-bottom: 8px; color: #c9bde0; }
   font-size: 15px;
 }
 
-#ddi-result { margin: 0 0 16px; color: #d4af37; font-size: 14px; }
+#ddi-result, #zodiac-result { margin: 0 0 16px; color: #d4af37; font-size: 14px; }
 
 #category-select, #period-select, #mode-select, #zodiac-select .button-grid {
   display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
