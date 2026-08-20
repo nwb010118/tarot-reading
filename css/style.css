@@ -46,6 +46,8 @@ label { display: block; margin-bottom: 8px; color: #c9bde0; }
 
 .category-btn.selected { border-color: #d4af37; background: #2a1f42; color: #d4af37; }
 
+.category-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
 #spread-select { display: flex; gap: 12px; margin-bottom: 20px; }
 
 .spread-btn {

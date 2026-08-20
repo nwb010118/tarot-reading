@@ -99,21 +99,35 @@
     });
   });
 
+  function updatePeriodLock() {
+    const locked = !selectedCategory;
+    periodButtons.forEach(function (b) { b.disabled = locked; });
+    if (locked) {
+      periodButtons.forEach(function (b) { b.classList.remove('selected'); });
+      periodButtons[0].classList.add('selected');
+      selectedPeriod = 'today';
+    }
+  }
+
   categoryButtons.forEach(function (btn) {
     btn.addEventListener('click', function () {
       categoryButtons.forEach(function (b) { b.classList.remove('selected'); });
       btn.classList.add('selected');
       selectedCategory = btn.dataset.category || null;
+      updatePeriodLock();
     });
   });
 
   periodButtons.forEach(function (btn) {
     btn.addEventListener('click', function () {
+      if (btn.disabled) return;
       periodButtons.forEach(function (b) { b.classList.remove('selected'); });
       btn.classList.add('selected');
       selectedPeriod = btn.dataset.period;
     });
   });
+
+  updatePeriodLock();
 
   drawButton.addEventListener('click', function () {
     if (selectedMode === 'zodiac') {
@@ -258,9 +272,7 @@
     categoryButtons.forEach(function (b) { b.classList.remove('selected'); });
     categoryButtons[0].classList.add('selected');
     selectedCategory = null;
-    periodButtons.forEach(function (b) { b.classList.remove('selected'); });
-    periodButtons[0].classList.add('selected');
-    selectedPeriod = 'today';
+    updatePeriodLock();
     zodiacButtons.forEach(function (b) { b.classList.remove('selected'); });
     zodiacButtons[0].classList.add('selected');
     selectedZodiac = 'aries';
