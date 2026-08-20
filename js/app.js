@@ -37,6 +37,8 @@
   const ZODIAC_LABELS = {};
   getZodiacList().forEach(function (z) { ZODIAC_LABELS[z.key] = z.name_kr; });
 
+  const MODE_BUTTON_LABELS = { tarot: '카드 뽑기', zodiac: '운세 보기', ddi: '운세 보기' };
+
   const storage = getStorage();
   const deck = getFullDeck();
   let selectedSpread = 1;
@@ -44,6 +46,7 @@
   let selectedPeriod = 'today';
   let selectedMode = 'tarot';
   let selectedZodiac = 'aries';
+  let selectedBirthYear = null;
   let flippedCount = 0;
   let historySaved = false;
 
@@ -52,6 +55,9 @@
   const modeButtons = document.querySelectorAll('#mode-select .mode-btn');
   const zodiacSelect = document.getElementById('zodiac-select');
   const zodiacButtons = document.querySelectorAll('#zodiac-select .zodiac-btn');
+  const ddiSelect = document.getElementById('ddi-select');
+  const birthYearInput = document.getElementById('birth-year-input');
+  const ddiResultEl = document.getElementById('ddi-result');
   const categoryButtons = document.querySelectorAll('#category-select .category-btn');
   const periodButtons = document.querySelectorAll('#period-select .category-btn');
   const spreadSelect = document.getElementById('spread-select');
@@ -71,15 +77,10 @@
       modeButtons.forEach(function (b) { b.classList.remove('selected'); });
       btn.classList.add('selected');
       selectedMode = btn.dataset.mode;
-      if (selectedMode === 'zodiac') {
-        zodiacSelect.classList.remove('hidden');
-        spreadSelect.classList.add('hidden');
-        drawButton.textContent = '운세 보기';
-      } else {
-        zodiacSelect.classList.add('hidden');
-        spreadSelect.classList.remove('hidden');
-        drawButton.textContent = '카드 뽑기';
-      }
+      zodiacSelect.classList.toggle('hidden', selectedMode !== 'zodiac');
+      ddiSelect.classList.toggle('hidden', selectedMode !== 'ddi');
+      spreadSelect.classList.toggle('hidden', selectedMode !== 'tarot');
+      drawButton.textContent = MODE_BUTTON_LABELS[selectedMode];
     });
   });
 
@@ -89,6 +90,19 @@
       btn.classList.add('selected');
       selectedZodiac = btn.dataset.zodiac;
     });
+  });
+
+  birthYearInput.addEventListener('input', function () {
+    const year = Number(birthYearInput.value);
+    if (!year || year < 1900 || year > 2100) {
+      selectedBirthYear = null;
+      ddiResultEl.classList.add('hidden');
+      return;
+    }
+    selectedBirthYear = year;
+    const ddi = getDdiByYear(year);
+    ddiResultEl.textContent = year + '년생 → ' + ddi.name_kr;
+    ddiResultEl.classList.remove('hidden');
   });
 
   spreadButtons.forEach(function (btn) {
@@ -139,6 +153,19 @@
       return;
     }
 
+    if (selectedMode === 'ddi') {
+      if (!selectedBirthYear) {
+        birthYearInput.focus();
+        return;
+      }
+      cardsContainer.innerHTML = '';
+      screenStart.classList.add('hidden');
+      screenReading.classList.remove('hidden');
+      showDdiSummary();
+      saveDdiReading();
+      return;
+    }
+
     const currentDraw = drawCards(deck, selectedSpread);
     flippedCount = 0;
     historySaved = false;
@@ -174,6 +201,35 @@
       date: new Date().toISOString(),
       mode: 'zodiac',
       zodiac: selectedZodiac,
+      category: selectedCategory,
+      period: selectedPeriod,
+      cards: []
+    };
+    saveReading(storage, entry);
+  }
+
+  function showDdiSummary() {
+    const ddi = getDdiByYear(selectedBirthYear);
+    const category = selectedCategory;
+    const period = selectedPeriod;
+    const heading = ddi.name_kr + ' · ' + PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '오늘의운') + ' 리딩';
+
+    const meaning = category && ddi.categories[category]
+      ? PERIOD_PREFIXES[period] + ' ' + ddi.categories[category]
+      : ddi.trait;
+
+    summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
+      '<div class="reading-detail"><p>' + meaning + '</p></div>';
+    summaryEl.classList.remove('hidden');
+    newReadingButton.classList.remove('hidden');
+  }
+
+  function saveDdiReading() {
+    if (!storage) return;
+    const entry = {
+      date: new Date().toISOString(),
+      mode: 'ddi',
+      birthYear: selectedBirthYear,
       category: selectedCategory,
       period: selectedPeriod,
       cards: []
@@ -276,6 +332,9 @@
     zodiacButtons.forEach(function (b) { b.classList.remove('selected'); });
     zodiacButtons[0].classList.add('selected');
     selectedZodiac = 'aries';
+    birthYearInput.value = '';
+    ddiResultEl.classList.add('hidden');
+    selectedBirthYear = null;
   });
 
   historyOpenButton.addEventListener('click', function () {
@@ -319,11 +378,16 @@
     }
 
     historyList.innerHTML = history.map(function (entry, index) {
-      const cardsText = entry.mode === 'zodiac'
-        ? (ZODIAC_LABELS[entry.zodiac] || '별자리')
-        : entry.cards.map(function (c) {
-            return c.name + '(' + (c.orientation === 'upright' ? '정' : '역') + ')';
-          }).join(', ');
+      let cardsText;
+      if (entry.mode === 'zodiac') {
+        cardsText = ZODIAC_LABELS[entry.zodiac] || '별자리';
+      } else if (entry.mode === 'ddi') {
+        cardsText = entry.birthYear ? entry.birthYear + '년생 ' + getDdiByYear(entry.birthYear).name_kr : '띠운세';
+      } else {
+        cardsText = entry.cards.map(function (c) {
+          return c.name + '(' + (c.orientation === 'upright' ? '정' : '역') + ')';
+        }).join(', ');
+      }
       const dateText = new Date(entry.date).toLocaleString('ko-KR');
       const periodLabel = entry.period && PERIOD_LABELS[entry.period] ? PERIOD_LABELS[entry.period] : '오늘';
       const categoryLabel = entry.category && CATEGORY_LABELS[entry.category] ? CATEGORY_LABELS[entry.category] : '오늘의운';

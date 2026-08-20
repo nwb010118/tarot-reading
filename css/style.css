@@ -17,22 +17,24 @@ header h1 { text-align: center; letter-spacing: 2px; color: #d4af37; }
 
 label { display: block; margin-bottom: 8px; color: #c9bde0; }
 
-#question-input {
+#birth-year-input {
   width: 100%;
   padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid #4a3a68;
   background: #1a1330;
   color: #f0e6c8;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   font-size: 15px;
 }
+
+#ddi-result { margin: 0 0 16px; color: #d4af37; font-size: 14px; }
 
 #category-select, #period-select, #mode-select, #zodiac-select .button-grid {
   display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
 }
 
-#zodiac-select label { margin-top: -8px; }
+#zodiac-select label, #ddi-select label { margin-top: -8px; }
 
 .category-btn {
   padding: 8px 14px;
