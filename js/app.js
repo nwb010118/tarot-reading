@@ -21,17 +21,31 @@
     moving: '이사운', children: '자식운'
   };
 
+  const PERIOD_LABELS = {
+    today: '오늘', week: '이번주', month: '이번달', month3: '3개월', month6: '6개월', year: '1년'
+  };
+
+  const PERIOD_PREFIXES = {
+    today: '오늘은',
+    week: '이번 주 안에는',
+    month: '이번 달 동안은',
+    month3: '앞으로 3개월간은',
+    month6: '앞으로 6개월간은',
+    year: '올 한 해 동안은'
+  };
+
   const storage = getStorage();
   const deck = getFullDeck();
   let selectedSpread = 1;
   let selectedCategory = null;
+  let selectedPeriod = 'today';
   let flippedCount = 0;
   let historySaved = false;
 
   const screenStart = document.getElementById('screen-start');
   const screenReading = document.getElementById('screen-reading');
-  const questionInput = document.getElementById('question-input');
-  const categoryButtons = document.querySelectorAll('.category-btn');
+  const categoryButtons = document.querySelectorAll('#category-select .category-btn');
+  const periodButtons = document.querySelectorAll('#period-select .category-btn');
   const spreadButtons = document.querySelectorAll('.spread-btn');
   const drawButton = document.getElementById('draw-button');
   const cardsContainer = document.getElementById('cards-container');
@@ -56,6 +70,14 @@
       categoryButtons.forEach(function (b) { b.classList.remove('selected'); });
       btn.classList.add('selected');
       selectedCategory = btn.dataset.category || null;
+    });
+  });
+
+  periodButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      periodButtons.forEach(function (b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      selectedPeriod = btn.dataset.period;
     });
   });
 
@@ -123,14 +145,16 @@
 
   function showSummary(draw) {
     const category = selectedCategory;
-    const heading = category ? CATEGORY_LABELS[category] + ' 리딩 요약' : '오늘의 리딩 요약';
+    const period = selectedPeriod;
+    const heading = PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '오늘의운') + ' 리딩 요약';
 
     const details = draw.map(function (item) {
       const orientationLabel = item.orientation === 'upright' ? '정방향' : '역방향';
       const categoryReading = category && item.card.categories && item.card.categories[category];
-      const meaning = categoryReading
+      const baseMeaning = categoryReading
         ? categoryReading[item.orientation]
         : (item.orientation === 'upright' ? item.card.upright : item.card.reversed);
+      const meaning = PERIOD_PREFIXES[period] + ' ' + baseMeaning;
       return '<div class="reading-detail">' +
         '<h4>' + item.card.name + ' (' + orientationLabel + ')</h4>' +
         '<p>' + meaning + '</p>' +
@@ -145,7 +169,8 @@
     if (!storage) return;
     const entry = {
       date: new Date().toISOString(),
-      question: questionInput.value.trim(),
+      category: selectedCategory,
+      period: selectedPeriod,
       spreadType: String(selectedSpread),
       cards: draw.map(function (item) {
         return { name: item.card.name, orientation: item.orientation };
@@ -157,10 +182,12 @@
   newReadingButton.addEventListener('click', function () {
     screenReading.classList.add('hidden');
     screenStart.classList.remove('hidden');
-    questionInput.value = '';
     categoryButtons.forEach(function (b) { b.classList.remove('selected'); });
     categoryButtons[0].classList.add('selected');
     selectedCategory = null;
+    periodButtons.forEach(function (b) { b.classList.remove('selected'); });
+    periodButtons[0].classList.add('selected');
+    selectedPeriod = 'today';
   });
 
   historyOpenButton.addEventListener('click', function () {
@@ -208,11 +235,13 @@
         return c.name + '(' + (c.orientation === 'upright' ? '정' : '역') + ')';
       }).join(', ');
       const dateText = new Date(entry.date).toLocaleString('ko-KR');
-      const questionText = entry.question ? escapeHtml(entry.question) : '(질문 없음)';
+      const periodLabel = entry.period && PERIOD_LABELS[entry.period] ? PERIOD_LABELS[entry.period] : '오늘';
+      const categoryLabel = entry.category && CATEGORY_LABELS[entry.category] ? CATEGORY_LABELS[entry.category] : '오늘의운';
+      const topicText = escapeHtml(periodLabel + ' ' + categoryLabel);
 
       return '<div class="history-item">' +
         '<p class="history-date">' + dateText + '</p>' +
-        '<p class="history-question">' + questionText + '</p>' +
+        '<p class="history-question">' + topicText + '</p>' +
         '<p class="history-cards">' + cardsText + '</p>' +
         '<button type="button" class="history-delete-button" data-index="' + index + '">삭제</button>' +
         '</div>';

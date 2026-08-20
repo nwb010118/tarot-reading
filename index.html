@@ -13,9 +13,6 @@
   </header>
 
   <section id="screen-start">
-    <label for="question-input">무엇이 궁금하신가요? (선택)</label>
-    <input type="text" id="question-input" placeholder="예: 이번 달 연애운은?">
-
     <label>어떤 운이 궁금하신가요?</label>
     <div id="category-select">
       <button type="button" class="category-btn selected" data-category="">오늘의운</button>
@@ -30,6 +27,16 @@
       <button type="button" class="category-btn" data-category="honor">명예운</button>
       <button type="button" class="category-btn" data-category="moving">이사운</button>
       <button type="button" class="category-btn" data-category="children">자식운</button>
+    </div>
+
+    <label>어느 기간이 궁금하신가요?</label>
+    <div id="period-select">
+      <button type="button" class="category-btn selected" data-period="today">오늘</button>
+      <button type="button" class="category-btn" data-period="week">이번주</button>
+      <button type="button" class="category-btn" data-period="month">이번달</button>
+      <button type="button" class="category-btn" data-period="month3">3개월</button>
+      <button type="button" class="category-btn" data-period="month6">6개월</button>
+      <button type="button" class="category-btn" data-period="year">1년</button>
     </div>
 
     <div id="spread-select">
