@@ -15,6 +15,23 @@
     }
   }
 
+  const CATEGORY_KEYWORDS = {
+    love: ['연애', '사랑', '썸', '짝사랑', '고백', '이별', '결혼', '남자친구', '여자친구', '소개팅', '연인', '이성'],
+    money: ['재물', '돈', '금전', '재정', '투자', '로또', '수입', '재테크', '사업자금', '지출', '용돈'],
+    career: ['취업', '이직', '직장', '면접', '승진', '커리어', '사업', '일자리', '회사', '창업'],
+    study: ['학업', '시험', '공부', '성적', '합격', '수능', '대학', '학점', '자격증'],
+    health: ['건강', '컨디션', '다이어트', '병원', '몸살', '체력', '질병', '수술']
+  };
+  const CATEGORY_LABELS = { love: '연애운', money: '재물운', career: '취업운', study: '학업운', health: '건강운' };
+
+  function detectCategory(text) {
+    if (!text) return null;
+    const found = Object.keys(CATEGORY_KEYWORDS).find(function (key) {
+      return CATEGORY_KEYWORDS[key].some(function (kw) { return text.indexOf(kw) !== -1; });
+    });
+    return found || null;
+  }
+
   const storage = getStorage();
   const deck = getFullDeck();
   let selectedSpread = 1;
@@ -106,15 +123,21 @@
   }
 
   function showSummary(draw) {
+    const category = detectCategory(questionInput.value.trim());
+    const heading = category ? CATEGORY_LABELS[category] + ' 리딩 요약' : '오늘의 리딩 요약';
+
     const details = draw.map(function (item) {
       const orientationLabel = item.orientation === 'upright' ? '정방향' : '역방향';
-      const meaning = item.orientation === 'upright' ? item.card.upright : item.card.reversed;
+      const categoryReading = category && item.card.categories && item.card.categories[category];
+      const meaning = categoryReading
+        ? categoryReading[item.orientation]
+        : (item.orientation === 'upright' ? item.card.upright : item.card.reversed);
       return '<div class="reading-detail">' +
         '<h4>' + item.card.name + ' (' + orientationLabel + ')</h4>' +
         '<p>' + meaning + '</p>' +
         '</div>';
     });
-    summaryEl.innerHTML = '<h3>오늘의 리딩 요약</h3>' + details.join('');
+    summaryEl.innerHTML = '<h3>' + heading + '</h3>' + details.join('');
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
   }
