@@ -121,9 +121,20 @@ label { display: block; margin-bottom: 8px; color: #c9bde0; }
 }
 
 .card-name { margin: 8px 0 2px; font-weight: bold; font-size: 13px; }
-.card-meaning { margin: 0; font-size: 11px; color: #c9bde0; overflow-y: auto; max-height: 60px; }
 
-#summary { text-align: center; margin: 20px 0; }
+#summary { margin: 20px 0; }
+#summary h3 { text-align: center; color: #d4af37; }
+
+.reading-detail {
+  border: 1px solid #4a3a68;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  background: #1a1330;
+}
+
+.reading-detail h4 { margin: 0 0 6px; color: #d4af37; font-size: 15px; }
+.reading-detail p { margin: 0; font-size: 14px; line-height: 1.5; color: #f0e6c8; }
 
 #history-modal {
   position: fixed;

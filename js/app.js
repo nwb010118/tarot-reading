@@ -68,7 +68,6 @@
       cardEl.setAttribute('aria-label', '카드 뒤집기');
 
       const orientationLabel = item.orientation === 'upright' ? '정방향' : '역방향';
-      const meaning = item.orientation === 'upright' ? item.card.upright : item.card.reversed;
       const imgClass = item.orientation === 'reversed' ? 'reversed' : '';
 
       cardEl.innerHTML =
@@ -79,7 +78,6 @@
               'onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';">' +
             '<div class="card-fallback">' + item.card.name + '</div>' +
             '<p class="card-name">' + item.card.name + ' (' + orientationLabel + ')</p>' +
-            '<p class="card-meaning">' + meaning + '</p>' +
           '</div>' +
         '</div>';
 
@@ -108,11 +106,15 @@
   }
 
   function showSummary(draw) {
-    const lines = draw.map(function (item) {
+    const details = draw.map(function (item) {
       const orientationLabel = item.orientation === 'upright' ? '정방향' : '역방향';
-      return item.card.name + ' - ' + orientationLabel;
+      const meaning = item.orientation === 'upright' ? item.card.upright : item.card.reversed;
+      return '<div class="reading-detail">' +
+        '<h4>' + item.card.name + ' (' + orientationLabel + ')</h4>' +
+        '<p>' + meaning + '</p>' +
+        '</div>';
     });
-    summaryEl.innerHTML = '<h3>오늘의 리딩 요약</h3><p>' + lines.join(' / ') + '</p>';
+    summaryEl.innerHTML = '<h3>오늘의 리딩 요약</h3>' + details.join('');
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
   }
