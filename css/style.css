@@ -28,6 +28,20 @@ label { display: block; margin-bottom: 8px; color: #c9bde0; }
   font-size: 15px;
 }
 
+#category-select { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+
+.category-btn {
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid #4a3a68;
+  background: #1a1330;
+  color: #f0e6c8;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.category-btn.selected { border-color: #d4af37; background: #2a1f42; color: #d4af37; }
+
 #spread-select { display: flex; gap: 12px; margin-bottom: 20px; }
 
 .spread-btn {

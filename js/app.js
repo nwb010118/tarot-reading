@@ -15,32 +15,23 @@
     }
   }
 
-  const CATEGORY_KEYWORDS = {
-    love: ['연애', '사랑', '썸', '짝사랑', '고백', '이별', '결혼', '남자친구', '여자친구', '소개팅', '연인', '이성'],
-    money: ['재물', '돈', '금전', '재정', '투자', '로또', '수입', '재테크', '사업자금', '지출', '용돈'],
-    career: ['취업', '이직', '직장', '면접', '승진', '커리어', '사업', '일자리', '회사', '창업'],
-    study: ['학업', '시험', '공부', '성적', '합격', '수능', '대학', '학점', '자격증'],
-    health: ['건강', '컨디션', '다이어트', '병원', '몸살', '체력', '질병', '수술']
+  const CATEGORY_LABELS = {
+    love: '연애운', money: '재물운', career: '취업운', workplace: '직장운', business: '사업운',
+    study: '학업운', health: '건강운', relationships: '대인관계운', honor: '명예운',
+    moving: '이사운', children: '자식운'
   };
-  const CATEGORY_LABELS = { love: '연애운', money: '재물운', career: '취업운', study: '학업운', health: '건강운' };
-
-  function detectCategory(text) {
-    if (!text) return null;
-    const found = Object.keys(CATEGORY_KEYWORDS).find(function (key) {
-      return CATEGORY_KEYWORDS[key].some(function (kw) { return text.indexOf(kw) !== -1; });
-    });
-    return found || null;
-  }
 
   const storage = getStorage();
   const deck = getFullDeck();
   let selectedSpread = 1;
+  let selectedCategory = null;
   let flippedCount = 0;
   let historySaved = false;
 
   const screenStart = document.getElementById('screen-start');
   const screenReading = document.getElementById('screen-reading');
   const questionInput = document.getElementById('question-input');
+  const categoryButtons = document.querySelectorAll('.category-btn');
   const spreadButtons = document.querySelectorAll('.spread-btn');
   const drawButton = document.getElementById('draw-button');
   const cardsContainer = document.getElementById('cards-container');
@@ -57,6 +48,14 @@
       spreadButtons.forEach(function (b) { b.classList.remove('selected'); });
       btn.classList.add('selected');
       selectedSpread = Number(btn.dataset.spread);
+    });
+  });
+
+  categoryButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      categoryButtons.forEach(function (b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      selectedCategory = btn.dataset.category || null;
     });
   });
 
@@ -123,7 +122,7 @@
   }
 
   function showSummary(draw) {
-    const category = detectCategory(questionInput.value.trim());
+    const category = selectedCategory;
     const heading = category ? CATEGORY_LABELS[category] + ' 리딩 요약' : '오늘의 리딩 요약';
 
     const details = draw.map(function (item) {
@@ -159,6 +158,9 @@
     screenReading.classList.add('hidden');
     screenStart.classList.remove('hidden');
     questionInput.value = '';
+    categoryButtons.forEach(function (b) { b.classList.remove('selected'); });
+    categoryButtons[0].classList.add('selected');
+    selectedCategory = null;
   });
 
   historyOpenButton.addEventListener('click', function () {
