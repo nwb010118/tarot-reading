@@ -63,6 +63,9 @@
     draw.forEach(function (item) {
       const cardEl = document.createElement('div');
       cardEl.className = 'card';
+      cardEl.setAttribute('tabindex', '0');
+      cardEl.setAttribute('role', 'button');
+      cardEl.setAttribute('aria-label', '카드 뒤집기');
 
       const orientationLabel = item.orientation === 'upright' ? '정방향' : '역방향';
       const meaning = item.orientation === 'upright' ? item.card.upright : item.card.reversed;
@@ -80,7 +83,7 @@
           '</div>' +
         '</div>';
 
-      cardEl.addEventListener('click', function () {
+      function flipCard() {
         if (cardEl.classList.contains('flipped')) return;
         cardEl.classList.add('flipped');
         flippedCount += 1;
@@ -89,6 +92,14 @@
           showSummary(draw);
           saveCurrentReading(draw);
           historySaved = true;
+        }
+      }
+
+      cardEl.addEventListener('click', flipCard);
+      cardEl.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          flipCard();
         }
       });
 
@@ -130,8 +141,20 @@
     historyModal.classList.remove('hidden');
   });
 
-  historyCloseButton.addEventListener('click', function () {
+  function closeHistoryModal() {
     historyModal.classList.add('hidden');
+  }
+
+  historyCloseButton.addEventListener('click', closeHistoryModal);
+
+  historyModal.addEventListener('click', function (event) {
+    if (event.target === historyModal) closeHistoryModal();
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && !historyModal.classList.contains('hidden')) {
+      closeHistoryModal();
+    }
   });
 
   clearHistoryButton.addEventListener('click', function () {

@@ -26,4 +26,8 @@ assert.strictEqual(result[1].orientation, 'reversed');
 const drawnIds = result.map(function (r) { return r.card.cardId; });
 assert.strictEqual(new Set(drawnIds).size, drawnIds.length, 'No duplicate cards in a single draw');
 
+assert.throws(function () {
+  drawCards(deck, 4, rng);
+}, /Cannot draw 4 cards from a deck of 3/, 'Drawing more cards than the deck holds should throw');
+
 console.log('All deck-logic tests passed');

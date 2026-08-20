@@ -1,4 +1,8 @@
 function drawCards(deck, count, rng) {
+  if (count > deck.length) {
+    throw new Error('Cannot draw ' + count + ' cards from a deck of ' + deck.length);
+  }
+
   const random = rng || Math.random;
   const pool = deck.slice();
   const drawn = [];
