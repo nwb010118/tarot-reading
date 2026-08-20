@@ -34,18 +34,27 @@
     year: '올 한 해 동안은'
   };
 
+  const ZODIAC_LABELS = {};
+  getZodiacList().forEach(function (z) { ZODIAC_LABELS[z.key] = z.name_kr; });
+
   const storage = getStorage();
   const deck = getFullDeck();
   let selectedSpread = 1;
   let selectedCategory = null;
   let selectedPeriod = 'today';
+  let selectedMode = 'tarot';
+  let selectedZodiac = 'aries';
   let flippedCount = 0;
   let historySaved = false;
 
   const screenStart = document.getElementById('screen-start');
   const screenReading = document.getElementById('screen-reading');
+  const modeButtons = document.querySelectorAll('#mode-select .mode-btn');
+  const zodiacSelect = document.getElementById('zodiac-select');
+  const zodiacButtons = document.querySelectorAll('#zodiac-select .zodiac-btn');
   const categoryButtons = document.querySelectorAll('#category-select .category-btn');
   const periodButtons = document.querySelectorAll('#period-select .category-btn');
+  const spreadSelect = document.getElementById('spread-select');
   const spreadButtons = document.querySelectorAll('.spread-btn');
   const drawButton = document.getElementById('draw-button');
   const cardsContainer = document.getElementById('cards-container');
@@ -56,6 +65,31 @@
   const historyList = document.getElementById('history-list');
   const historyCloseButton = document.getElementById('history-close-button');
   const clearHistoryButton = document.getElementById('clear-history-button');
+
+  modeButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      modeButtons.forEach(function (b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      selectedMode = btn.dataset.mode;
+      if (selectedMode === 'zodiac') {
+        zodiacSelect.classList.remove('hidden');
+        spreadSelect.classList.add('hidden');
+        drawButton.textContent = '운세 보기';
+      } else {
+        zodiacSelect.classList.add('hidden');
+        spreadSelect.classList.remove('hidden');
+        drawButton.textContent = '카드 뽑기';
+      }
+    });
+  });
+
+  zodiacButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      zodiacButtons.forEach(function (b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      selectedZodiac = btn.dataset.zodiac;
+    });
+  });
 
   spreadButtons.forEach(function (btn) {
     btn.addEventListener('click', function () {
@@ -82,6 +116,15 @@
   });
 
   drawButton.addEventListener('click', function () {
+    if (selectedMode === 'zodiac') {
+      cardsContainer.innerHTML = '';
+      screenStart.classList.add('hidden');
+      screenReading.classList.remove('hidden');
+      showZodiacSummary();
+      saveZodiacReading();
+      return;
+    }
+
     const currentDraw = drawCards(deck, selectedSpread);
     flippedCount = 0;
     historySaved = false;
@@ -94,6 +137,35 @@
     summaryEl.innerHTML = '';
     newReadingButton.classList.add('hidden');
   });
+
+  function showZodiacSummary() {
+    const zodiac = getZodiacByKey(selectedZodiac);
+    const category = selectedCategory;
+    const period = selectedPeriod;
+    const heading = zodiac.name_kr + ' · ' + PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '오늘의운') + ' 리딩';
+
+    const meaning = category && zodiac.categories[category]
+      ? PERIOD_PREFIXES[period] + ' ' + zodiac.categories[category]
+      : zodiac.trait;
+
+    summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
+      '<div class="reading-detail"><p>' + meaning + '</p></div>';
+    summaryEl.classList.remove('hidden');
+    newReadingButton.classList.remove('hidden');
+  }
+
+  function saveZodiacReading() {
+    if (!storage) return;
+    const entry = {
+      date: new Date().toISOString(),
+      mode: 'zodiac',
+      zodiac: selectedZodiac,
+      category: selectedCategory,
+      period: selectedPeriod,
+      cards: []
+    };
+    saveReading(storage, entry);
+  }
 
   function renderCards(draw) {
     cardsContainer.innerHTML = '';
@@ -169,6 +241,7 @@
     if (!storage) return;
     const entry = {
       date: new Date().toISOString(),
+      mode: 'tarot',
       category: selectedCategory,
       period: selectedPeriod,
       spreadType: String(selectedSpread),
@@ -188,6 +261,9 @@
     periodButtons.forEach(function (b) { b.classList.remove('selected'); });
     periodButtons[0].classList.add('selected');
     selectedPeriod = 'today';
+    zodiacButtons.forEach(function (b) { b.classList.remove('selected'); });
+    zodiacButtons[0].classList.add('selected');
+    selectedZodiac = 'aries';
   });
 
   historyOpenButton.addEventListener('click', function () {
@@ -231,9 +307,11 @@
     }
 
     historyList.innerHTML = history.map(function (entry, index) {
-      const cardsText = entry.cards.map(function (c) {
-        return c.name + '(' + (c.orientation === 'upright' ? '정' : '역') + ')';
-      }).join(', ');
+      const cardsText = entry.mode === 'zodiac'
+        ? (ZODIAC_LABELS[entry.zodiac] || '별자리')
+        : entry.cards.map(function (c) {
+            return c.name + '(' + (c.orientation === 'upright' ? '정' : '역') + ')';
+          }).join(', ');
       const dateText = new Date(entry.date).toLocaleString('ko-KR');
       const periodLabel = entry.period && PERIOD_LABELS[entry.period] ? PERIOD_LABELS[entry.period] : '오늘';
       const categoryLabel = entry.category && CATEGORY_LABELS[entry.category] ? CATEGORY_LABELS[entry.category] : '오늘의운';

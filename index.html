@@ -13,6 +13,29 @@
   </header>
 
   <section id="screen-start">
+    <div id="mode-select">
+      <button type="button" class="category-btn mode-btn selected" data-mode="tarot">타로</button>
+      <button type="button" class="category-btn mode-btn" data-mode="zodiac">별자리</button>
+    </div>
+
+    <div id="zodiac-select" class="hidden">
+      <label>별자리를 선택하세요</label>
+      <div class="button-grid">
+        <button type="button" class="category-btn zodiac-btn selected" data-zodiac="aries">양자리</button>
+        <button type="button" class="category-btn zodiac-btn" data-zodiac="taurus">황소자리</button>
+        <button type="button" class="category-btn zodiac-btn" data-zodiac="gemini">쌍둥이자리</button>
+        <button type="button" class="category-btn zodiac-btn" data-zodiac="cancer">게자리</button>
+        <button type="button" class="category-btn zodiac-btn" data-zodiac="leo">사자자리</button>
+        <button type="button" class="category-btn zodiac-btn" data-zodiac="virgo">처녀자리</button>
+        <button type="button" class="category-btn zodiac-btn" data-zodiac="libra">천칭자리</button>
+        <button type="button" class="category-btn zodiac-btn" data-zodiac="scorpio">전갈자리</button>
+        <button type="button" class="category-btn zodiac-btn" data-zodiac="sagittarius">사수자리</button>
+        <button type="button" class="category-btn zodiac-btn" data-zodiac="capricorn">염소자리</button>
+        <button type="button" class="category-btn zodiac-btn" data-zodiac="aquarius">물병자리</button>
+        <button type="button" class="category-btn zodiac-btn" data-zodiac="pisces">물고기자리</button>
+      </div>
+    </div>
+
     <label>어떤 운이 궁금하신가요?</label>
     <div id="category-select">
       <button type="button" class="category-btn selected" data-category="">오늘의운</button>
@@ -67,6 +90,7 @@
 </div>
 
 <script src="data/tarot-data.js"></script>
+<script src="data/zodiac-data.js"></script>
 <script src="js/deck-logic.js"></script>
 <script src="js/history-store.js"></script>
 <script src="js/app.js"></script>

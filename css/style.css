@@ -28,7 +28,11 @@ label { display: block; margin-bottom: 8px; color: #c9bde0; }
   font-size: 15px;
 }
 
-#category-select, #period-select { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+#category-select, #period-select, #mode-select, #zodiac-select .button-grid {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
+}
+
+#zodiac-select label { margin-top: -8px; }
 
 .category-btn {
   padding: 8px 14px;
