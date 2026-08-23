@@ -97,6 +97,52 @@ function getHourStemIndex(dayStemIdx, hourBranchIdx) {
   return normalizeMod(HOUR_STEM_START[dayStemIdx] + hourBranchIdx, 10);
 }
 
+// KST 기준 생년월일시를 절대 시각(UTC 인스턴트)으로 변환
+function kstDateToInstant(year, month, day, hour, minute) {
+  return new Date(Date.UTC(year, month - 1, day, hour - 9, minute || 0));
+}
+
+// birthDate가 그 해 입춘 이전이면 사주상 연도는 전년도
+function getSajuYear(instant, calendarYear) {
+  const ipchun = findIpchun(calendarYear);
+  return instant < ipchun ? calendarYear - 1 : calendarYear;
+}
+
+function calculateSaju(input) {
+  // 시간을 모르면 절기/월지 판단용으로 정오를 기준 시각으로 사용(오차는 하루 안쪽 절기 경계 근처에서만 발생 가능하며,
+  // 이 경우 UI에서 시주/대운을 아예 표시하지 않으므로 영향 없음)
+  const hour = input.timeUnknown ? 12 : input.hour;
+  const minute = input.timeUnknown ? 0 : input.minute;
+  const instant = kstDateToInstant(input.year, input.month, input.day, hour, minute);
+
+  const sajuYear = getSajuYear(instant, input.year);
+  const yearPillar = getYearPillar(sajuYear);
+
+  const longitude = solarLongitude(instant);
+  const monthOffset = getMonthOffset(longitude);
+  const monthPillar = getMonthPillar(yearPillar.stemIdx, monthOffset);
+
+  const dayIndex = getDayPillarIndex(input.year, input.month, input.day);
+  const dayPillar = { stemIdx: normalizeMod(dayIndex, 10), branchIdx: normalizeMod(dayIndex, 12) };
+
+  let hourPillar = null;
+  if (!input.timeUnknown) {
+    const hourBranchIdx = getHourBranchIndex(input.hour);
+    const hourStemIdx = getHourStemIndex(dayPillar.stemIdx, hourBranchIdx);
+    hourPillar = { stemIdx: hourStemIdx, branchIdx: hourBranchIdx };
+  }
+
+  return {
+    year: yearPillar,
+    month: monthPillar,
+    day: dayPillar,
+    hour: hourPillar,
+    sajuYear: sajuYear,
+    monthOffset: monthOffset,
+    instant: instant
+  };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex };
+  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju };
 }

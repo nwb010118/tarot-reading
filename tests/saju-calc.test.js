@@ -89,3 +89,30 @@ assert.strictEqual(getHourStemIndex(2, 7), 1);
 assert.strictEqual(getHourStemIndex(0, 0), 0);
 
 console.log('All saju-calc hour pillar tests passed');
+
+// calculateSaju orchestration tests
+const { kstDateToInstant, getSajuYear, calculateSaju } = require('../js/saju-calc.js');
+
+// 골든 케이스: 2026-08-20 14:30 KST, 시간 앎
+// 기대값: 년주 병오, 월주 병신, 일주 병인, 시주 을미 (Task 1~4 테스트로 개별 검증된 값의 조합)
+const result = calculateSaju({ year: 2026, month: 8, day: 20, hour: 14, minute: 30, timeUnknown: false });
+assert.strictEqual(pillarLabel(result.year), '병오');
+assert.strictEqual(pillarLabel(result.month), '병신');
+assert.strictEqual(pillarLabel(result.day), '병인');
+assert.strictEqual(pillarLabel(result.hour), '을미');
+assert.strictEqual(result.sajuYear, 2026);
+
+// 시간 모름 -> hour는 null, 나머지 3주는 동일하게 계산됨
+const resultUnknown = calculateSaju({ year: 2026, month: 8, day: 20, timeUnknown: true });
+assert.strictEqual(resultUnknown.hour, null);
+assert.strictEqual(pillarLabel(resultUnknown.year), '병오');
+assert.strictEqual(pillarLabel(resultUnknown.day), '병인');
+
+// 입춘 경계 테스트: 2026년 입춘은 2/4 KST. 그 전날(2/2)은 전년도(2025=을사년) 기준,
+// 입춘 당일 이후(2/4)는 2026년(병오년) 기준이어야 함
+const beforeIpchun = calculateSaju({ year: 2026, month: 2, day: 2, hour: 12, minute: 0, timeUnknown: false });
+assert.strictEqual(pillarLabel(beforeIpchun.year), '을사');
+const afterIpchun = calculateSaju({ year: 2026, month: 2, day: 4, hour: 12, minute: 0, timeUnknown: false });
+assert.strictEqual(pillarLabel(afterIpchun.year), '병오');
+
+console.log('All saju-calc calculateSaju tests passed');
