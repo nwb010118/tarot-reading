@@ -116,3 +116,28 @@ const afterIpchun = calculateSaju({ year: 2026, month: 2, day: 4, hour: 12, minu
 assert.strictEqual(pillarLabel(afterIpchun.year), '병오');
 
 console.log('All saju-calc calculateSaju tests passed');
+
+// Element counts and balance classification tests
+const { getElementCounts, classifyElementBalance } = require('../js/saju-calc.js');
+
+// 골든 케이스(2026-08-20 14:30)의 4주: 병오/병신/병인/을미
+// 천간 병병병을(화화화목), 지지 오신인미(화금목토) -> 목2 화4 토1 금1 수0
+const goldenPillars = calculateSaju({ year: 2026, month: 8, day: 20, hour: 14, minute: 30, timeUnknown: false });
+const counts = getElementCounts(goldenPillars);
+assert.deepStrictEqual(counts, { 목: 2, 화: 4, 토: 1, 금: 1, 수: 0 });
+
+const balance = classifyElementBalance(counts);
+assert.strictEqual(balance.state, 'excess');
+assert.strictEqual(balance.element, '화');
+
+// 시간 모름 -> 6글자만 집계 (hour 없음)
+const noHourPillars = calculateSaju({ year: 2026, month: 8, day: 20, timeUnknown: true });
+const noHourCounts = getElementCounts(noHourPillars);
+const total = Object.keys(noHourCounts).reduce(function (sum, k) { return sum + noHourCounts[k]; }, 0);
+assert.strictEqual(total, 6);
+
+// 완전 균형 케이스(가상 데이터)로 balanced 분류 확인
+const balanced = classifyElementBalance({ 목: 2, 화: 2, 토: 2, 금: 1, 수: 1 });
+assert.strictEqual(balanced.state, 'balanced');
+
+console.log('All saju-calc element balance tests passed');

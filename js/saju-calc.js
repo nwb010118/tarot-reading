@@ -143,6 +143,30 @@ function calculateSaju(input) {
   };
 }
 
+const CHEONGAN_ELEMENT = ['목', '목', '화', '화', '토', '토', '금', '금', '수', '수'];
+const JIJI_ELEMENT = ['수', '토', '목', '목', '토', '화', '화', '토', '금', '금', '토', '수'];
+
+function getElementCounts(pillars) {
+  const counts = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
+  const list = [pillars.year, pillars.month, pillars.day];
+  if (pillars.hour) list.push(pillars.hour);
+  list.forEach(function (p) {
+    counts[CHEONGAN_ELEMENT[p.stemIdx]] += 1;
+    counts[JIJI_ELEMENT[p.branchIdx]] += 1;
+  });
+  return counts;
+}
+
+function classifyElementBalance(counts) {
+  const entries = Object.keys(counts).map(function (el) { return { el: el, count: counts[el] }; });
+  entries.sort(function (a, b) { return b.count - a.count; });
+  const max = entries[0];
+  const zero = entries.filter(function (e) { return e.count === 0; });
+  if (max.count >= 3) return { state: 'excess', element: max.el };
+  if (zero.length > 0) return { state: 'deficient', element: zero[0].el };
+  return { state: 'balanced', element: null };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju };
+  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju, getElementCounts, classifyElementBalance };
 }
