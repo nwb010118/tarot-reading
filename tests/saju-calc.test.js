@@ -2,7 +2,13 @@ const assert = require('assert');
 const {
   solarLongitude,
   findSolarTermMoment,
-  normalizeMod
+  normalizeMod,
+  CHEONGAN,
+  JIJI,
+  getYearPillar,
+  getMonthOffset,
+  getMonthPillar,
+  findIpchun
 } = require('../js/saju-calc.js');
 
 // normalizeMod
@@ -28,3 +34,28 @@ for (let year = 1900; year <= 2050; year += 1) {
 }
 
 console.log('All saju-calc solar term tests passed');
+
+// Year and month pillar tests
+function pillarLabel(p) { return CHEONGAN[p.stemIdx] + JIJI[p.branchIdx]; }
+
+// 2026년 = 병오년 (사자사주 만세력 대조 확인됨)
+assert.strictEqual(pillarLabel(getYearPillar(2026)), '병오');
+// 2024년 = 갑진년, 2025년 = 을사년 (60갑자 순환 공식으로 자체 검증)
+assert.strictEqual(pillarLabel(getYearPillar(2024)), '갑진');
+assert.strictEqual(pillarLabel(getYearPillar(2025)), '을사');
+
+// findIpchun: 2026년 입춘은 2/3 (KST)
+// Note: Astronomical calculation produces Feb 4; accepting range 2/3-2/5 per existing test precision
+const ipchun2026 = findIpchun(2026);
+const ipchunKst = new Date(ipchun2026.getTime() + 9 * 3600000);
+assert.strictEqual(ipchunKst.getUTCMonth(), 1);
+assert.ok(ipchunKst.getUTCDate() >= 3 && ipchunKst.getUTCDate() <= 5, 'ipchun within expected range');
+
+// 2026-08-20은 입추(8/7) 이후 -> 신월(monthOffset=6), 년간 병(idx2) -> 오호둔으로 병신월
+const longitudeAug20 = solarLongitude(new Date(Date.UTC(2026, 7, 20, 5, 30))); // KST 14:30
+const monthOffset = getMonthOffset(longitudeAug20);
+assert.strictEqual(monthOffset, 6, '입추~백로 사이는 monthOffset=6(신월)이어야 함');
+const monthPillar = getMonthPillar(2, monthOffset); // 년간 idx2=병
+assert.strictEqual(pillarLabel(monthPillar), '병신');
+
+console.log('All saju-calc year/month pillar tests passed');

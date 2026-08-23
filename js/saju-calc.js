@@ -42,6 +42,35 @@ function findSolarTermMoment(seedInstant, targetLongitude) {
   return t;
 }
 
+const CHEONGAN = ['갑', '을', '병', '정', '무', '기', '경', '신', '임', '계'];
+const JIJI = ['자', '축', '인', '묘', '진', '사', '오', '미', '신', '유', '술', '해'];
+
+function getYearPillar(sajuYear) {
+  return {
+    stemIdx: normalizeMod(sajuYear - 4, 10),
+    branchIdx: normalizeMod(sajuYear - 4, 12)
+  };
+}
+
+// 315도(입춘)를 monthOffset=0(인월)로 삼아 30도 단위로 12개월 구간을 나눔
+function getMonthOffset(longitude) {
+  return Math.floor(normalizeMod(longitude - 315, 360) / 30);
+}
+
+// 오호둔: 년간의 짝(갑기/을경/병신/정임/무계)에 따라 인월(월지 시작)의 월간이 정해짐
+const MONTH_STEM_START = { 0: 2, 5: 2, 1: 4, 6: 4, 2: 6, 7: 6, 3: 8, 8: 8, 4: 0, 9: 0 };
+
+function getMonthPillar(yearStemIdx, monthOffset) {
+  const branchIdx = normalizeMod(monthOffset + 2, 12); // monthOffset 0(인)=JIJI idx2
+  const stemIdx = normalizeMod(MONTH_STEM_START[yearStemIdx] + monthOffset, 10);
+  return { stemIdx, branchIdx };
+}
+
+function findIpchun(calendarYear) {
+  const seed = new Date(Date.UTC(calendarYear, 1, 4));
+  return findSolarTermMoment(seed, 315);
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay };
+  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun };
 }
