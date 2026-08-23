@@ -71,6 +71,20 @@ function findIpchun(calendarYear) {
   return findSolarTermMoment(seed, 315);
 }
 
+// 그레고리력 날짜 -> 율리우스일(JDN, 정오 기준 정수)
+function toJDN(year, month, day) {
+  const a = Math.floor((14 - month) / 12);
+  const y = year + 4800 - a;
+  const m = month + 12 * a - 3;
+  return day + Math.floor((153 * m + 2) / 5) + 365 * y
+    + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+}
+
+// (JDN+49)%60 == 0 이 갑자일. 사자사주 만세력의 2026-08-01/10/20 일진과 대조해 검증됨.
+function getDayPillarIndex(year, month, day) {
+  return normalizeMod(toJDN(year, month, day) + 49, 60);
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun };
+  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex };
 }

@@ -8,7 +8,9 @@ const {
   getYearPillar,
   getMonthOffset,
   getMonthPillar,
-  findIpchun
+  findIpchun,
+  toJDN,
+  getDayPillarIndex
 } = require('../js/saju-calc.js');
 
 // normalizeMod
@@ -59,3 +61,13 @@ const monthPillar = getMonthPillar(2, monthOffset); // 년간 idx2=병
 assert.strictEqual(pillarLabel(monthPillar), '병신');
 
 console.log('All saju-calc year/month pillar tests passed');
+
+// Day pillar tests (JDN-based 60갑자)
+function dayLabel(idx) { return CHEONGAN[idx % 10] + JIJI[idx % 12]; }
+
+// 사자사주 만세력(2026년 8월 일진표)과 대조해 검증된 3개 날짜
+assert.strictEqual(dayLabel(getDayPillarIndex(2026, 8, 1)), '정미');
+assert.strictEqual(dayLabel(getDayPillarIndex(2026, 8, 10)), '병진');
+assert.strictEqual(dayLabel(getDayPillarIndex(2026, 8, 20)), '병인');
+
+console.log('All saju-calc day pillar tests passed');
