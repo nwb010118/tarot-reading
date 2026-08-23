@@ -141,3 +141,30 @@ const balanced = classifyElementBalance({ 목: 2, 화: 2, 토: 2, 금: 1, 수: 1
 assert.strictEqual(balanced.state, 'balanced');
 
 console.log('All saju-calc element balance tests passed');
+
+// Daeun (10-year luck cycle) tests
+const { getDaeunDirection, getDaeunStartAge, getDaeunList } = require('../js/saju-calc.js');
+
+// 골든 케이스: 2026년 병오년(년간 병=idx2, 양간) + 남성 -> 순행(1)
+assert.strictEqual(getDaeunDirection(2, 'male'), 1);
+// 같은 년간 + 여성 -> 역행(-1)
+assert.strictEqual(getDaeunDirection(2, 'female'), -1);
+// 음간(을=idx1) + 남성 -> 역행(-1), + 여성 -> 순행(1)
+assert.strictEqual(getDaeunDirection(1, 'male'), -1);
+assert.strictEqual(getDaeunDirection(1, 'female'), 1);
+
+const golden = calculateSaju({ year: 2026, month: 8, day: 20, hour: 14, minute: 30, timeUnknown: false });
+const direction = getDaeunDirection(golden.year.stemIdx, 'male');
+const startAge = getDaeunStartAge(golden.instant, golden.monthOffset, direction);
+assert.ok(startAge >= 0 && startAge <= 10, '대운수는 보통 0~10 사이: got ' + startAge);
+
+const daeunList = getDaeunList(golden.month.stemIdx, golden.month.branchIdx, direction, startAge);
+assert.strictEqual(daeunList.length, 9);
+assert.strictEqual(daeunList[0].startAge, startAge);
+assert.strictEqual(daeunList[0].endAge, startAge + 9);
+assert.strictEqual(daeunList[1].startAge, startAge + 10);
+// 순행이므로 월주(병신, stemIdx2/branchIdx8)에서 다음 갑자로 진행: 정유(stemIdx3/branchIdx9)
+assert.strictEqual(daeunList[0].stemIdx, 3);
+assert.strictEqual(daeunList[0].branchIdx, 9);
+
+console.log('All saju-calc daeun tests passed');

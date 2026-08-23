@@ -167,6 +167,41 @@ function classifyElementBalance(counts) {
   return { state: 'balanced', element: null };
 }
 
+function isYangStem(stemIdx) { return stemIdx % 2 === 0; }
+
+// 양간+남자 또는 음간+여자 -> 순행(1), 그 외 -> 역행(-1)
+function getDaeunDirection(yearStemIdx, gender) {
+  const yang = isYangStem(yearStemIdx);
+  const forward = (yang && gender === 'male') || (!yang && gender === 'female');
+  return forward ? 1 : -1;
+}
+
+function getDaeunBoundary(instant, monthOffset, direction) {
+  const targetLongitude = direction === 1
+    ? normalizeMod(315 + (monthOffset + 1) * 30, 360)
+    : normalizeMod(315 + monthOffset * 30, 360);
+  return findSolarTermMoment(instant, targetLongitude);
+}
+
+// 절입일까지 일수 ÷ 3 (나머지 1=버림, 2=올림 규칙은 Math.round와 동치)
+function getDaeunStartAge(instant, monthOffset, direction) {
+  const boundary = getDaeunBoundary(instant, monthOffset, direction);
+  const diffDays = Math.abs(boundary.getTime() - instant.getTime()) / 86400000;
+  return Math.round(diffDays / 3);
+}
+
+function getDaeunList(monthStemIdx, monthBranchIdx, direction, startAge) {
+  const list = [];
+  let stemIdx = monthStemIdx;
+  let branchIdx = monthBranchIdx;
+  for (let i = 0; i < 9; i += 1) {
+    stemIdx = normalizeMod(stemIdx + direction, 10);
+    branchIdx = normalizeMod(branchIdx + direction, 12);
+    list.push({ stemIdx: stemIdx, branchIdx: branchIdx, startAge: startAge + i * 10, endAge: startAge + i * 10 + 9 });
+  }
+  return list;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju, getElementCounts, classifyElementBalance };
+  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju, getElementCounts, classifyElementBalance, getDaeunDirection, getDaeunStartAge, getDaeunList };
 }
