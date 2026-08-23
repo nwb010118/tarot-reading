@@ -71,3 +71,21 @@ assert.strictEqual(dayLabel(getDayPillarIndex(2026, 8, 10)), '병진');
 assert.strictEqual(dayLabel(getDayPillarIndex(2026, 8, 20)), '병인');
 
 console.log('All saju-calc day pillar tests passed');
+
+// Hour pillar tests
+const { getHourBranchIndex, getHourStemIndex } = require('../js/saju-calc.js');
+
+// 자시(23~00시)는 branchIdx 0
+assert.strictEqual(getHourBranchIndex(23), 0);
+assert.strictEqual(getHourBranchIndex(0), 0);
+assert.strictEqual(getHourBranchIndex(1), 1); // 축시
+assert.strictEqual(getHourBranchIndex(13), 7); // 미시(13~15시)
+assert.strictEqual(getHourBranchIndex(22), 11); // 해시
+
+// 일간이 병(idx2, 병신일→무자시 시작)일 때 미시(idx7)의 시간은 을미
+// HOUR_STEM_START[2]=4(무), (4+7)%10=1(을)
+assert.strictEqual(getHourStemIndex(2, 7), 1);
+// 일간이 갑(idx0, 갑기일→갑자시 시작)일 때 자시(idx0)의 시간은 갑자
+assert.strictEqual(getHourStemIndex(0, 0), 0);
+
+console.log('All saju-calc hour pillar tests passed');

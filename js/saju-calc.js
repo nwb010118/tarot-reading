@@ -85,6 +85,18 @@ function getDayPillarIndex(year, month, day) {
   return normalizeMod(toJDN(year, month, day) + 49, 60);
 }
 
+// 자시=23:00~00:59, 이후 2시간 단위로 축인묘진사오미신유술해 순환
+function getHourBranchIndex(hour) {
+  return Math.floor(normalizeMod(hour + 1, 24) / 2);
+}
+
+// 오둔법: 일간의 짝(갑기/을경/병신/정임/무계)에 따라 자시의 시간이 정해짐
+const HOUR_STEM_START = { 0: 0, 5: 0, 1: 2, 6: 2, 2: 4, 7: 4, 3: 6, 8: 6, 4: 8, 9: 8 };
+
+function getHourStemIndex(dayStemIdx, hourBranchIdx) {
+  return normalizeMod(HOUR_STEM_START[dayStemIdx] + hourBranchIdx, 10);
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex };
+  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex };
 }
