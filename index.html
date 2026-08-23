@@ -17,6 +17,7 @@
       <button type="button" class="category-btn mode-btn selected" data-mode="tarot">타로</button>
       <button type="button" class="category-btn mode-btn" data-mode="zodiac">별자리</button>
       <button type="button" class="category-btn mode-btn" data-mode="ddi">띠운세</button>
+      <button type="button" class="category-btn mode-btn" data-mode="saju">사주</button>
     </div>
 
     <div id="zodiac-select" class="hidden">
@@ -42,6 +43,32 @@
       <label for="birth-year-input">태어난 연도를 입력하세요 (양력 기준)</label>
       <input type="number" id="birth-year-input" placeholder="예: 1995" min="1900" max="2100">
       <p id="ddi-result" class="hidden"></p>
+    </div>
+
+    <div id="saju-select" class="hidden">
+      <label>양력/음력을 선택하세요</label>
+      <div id="calendar-type-select" class="button-grid">
+        <button type="button" class="category-btn calendar-type-btn selected" data-calendar-type="solar">양력</button>
+        <button type="button" class="category-btn calendar-type-btn" data-calendar-type="lunar">음력</button>
+      </div>
+      <div id="intercalation-select" class="hidden">
+        <label><input type="checkbox" id="intercalation-checkbox"> 윤달이에요</label>
+      </div>
+
+      <label for="saju-date-input">생년월일을 입력하세요</label>
+      <input type="date" id="saju-date-input" min="1900-01-01" max="2050-12-31">
+
+      <label for="saju-time-input">태어난 시각을 입력하세요</label>
+      <input type="time" id="saju-time-input">
+      <label><input type="checkbox" id="time-unknown-checkbox"> 태어난 시간을 몰라요</label>
+
+      <label>성별을 선택하세요</label>
+      <div id="gender-select" class="button-grid">
+        <button type="button" class="category-btn gender-btn selected" data-gender="male">남자</button>
+        <button type="button" class="category-btn gender-btn" data-gender="female">여자</button>
+      </div>
+
+      <p id="saju-error" class="hidden"></p>
     </div>
 
     <label>어떤 운이 궁금하신가요?</label>
@@ -100,8 +127,12 @@
 <script src="data/tarot-data.js"></script>
 <script src="data/zodiac-data.js"></script>
 <script src="data/ddi-data.js"></script>
+<script src="data/lunar-table.js"></script>
+<script src="data/saju-data.js"></script>
 <script src="js/deck-logic.js"></script>
 <script src="js/history-store.js"></script>
+<script src="js/lunar-convert.js"></script>
+<script src="js/saju-calc.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
