@@ -37,7 +37,7 @@
   const ZODIAC_LABELS = {};
   getZodiacList().forEach(function (z) { ZODIAC_LABELS[z.key] = z.name_kr; });
 
-  const MODE_BUTTON_LABELS = { tarot: '카드 뽑기', zodiac: '운세 보기', ddi: '운세 보기' };
+  const MODE_BUTTON_LABELS = { tarot: '카드 뽑기', zodiac: '운세 보기', ddi: '운세 보기', saju: '운세 보기' };
 
   const storage = getStorage();
   const deck = getFullDeck();
@@ -49,6 +49,10 @@
   let selectedBirthYear = null;
   let flippedCount = 0;
   let historySaved = false;
+  let selectedCalendarType = 'solar';
+  let selectedIntercalation = false;
+  let selectedGender = 'male';
+  let selectedTimeUnknown = false;
 
   const screenStart = document.getElementById('screen-start');
   const screenReading = document.getElementById('screen-reading');
@@ -59,6 +63,15 @@
   const ddiSelect = document.getElementById('ddi-select');
   const birthYearInput = document.getElementById('birth-year-input');
   const ddiResultEl = document.getElementById('ddi-result');
+  const sajuSelect = document.getElementById('saju-select');
+  const calendarTypeButtons = document.querySelectorAll('#calendar-type-select .calendar-type-btn');
+  const intercalationSelect = document.getElementById('intercalation-select');
+  const intercalationCheckbox = document.getElementById('intercalation-checkbox');
+  const sajuDateInput = document.getElementById('saju-date-input');
+  const sajuTimeInput = document.getElementById('saju-time-input');
+  const timeUnknownCheckbox = document.getElementById('time-unknown-checkbox');
+  const genderButtons = document.querySelectorAll('#gender-select .gender-btn');
+  const sajuErrorEl = document.getElementById('saju-error');
   const categoryButtons = document.querySelectorAll('#category-select .category-btn');
   const periodButtons = document.querySelectorAll('#period-select .category-btn');
   const spreadSelect = document.getElementById('spread-select');
@@ -80,6 +93,7 @@
       selectedMode = btn.dataset.mode;
       zodiacSelect.classList.toggle('hidden', selectedMode !== 'zodiac');
       ddiSelect.classList.toggle('hidden', selectedMode !== 'ddi');
+      sajuSelect.classList.toggle('hidden', selectedMode !== 'saju');
       spreadSelect.classList.toggle('hidden', selectedMode !== 'tarot');
       drawButton.textContent = MODE_BUTTON_LABELS[selectedMode];
     });
@@ -112,6 +126,32 @@
     const ddi = getDdiByYear(year);
     ddiResultEl.textContent = year + '년생 → ' + ddi.name_kr;
     ddiResultEl.classList.remove('hidden');
+  });
+
+  calendarTypeButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      calendarTypeButtons.forEach(function (b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      selectedCalendarType = btn.dataset.calendarType;
+      intercalationSelect.classList.toggle('hidden', selectedCalendarType !== 'lunar');
+    });
+  });
+
+  intercalationCheckbox.addEventListener('change', function () {
+    selectedIntercalation = intercalationCheckbox.checked;
+  });
+
+  timeUnknownCheckbox.addEventListener('change', function () {
+    selectedTimeUnknown = timeUnknownCheckbox.checked;
+    sajuTimeInput.disabled = selectedTimeUnknown;
+  });
+
+  genderButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      genderButtons.forEach(function (b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      selectedGender = btn.dataset.gender;
+    });
   });
 
   spreadButtons.forEach(function (btn) {
@@ -172,6 +212,18 @@
       screenReading.classList.remove('hidden');
       showDdiSummary();
       saveDdiReading();
+      return;
+    }
+
+    if (selectedMode === 'saju') {
+      const input = resolveSajuInput();
+      if (!input) return;
+      const saju = calculateSaju(input);
+      cardsContainer.innerHTML = '';
+      screenStart.classList.add('hidden');
+      screenReading.classList.remove('hidden');
+      showSajuSummary(input, saju);
+      saveSajuReading(input, saju);
       return;
     }
 
@@ -239,6 +291,129 @@
       date: new Date().toISOString(),
       mode: 'ddi',
       birthYear: selectedBirthYear,
+      category: selectedCategory,
+      period: selectedPeriod,
+      cards: []
+    };
+    saveReading(storage, entry);
+  }
+
+  // 입력을 검증하고 calculateSaju에 넘길 형태로 정규화. 실패 시 null을 반환하고 에러 메시지를 표시.
+  function resolveSajuInput() {
+    sajuErrorEl.classList.add('hidden');
+
+    if (!sajuDateInput.value) {
+      sajuErrorEl.textContent = '생년월일을 입력해주세요.';
+      sajuErrorEl.classList.remove('hidden');
+      return null;
+    }
+    if (!selectedTimeUnknown && !sajuTimeInput.value) {
+      sajuErrorEl.textContent = '태어난 시각을 입력하거나 "시간을 몰라요"를 선택해주세요.';
+      sajuErrorEl.classList.remove('hidden');
+      return null;
+    }
+
+    const dateParts = sajuDateInput.value.split('-').map(Number);
+    let year = dateParts[0];
+    let month = dateParts[1];
+    let day = dateParts[2];
+
+    if (year < 1900 || year > 2050) {
+      sajuErrorEl.textContent = '1900년~2050년 사이의 생년월일만 지원합니다.';
+      sajuErrorEl.classList.remove('hidden');
+      return null;
+    }
+
+    if (selectedCalendarType === 'lunar') {
+      const solar = lunarToSolar(year, month, day, selectedIntercalation);
+      if (!solar) {
+        sajuErrorEl.textContent = '입력한 음력 날짜를 양력으로 변환할 수 없습니다. 날짜를 다시 확인해주세요.';
+        sajuErrorEl.classList.remove('hidden');
+        return null;
+      }
+      year = solar.year;
+      month = solar.month;
+      day = solar.day;
+    }
+
+    let hour = 0;
+    let minute = 0;
+    if (!selectedTimeUnknown) {
+      const timeParts = sajuTimeInput.value.split(':').map(Number);
+      hour = timeParts[0];
+      minute = timeParts[1];
+    }
+
+    return { year: year, month: month, day: day, hour: hour, minute: minute, timeUnknown: selectedTimeUnknown };
+  }
+
+  function pillarText(pillar) {
+    return CHEONGAN[pillar.stemIdx] + JIJI[pillar.branchIdx];
+  }
+
+  function showSajuSummary(input, saju) {
+    const category = selectedCategory;
+    const period = selectedPeriod;
+    const ilgan = getIlganByIndex(saju.day.stemIdx);
+    const heading = ilgan.name_kr + ' 일간 · ' + PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '오늘의운') + ' 리딩';
+
+    const myeongsikRows = [
+      { label: '년주', text: pillarText(saju.year) },
+      { label: '월주', text: pillarText(saju.month) },
+      { label: '일주', text: pillarText(saju.day) },
+      { label: '시주', text: saju.hour ? pillarText(saju.hour) : '모름' }
+    ];
+    const myeongsikHtml = '<div class="myeongsik-table">' +
+      myeongsikRows.map(function (row) {
+        return '<div class="myeongsik-col"><span class="myeongsik-label">' + row.label + '</span><span class="myeongsik-value">' + row.text + '</span></div>';
+      }).join('') +
+      '</div>';
+
+    const counts = getElementCounts(saju);
+    const elementHtml = '<p class="element-summary">' +
+      ['목', '화', '토', '금', '수'].map(function (el) { return el + counts[el]; }).join(' ') +
+      '</p>';
+
+    let daeunHtml = '';
+    if (saju.hour) {
+      const direction = getDaeunDirection(saju.year.stemIdx, selectedGender);
+      const startAge = getDaeunStartAge(saju.instant, saju.monthOffset, direction);
+      const daeunList = getDaeunList(saju.month.stemIdx, saju.month.branchIdx, direction, startAge);
+      const today = new Date();
+      const currentAge = today.getFullYear() - input.year + 1;
+      daeunHtml = '<div class="daeun-table">' +
+        daeunList.map(function (d) {
+          const isCurrent = currentAge >= d.startAge && currentAge <= d.endAge;
+          return '<div class="daeun-col' + (isCurrent ? ' current' : '') + '"><span class="daeun-ganji">' + CHEONGAN[d.stemIdx] + JIJI[d.branchIdx] + '</span><span class="daeun-age">' + d.startAge + '~' + d.endAge + '세</span></div>';
+        }).join('') +
+        '</div>';
+    }
+
+    const balance = classifyElementBalance(counts);
+    const balanceText = getElementBalanceText(balance);
+    const baseMeaning = category && ilgan.categories[category]
+      ? PERIOD_PREFIXES[period] + ' ' + ilgan.categories[category]
+      : ilgan.trait;
+    const meaning = baseMeaning + ' ' + balanceText;
+
+    summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
+      myeongsikHtml + elementHtml + daeunHtml +
+      '<div class="reading-detail"><p>' + meaning + '</p></div>';
+    summaryEl.classList.remove('hidden');
+    newReadingButton.classList.remove('hidden');
+  }
+
+  function saveSajuReading(input, saju) {
+    if (!storage) return;
+    const entry = {
+      date: new Date().toISOString(),
+      mode: 'saju',
+      calendarType: selectedCalendarType,
+      birthDate: input.year + '-' + String(input.month).padStart(2, '0') + '-' + String(input.day).padStart(2, '0'),
+      birthTime: input.timeUnknown ? null : (String(input.hour).padStart(2, '0') + ':' + String(input.minute).padStart(2, '0')),
+      timeUnknown: input.timeUnknown,
+      gender: selectedGender,
+      dayIlganName: getIlganByIndex(saju.day.stemIdx).name_kr,
       category: selectedCategory,
       period: selectedPeriod,
       cards: []
@@ -345,6 +520,21 @@
     birthYearInput.value = '';
     ddiResultEl.classList.add('hidden');
     selectedBirthYear = null;
+    calendarTypeButtons.forEach(function (b) { b.classList.remove('selected'); });
+    calendarTypeButtons[0].classList.add('selected');
+    selectedCalendarType = 'solar';
+    intercalationSelect.classList.add('hidden');
+    intercalationCheckbox.checked = false;
+    selectedIntercalation = false;
+    sajuDateInput.value = '';
+    sajuTimeInput.value = '';
+    sajuTimeInput.disabled = false;
+    timeUnknownCheckbox.checked = false;
+    selectedTimeUnknown = false;
+    genderButtons.forEach(function (b) { b.classList.remove('selected'); });
+    genderButtons[0].classList.add('selected');
+    selectedGender = 'male';
+    sajuErrorEl.classList.add('hidden');
   });
 
   historyOpenButton.addEventListener('click', function () {
@@ -393,6 +583,8 @@
         cardsText = ZODIAC_LABELS[entry.zodiac] || '별자리';
       } else if (entry.mode === 'ddi') {
         cardsText = entry.birthYear ? entry.birthYear + '년생 ' + getDdiByYear(entry.birthYear).name_kr : '띠운세';
+      } else if (entry.mode === 'saju') {
+        cardsText = entry.birthDate + ' ' + (entry.timeUnknown ? '(시간 모름)' : entry.birthTime) + ' · ' + entry.dayIlganName + ' 일간';
       } else {
         cardsText = entry.cards.map(function (c) {
           return c.name + '(' + (c.orientation === 'upright' ? '정' : '역') + ')';
