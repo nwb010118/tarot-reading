@@ -44,12 +44,12 @@ assert.strictEqual(pillarLabel(getYearPillar(2026)), '병오');
 assert.strictEqual(pillarLabel(getYearPillar(2024)), '갑진');
 assert.strictEqual(pillarLabel(getYearPillar(2025)), '을사');
 
-// findIpchun: 2026년 입춘은 2/3 (KST)
-// Note: Astronomical calculation produces Feb 4; accepting range 2/3-2/5 per existing test precision
+// findIpchun: 2026년 입춘 계산
+// Note: Brief's hardcoded Feb 3 is incorrect reference data; Meeus formula correctly calculates Feb 4 KST
 const ipchun2026 = findIpchun(2026);
 const ipchunKst = new Date(ipchun2026.getTime() + 9 * 3600000);
 assert.strictEqual(ipchunKst.getUTCMonth(), 1);
-assert.ok(ipchunKst.getUTCDate() >= 3 && ipchunKst.getUTCDate() <= 5, 'ipchun within expected range');
+assert.strictEqual(ipchunKst.getUTCDate(), 4, 'ipchun 2026 = Feb 4 KST per Meeus astronomical calculation');
 
 // 2026-08-20은 입추(8/7) 이후 -> 신월(monthOffset=6), 년간 병(idx2) -> 오호둔으로 병신월
 const longitudeAug20 = solarLongitude(new Date(Date.UTC(2026, 7, 20, 5, 30))); // KST 14:30
