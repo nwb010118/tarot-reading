@@ -55,8 +55,14 @@
         <label><input type="checkbox" id="intercalation-checkbox"> 윤달이에요</label>
       </div>
 
-      <label for="saju-date-input">생년월일을 입력하세요</label>
-      <input type="date" id="saju-date-input" min="1900-01-01" max="2050-12-31">
+      <div id="saju-date-solar-group">
+        <label for="saju-date-input">생년월일을 입력하세요</label>
+        <input type="date" id="saju-date-input" min="1900-01-01" max="2050-12-31">
+      </div>
+      <div id="saju-date-lunar-group" class="hidden">
+        <label for="saju-lunar-date-input">음력 생년월일을 입력하세요 (YYYY-MM-DD)</label>
+        <input type="text" id="saju-lunar-date-input" inputmode="numeric" placeholder="예: 1990-02-30">
+      </div>
 
       <label for="saju-time-input">태어난 시각을 입력하세요</label>
       <input type="time" id="saju-time-input">

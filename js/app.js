@@ -67,7 +67,10 @@
   const calendarTypeButtons = document.querySelectorAll('#calendar-type-select .calendar-type-btn');
   const intercalationSelect = document.getElementById('intercalation-select');
   const intercalationCheckbox = document.getElementById('intercalation-checkbox');
+  const sajuDateSolarGroup = document.getElementById('saju-date-solar-group');
+  const sajuDateLunarGroup = document.getElementById('saju-date-lunar-group');
   const sajuDateInput = document.getElementById('saju-date-input');
+  const sajuLunarDateInput = document.getElementById('saju-lunar-date-input');
   const sajuTimeInput = document.getElementById('saju-time-input');
   const timeUnknownCheckbox = document.getElementById('time-unknown-checkbox');
   const genderButtons = document.querySelectorAll('#gender-select .gender-btn');
@@ -134,6 +137,8 @@
       btn.classList.add('selected');
       selectedCalendarType = btn.dataset.calendarType;
       intercalationSelect.classList.toggle('hidden', selectedCalendarType !== 'lunar');
+      sajuDateSolarGroup.classList.toggle('hidden', selectedCalendarType === 'lunar');
+      sajuDateLunarGroup.classList.toggle('hidden', selectedCalendarType !== 'lunar');
     });
   });
 
@@ -302,7 +307,11 @@
   function resolveSajuInput() {
     sajuErrorEl.classList.add('hidden');
 
-    if (!sajuDateInput.value) {
+    // 음력 입력은 양력 <input type="date">가 아니라 별도의 텍스트 입력(YYYY-MM-DD)을 사용한다.
+    // 양력 달력의 일수 제한(예: 2월 28/29일)이 음력(29/30일)에는 적용되지 않기 때문.
+    const activeDateInput = selectedCalendarType === 'lunar' ? sajuLunarDateInput : sajuDateInput;
+
+    if (!activeDateInput.value) {
       sajuErrorEl.textContent = '생년월일을 입력해주세요.';
       sajuErrorEl.classList.remove('hidden');
       return null;
@@ -313,12 +322,18 @@
       return null;
     }
 
-    const dateParts = sajuDateInput.value.split('-').map(Number);
+    if (selectedCalendarType === 'lunar' && !/^\d{4}-\d{1,2}-\d{1,2}$/.test(activeDateInput.value.trim())) {
+      sajuErrorEl.textContent = '음력 생년월일은 YYYY-MM-DD 형식으로 입력해주세요.';
+      sajuErrorEl.classList.remove('hidden');
+      return null;
+    }
+
+    const dateParts = activeDateInput.value.trim().split('-').map(Number);
     let year = dateParts[0];
     let month = dateParts[1];
     let day = dateParts[2];
 
-    if (year < 1900 || year > 2050) {
+    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day) || year < 1900 || year > 2050) {
       sajuErrorEl.textContent = '1900년~2050년 사이의 생년월일만 지원합니다.';
       sajuErrorEl.classList.remove('hidden');
       return null;
@@ -334,6 +349,14 @@
       year = solar.year;
       month = solar.month;
       day = solar.day;
+
+      // 음력 입력 자체는 1900~2050 범위였더라도, 변환된 양력 날짜가 그 범위를 벗어날 수 있다
+      // (예: 음력 2050년 12월 -> 양력 2051년). 변환 후 최종 날짜로 다시 검증한다.
+      if (year < 1900 || year > 2050) {
+        sajuErrorEl.textContent = '1900년~2050년 사이의 생년월일만 지원합니다.';
+        sajuErrorEl.classList.remove('hidden');
+        return null;
+      }
     }
 
     let hour = 0;
@@ -380,11 +403,12 @@
       const startAge = getDaeunStartAge(saju.instant, saju.monthOffset, direction);
       const daeunList = getDaeunList(saju.month.stemIdx, saju.month.branchIdx, direction, startAge);
       const today = new Date();
+      // 대운 구간은 한국식 세는나이 기준으로 판단
       const currentAge = today.getFullYear() - input.year + 1;
       daeunHtml = '<div class="daeun-table">' +
         daeunList.map(function (d) {
           const isCurrent = currentAge >= d.startAge && currentAge <= d.endAge;
-          return '<div class="daeun-col' + (isCurrent ? ' current' : '') + '"><span class="daeun-ganji">' + CHEONGAN[d.stemIdx] + JIJI[d.branchIdx] + '</span><span class="daeun-age">' + d.startAge + '~' + d.endAge + '세</span></div>';
+          return '<div class="daeun-col' + (isCurrent ? ' current' : '') + '"><span class="daeun-ganji">' + pillarText(d) + '</span><span class="daeun-age">' + d.startAge + '~' + d.endAge + '세</span></div>';
         }).join('') +
         '</div>';
     }
@@ -526,7 +550,10 @@
     intercalationSelect.classList.add('hidden');
     intercalationCheckbox.checked = false;
     selectedIntercalation = false;
+    sajuDateSolarGroup.classList.remove('hidden');
+    sajuDateLunarGroup.classList.add('hidden');
     sajuDateInput.value = '';
+    sajuLunarDateInput.value = '';
     sajuTimeInput.value = '';
     sajuTimeInput.disabled = false;
     timeUnknownCheckbox.checked = false;
@@ -584,7 +611,7 @@
       } else if (entry.mode === 'ddi') {
         cardsText = entry.birthYear ? entry.birthYear + '년생 ' + getDdiByYear(entry.birthYear).name_kr : '띠운세';
       } else if (entry.mode === 'saju') {
-        cardsText = entry.birthDate + ' ' + (entry.timeUnknown ? '(시간 모름)' : entry.birthTime) + ' · ' + entry.dayIlganName + ' 일간';
+        cardsText = escapeHtml(entry.birthDate + ' ' + (entry.timeUnknown ? '(시간 모름)' : entry.birthTime) + ' · ' + entry.dayIlganName + ' 일간');
       } else {
         cardsText = entry.cards.map(function (c) {
           return c.name + '(' + (c.orientation === 'upright' ? '정' : '역') + ')';

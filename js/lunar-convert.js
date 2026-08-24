@@ -73,12 +73,17 @@ function getSolarAbsDays(year, month, day) {
   return getSolarDaysBeforeBaseYear(year - 1) + getSolarDaysBeforeBaseMonth(year, month - 1) + day - LUNAR_TABLE_DATA.SOLAR_LUNAR_DAY_DIFF;
 }
 
-// 음력 날짜 -> 양력 날짜. 지원 범위(1000~2050) 밖이거나 유효하지 않으면 null.
+// 음력 날짜 -> 양력 날짜. 데이터 테이블의 원본 지원 범위는 1000~2050년이지만,
+// 이 앱이 사용자 입력으로 허용하는 범위는 1900~2050년이다(js/app.js에서 별도 검증).
+// 유효하지 않은 날짜(범위 밖 연/월/일, 해당 월의 실제 일수를 초과하는 일)면 null.
 function lunarToSolar(lunarYear, lunarMonth, lunarDay, isIntercalation) {
   if (lunarYear < LUNAR_TABLE_DATA.BASE_YEAR || lunarYear > LUNAR_TABLE_DATA.BASE_YEAR + LUNAR_TABLE_DATA.DATA.length - 1) {
     return null;
   }
   if (lunarMonth < 1 || lunarMonth > 12 || lunarDay < 1) {
+    return null;
+  }
+  if (lunarDay > getLunarMonthDays(lunarYear, lunarMonth, isIntercalation)) {
     return null;
   }
 

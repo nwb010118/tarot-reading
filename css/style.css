@@ -202,7 +202,7 @@ label { display: block; margin-bottom: 8px; color: #c9bde0; }
   .card { width: 44vw; height: 77vw; max-width: 160px; max-height: 280px; }
 }
 
-#saju-date-input, #saju-time-input {
+#saju-date-input, #saju-lunar-date-input, #saju-time-input {
   width: 100%;
   padding: 10px 12px;
   border-radius: 8px;
