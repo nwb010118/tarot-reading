@@ -10,7 +10,17 @@ const {
   getMonthPillar,
   findIpchun,
   toJDN,
-  getDayPillarIndex
+  getDayPillarIndex,
+  getHourBranchIndex,
+  getHourStemIndex,
+  kstDateToInstant,
+  getSajuYear,
+  calculateSaju,
+  getElementCounts,
+  classifyElementBalance,
+  getDaeunDirection,
+  getDaeunStartAge,
+  getDaeunList
 } = require('../js/saju-calc.js');
 
 // normalizeMod
@@ -73,7 +83,6 @@ assert.strictEqual(dayLabel(getDayPillarIndex(2026, 8, 20)), '병인');
 console.log('All saju-calc day pillar tests passed');
 
 // Hour pillar tests
-const { getHourBranchIndex, getHourStemIndex } = require('../js/saju-calc.js');
 
 // 자시(23~00시)는 branchIdx 0
 assert.strictEqual(getHourBranchIndex(23), 0);
@@ -91,7 +100,6 @@ assert.strictEqual(getHourStemIndex(0, 0), 0);
 console.log('All saju-calc hour pillar tests passed');
 
 // calculateSaju orchestration tests
-const { kstDateToInstant, getSajuYear, calculateSaju } = require('../js/saju-calc.js');
 
 // 골든 케이스: 2026-08-20 14:30 KST, 시간 앎
 // 기대값: 년주 병오, 월주 병신, 일주 병인, 시주 을미 (Task 1~4 테스트로 개별 검증된 값의 조합)
@@ -118,7 +126,6 @@ assert.strictEqual(pillarLabel(afterIpchun.year), '병오');
 console.log('All saju-calc calculateSaju tests passed');
 
 // Element counts and balance classification tests
-const { getElementCounts, classifyElementBalance } = require('../js/saju-calc.js');
 
 // 골든 케이스(2026-08-20 14:30)의 4주: 병오/병신/병인/을미
 // 천간 병병병을(화화화목), 지지 오신인미(화금목토) -> 목2 화4 토1 금1 수0
@@ -143,7 +150,6 @@ assert.strictEqual(balanced.state, 'balanced');
 console.log('All saju-calc element balance tests passed');
 
 // Daeun (10-year luck cycle) tests
-const { getDaeunDirection, getDaeunStartAge, getDaeunList } = require('../js/saju-calc.js');
 
 // 골든 케이스: 2026년 병오년(년간 병=idx2, 양간) + 남성 -> 순행(1)
 assert.strictEqual(getDaeunDirection(2, 'male'), 1);

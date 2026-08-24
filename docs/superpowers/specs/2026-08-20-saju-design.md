@@ -107,10 +107,11 @@ const ILGAN_DATA = [
   date, mode: 'saju',
   calendarType: 'solar' | 'lunar',
   birthDate, birthTime, timeUnknown, gender,
-  pillars: { year: {stem, branch}, month: {...}, day: {...}, hour: {...} | null },
+  dayIlganName,
   category, period
 }
 ```
+전체 8자 간지(`pillars`)는 저장하지 않고, 일간 이름(`dayIlganName`, 예: "갑목")만 문자열로 저장한다 — 명식표는 재생성하지 않고 히스토리 목록에는 일간만 표시하면 충분하기 때문.
 `renderHistory()`에 사주 분기 추가 (예: "1995-03-12 · 갑목 일간").
 
 ## 에러 처리
