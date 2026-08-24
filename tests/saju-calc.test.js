@@ -20,7 +20,8 @@ const {
   classifyElementBalance,
   getDaeunDirection,
   getDaeunStartAge,
-  getDaeunList
+  getDaeunList,
+  getStemElement
 } = require('../js/saju-calc.js');
 
 // normalizeMod
@@ -174,3 +175,12 @@ assert.strictEqual(daeunList[0].stemIdx, 3);
 assert.strictEqual(daeunList[0].branchIdx, 9);
 
 console.log('All saju-calc daeun tests passed');
+
+// getStemElement: 천간 인덱스 -> 오행
+assert.strictEqual(getStemElement(0), '목'); // 갑
+assert.strictEqual(getStemElement(2), '화'); // 병
+assert.strictEqual(getStemElement(4), '토'); // 무
+assert.strictEqual(getStemElement(6), '금'); // 경
+assert.strictEqual(getStemElement(8), '수'); // 임
+
+console.log('All getStemElement tests passed');
