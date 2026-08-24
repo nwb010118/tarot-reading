@@ -30,7 +30,8 @@ label { display: block; margin-bottom: 8px; color: #c9bde0; }
 
 #ddi-result, #zodiac-result { margin: 0 0 16px; color: #d4af37; font-size: 14px; }
 
-#category-select, #period-select, #mode-select, #zodiac-select .button-grid {
+#category-select, #period-select, #mode-select, #zodiac-select .button-grid,
+#compat-subtype-select, #compat-zodiac-group .button-grid, #compat-calendar-type-select {
   display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
 }
 
@@ -250,3 +251,36 @@ label { display: block; margin-bottom: 8px; color: #c9bde0; }
 .daeun-age { font-size: 11px; color: #c9bde0; }
 
 .element-summary { text-align: center; color: #c9bde0; font-size: 13px; margin: 0 0 8px; }
+
+#compat-ddi-year1-input, #compat-ddi-year2-input,
+#compat-saju-date1-input, #compat-saju-lunar-date1-input,
+#compat-saju-date2-input, #compat-saju-lunar-date2-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #4a3a68;
+  background: #1a1330;
+  color: #f0e6c8;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.compat-person-group { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.compat-person-col { flex: 1 1 240px; min-width: 0; }
+.compat-saju-common { flex-basis: 100%; }
+
+.compat-person-col label:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+#compat-error { color: #e08080; font-size: 13px; margin: -4px 0 12px; }
+
+.compat-score { text-align: center; font-size: 32px; font-weight: bold; color: #d4af37; margin: 12px 0 4px; }
+.compat-tier-label { text-align: center; color: #c9bde0; font-size: 14px; margin: 0 0 12px; }
+
+@media (max-width: 480px) {
+  .compat-person-group { flex-direction: column; }
+}
