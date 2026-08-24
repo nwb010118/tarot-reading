@@ -37,7 +37,9 @@
   const ZODIAC_LABELS = {};
   getZodiacList().forEach(function (z) { ZODIAC_LABELS[z.key] = z.name_kr; });
 
-  const MODE_BUTTON_LABELS = { tarot: '카드 뽑기', zodiac: '운세 보기', ddi: '운세 보기', saju: '운세 보기' };
+  const COMPAT_SUBTYPE_LABELS = { zodiac: '별자리 궁합', ddi: '띠 궁합', saju: '사주 궁합' };
+
+  const MODE_BUTTON_LABELS = { tarot: '카드 뽑기', zodiac: '운세 보기', ddi: '운세 보기', saju: '운세 보기', compatibility: '궁합 보기' };
 
   const storage = getStorage();
   const deck = getFullDeck();
@@ -53,6 +55,10 @@
   let selectedIntercalation = false;
   let selectedGender = 'male';
   let selectedTimeUnknown = false;
+  let selectedCompatSubtype = 'zodiac';
+  let selectedCompatZodiac1 = 'aries';
+  let selectedCompatZodiac2 = 'aries';
+  let selectedCompatCalendarType = 'solar';
 
   const screenStart = document.getElementById('screen-start');
   const screenReading = document.getElementById('screen-reading');
@@ -75,6 +81,29 @@
   const timeUnknownCheckbox = document.getElementById('time-unknown-checkbox');
   const genderButtons = document.querySelectorAll('#gender-select .gender-btn');
   const sajuErrorEl = document.getElementById('saju-error');
+  const compatibilitySelect = document.getElementById('compatibility-select');
+  const categorySection = document.getElementById('category-section');
+  const periodSection = document.getElementById('period-section');
+  const compatSubtypeButtons = document.querySelectorAll('#compat-subtype-select .compat-subtype-btn');
+  const compatZodiacGroup = document.getElementById('compat-zodiac-group');
+  const compatZodiac1Buttons = document.querySelectorAll('.compat-zodiac1-btn');
+  const compatZodiac2Buttons = document.querySelectorAll('.compat-zodiac2-btn');
+  const compatDdiGroup = document.getElementById('compat-ddi-group');
+  const compatDdiYear1Input = document.getElementById('compat-ddi-year1-input');
+  const compatDdiYear2Input = document.getElementById('compat-ddi-year2-input');
+  const compatSajuGroup = document.getElementById('compat-saju-group');
+  const compatCalendarTypeButtons = document.querySelectorAll('#compat-calendar-type-select .compat-calendar-type-btn');
+  const compatSajuDate1SolarGroup = document.getElementById('compat-saju-date1-solar-group');
+  const compatSajuDate1LunarGroup = document.getElementById('compat-saju-date1-lunar-group');
+  const compatSajuDate2SolarGroup = document.getElementById('compat-saju-date2-solar-group');
+  const compatSajuDate2LunarGroup = document.getElementById('compat-saju-date2-lunar-group');
+  const compatSajuDate1Input = document.getElementById('compat-saju-date1-input');
+  const compatSajuLunarDate1Input = document.getElementById('compat-saju-lunar-date1-input');
+  const compatSajuDate2Input = document.getElementById('compat-saju-date2-input');
+  const compatSajuLunarDate2Input = document.getElementById('compat-saju-lunar-date2-input');
+  const compatIntercalation1Checkbox = document.getElementById('compat-intercalation1-checkbox');
+  const compatIntercalation2Checkbox = document.getElementById('compat-intercalation2-checkbox');
+  const compatErrorEl = document.getElementById('compat-error');
   const categoryButtons = document.querySelectorAll('#category-select .category-btn');
   const periodButtons = document.querySelectorAll('#period-select .category-btn');
   const spreadSelect = document.getElementById('spread-select');
@@ -97,7 +126,10 @@
       zodiacSelect.classList.toggle('hidden', selectedMode !== 'zodiac');
       ddiSelect.classList.toggle('hidden', selectedMode !== 'ddi');
       sajuSelect.classList.toggle('hidden', selectedMode !== 'saju');
+      compatibilitySelect.classList.toggle('hidden', selectedMode !== 'compatibility');
       spreadSelect.classList.toggle('hidden', selectedMode !== 'tarot');
+      categorySection.classList.toggle('hidden', selectedMode === 'compatibility');
+      periodSection.classList.toggle('hidden', selectedMode === 'compatibility');
       drawButton.textContent = MODE_BUTTON_LABELS[selectedMode];
     });
   });
@@ -156,6 +188,46 @@
       genderButtons.forEach(function (b) { b.classList.remove('selected'); });
       btn.classList.add('selected');
       selectedGender = btn.dataset.gender;
+    });
+  });
+
+  compatSubtypeButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      compatSubtypeButtons.forEach(function (b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      selectedCompatSubtype = btn.dataset.compatSubtype;
+      compatZodiacGroup.classList.toggle('hidden', selectedCompatSubtype !== 'zodiac');
+      compatDdiGroup.classList.toggle('hidden', selectedCompatSubtype !== 'ddi');
+      compatSajuGroup.classList.toggle('hidden', selectedCompatSubtype !== 'saju');
+      compatErrorEl.classList.add('hidden');
+    });
+  });
+
+  compatZodiac1Buttons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      compatZodiac1Buttons.forEach(function (b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      selectedCompatZodiac1 = btn.dataset.zodiac;
+    });
+  });
+
+  compatZodiac2Buttons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      compatZodiac2Buttons.forEach(function (b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      selectedCompatZodiac2 = btn.dataset.zodiac;
+    });
+  });
+
+  compatCalendarTypeButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      compatCalendarTypeButtons.forEach(function (b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      selectedCompatCalendarType = btn.dataset.calendarType;
+      compatSajuDate1SolarGroup.classList.toggle('hidden', selectedCompatCalendarType === 'lunar');
+      compatSajuDate1LunarGroup.classList.toggle('hidden', selectedCompatCalendarType !== 'lunar');
+      compatSajuDate2SolarGroup.classList.toggle('hidden', selectedCompatCalendarType === 'lunar');
+      compatSajuDate2LunarGroup.classList.toggle('hidden', selectedCompatCalendarType !== 'lunar');
     });
   });
 
@@ -229,6 +301,35 @@
       screenReading.classList.remove('hidden');
       showSajuSummary(input, saju);
       saveSajuReading(input, saju);
+      return;
+    }
+
+    if (selectedMode === 'compatibility') {
+      let label1, label2, tier;
+      if (selectedCompatSubtype === 'zodiac') {
+        label1 = getZodiacByKey(selectedCompatZodiac1).name_kr;
+        label2 = getZodiacByKey(selectedCompatZodiac2).name_kr;
+        tier = getZodiacCompatibility(selectedCompatZodiac1, selectedCompatZodiac2);
+      } else if (selectedCompatSubtype === 'ddi') {
+        const input = resolveCompatDdiInput();
+        if (!input) return;
+        label1 = input.year1 + '년생 ' + getDdiByYear(input.year1).name_kr;
+        label2 = input.year2 + '년생 ' + getDdiByYear(input.year2).name_kr;
+        tier = getDdiCompatibility(input.year1, input.year2);
+      } else {
+        const input = resolveCompatSajuInput();
+        if (!input) return;
+        const sajuResult = getSajuCompatibility(input.date1, input.date2);
+        label1 = sajuResult.ilganName1 + ' 일간';
+        label2 = sajuResult.ilganName2 + ' 일간';
+        tier = sajuResult.tier;
+      }
+      const tierInfo = getCompatTierInfo(tier, label1, label2);
+      cardsContainer.innerHTML = '';
+      screenStart.classList.add('hidden');
+      screenReading.classList.remove('hidden');
+      showCompatibilitySummary(label1, label2, tierInfo);
+      saveCompatibilityReading(selectedCompatSubtype, label1, label2, tierInfo);
       return;
     }
 
@@ -370,6 +471,80 @@
     return { year: year, month: month, day: day, hour: hour, minute: minute, timeUnknown: selectedTimeUnknown };
   }
 
+  function resolveCompatDdiInput() {
+    compatErrorEl.classList.add('hidden');
+    const year1 = Number(compatDdiYear1Input.value);
+    const year2 = Number(compatDdiYear2Input.value);
+    if (!compatDdiYear1Input.value || !year1 || year1 < 1900 || year1 > 2100) {
+      compatErrorEl.textContent = '사람 1의 태어난 연도를 1900~2100년 사이로 입력해주세요.';
+      compatErrorEl.classList.remove('hidden');
+      return null;
+    }
+    if (!compatDdiYear2Input.value || !year2 || year2 < 1900 || year2 > 2100) {
+      compatErrorEl.textContent = '사람 2의 태어난 연도를 1900~2100년 사이로 입력해주세요.';
+      compatErrorEl.classList.remove('hidden');
+      return null;
+    }
+    return { year1: year1, year2: year2 };
+  }
+
+  // 궁합 사주 날짜 한 사람분을 검증. 실패 시 null을 반환하고 compatErrorEl에 에러를 표시.
+  function resolveCompatSajuDate(dateInput, lunarDateInput, intercalation, personLabel) {
+    const activeInput = selectedCompatCalendarType === 'lunar' ? lunarDateInput : dateInput;
+
+    if (!activeInput.value) {
+      compatErrorEl.textContent = personLabel + '의 생년월일을 입력해주세요.';
+      compatErrorEl.classList.remove('hidden');
+      return null;
+    }
+
+    if (selectedCompatCalendarType === 'lunar' && !/^\d{4}-\d{1,2}-\d{1,2}$/.test(activeInput.value.trim())) {
+      compatErrorEl.textContent = personLabel + '의 음력 생년월일은 YYYY-MM-DD 형식으로 입력해주세요.';
+      compatErrorEl.classList.remove('hidden');
+      return null;
+    }
+
+    const dateParts = activeInput.value.trim().split('-').map(Number);
+    let year = dateParts[0];
+    let month = dateParts[1];
+    let day = dateParts[2];
+
+    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day) || year < 1900 || year > 2050) {
+      compatErrorEl.textContent = personLabel + '은(는) 1900년~2050년 사이의 생년월일만 지원합니다.';
+      compatErrorEl.classList.remove('hidden');
+      return null;
+    }
+
+    if (selectedCompatCalendarType === 'lunar') {
+      const solar = lunarToSolar(year, month, day, intercalation);
+      if (!solar) {
+        compatErrorEl.textContent = personLabel + '의 음력 날짜를 양력으로 변환할 수 없습니다. 날짜를 다시 확인해주세요.';
+        compatErrorEl.classList.remove('hidden');
+        return null;
+      }
+      year = solar.year;
+      month = solar.month;
+      day = solar.day;
+
+      if (year < 1900 || year > 2050) {
+        compatErrorEl.textContent = personLabel + '은(는) 1900년~2050년 사이의 생년월일만 지원합니다.';
+        compatErrorEl.classList.remove('hidden');
+        return null;
+      }
+    }
+
+    return { year: year, month: month, day: day };
+  }
+
+  function resolveCompatSajuInput() {
+    compatErrorEl.classList.add('hidden');
+    const date1 = resolveCompatSajuDate(compatSajuDate1Input, compatSajuLunarDate1Input, compatIntercalation1Checkbox.checked, '사람 1');
+    if (!date1) return null;
+    const date2 = resolveCompatSajuDate(compatSajuDate2Input, compatSajuLunarDate2Input, compatIntercalation2Checkbox.checked, '사람 2');
+    if (!date2) return null;
+    return { date1: date1, date2: date2 };
+  }
+
   function pillarText(pillar) {
     return CHEONGAN[pillar.stemIdx] + JIJI[pillar.branchIdx];
   }
@@ -440,6 +615,31 @@
       dayIlganName: getIlganByIndex(saju.day.stemIdx).name_kr,
       category: selectedCategory,
       period: selectedPeriod,
+      cards: []
+    };
+    saveReading(storage, entry);
+  }
+
+  function showCompatibilitySummary(label1, label2, tierInfo) {
+    const heading = label1 + ' × ' + label2 + ' 궁합';
+    summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
+      '<p class="compat-score">' + tierInfo.score + '%</p>' +
+      '<p class="compat-tier-label">' + tierInfo.tierLabel + '</p>' +
+      '<div class="reading-detail"><p>' + tierInfo.text + '</p></div>';
+    summaryEl.classList.remove('hidden');
+    newReadingButton.classList.remove('hidden');
+  }
+
+  function saveCompatibilityReading(subtype, label1, label2, tierInfo) {
+    if (!storage) return;
+    const entry = {
+      date: new Date().toISOString(),
+      mode: 'compatibility',
+      subtype: subtype,
+      person1Label: label1,
+      person2Label: label2,
+      tierLabel: tierInfo.tierLabel,
+      score: tierInfo.score,
       cards: []
     };
     saveReading(storage, entry);
@@ -562,6 +762,34 @@
     genderButtons[0].classList.add('selected');
     selectedGender = 'male';
     sajuErrorEl.classList.add('hidden');
+    compatSubtypeButtons.forEach(function (b) { b.classList.remove('selected'); });
+    compatSubtypeButtons[0].classList.add('selected');
+    selectedCompatSubtype = 'zodiac';
+    compatZodiacGroup.classList.remove('hidden');
+    compatDdiGroup.classList.add('hidden');
+    compatSajuGroup.classList.add('hidden');
+    compatZodiac1Buttons.forEach(function (b) { b.classList.remove('selected'); });
+    compatZodiac1Buttons[0].classList.add('selected');
+    selectedCompatZodiac1 = 'aries';
+    compatZodiac2Buttons.forEach(function (b) { b.classList.remove('selected'); });
+    compatZodiac2Buttons[0].classList.add('selected');
+    selectedCompatZodiac2 = 'aries';
+    compatDdiYear1Input.value = '';
+    compatDdiYear2Input.value = '';
+    compatCalendarTypeButtons.forEach(function (b) { b.classList.remove('selected'); });
+    compatCalendarTypeButtons[0].classList.add('selected');
+    selectedCompatCalendarType = 'solar';
+    compatSajuDate1SolarGroup.classList.remove('hidden');
+    compatSajuDate1LunarGroup.classList.add('hidden');
+    compatSajuDate2SolarGroup.classList.remove('hidden');
+    compatSajuDate2LunarGroup.classList.add('hidden');
+    compatSajuDate1Input.value = '';
+    compatSajuLunarDate1Input.value = '';
+    compatSajuDate2Input.value = '';
+    compatSajuLunarDate2Input.value = '';
+    compatIntercalation1Checkbox.checked = false;
+    compatIntercalation2Checkbox.checked = false;
+    compatErrorEl.classList.add('hidden');
   });
 
   historyOpenButton.addEventListener('click', function () {
@@ -612,6 +840,8 @@
         cardsText = entry.birthYear ? entry.birthYear + '년생 ' + getDdiByYear(entry.birthYear).name_kr : '띠운세';
       } else if (entry.mode === 'saju') {
         cardsText = escapeHtml(entry.birthDate + ' ' + (entry.timeUnknown ? '(시간 모름)' : entry.birthTime) + ' · ' + entry.dayIlganName + ' 일간');
+      } else if (entry.mode === 'compatibility') {
+        cardsText = escapeHtml(entry.person1Label + ' × ' + entry.person2Label + ' · ' + entry.score + '%');
       } else {
         cardsText = entry.cards.map(function (c) {
           return c.name + '(' + (c.orientation === 'upright' ? '정' : '역') + ')';
@@ -620,7 +850,9 @@
       const dateText = new Date(entry.date).toLocaleString('ko-KR');
       const periodLabel = entry.period && PERIOD_LABELS[entry.period] ? PERIOD_LABELS[entry.period] : '오늘';
       const categoryLabel = entry.category && CATEGORY_LABELS[entry.category] ? CATEGORY_LABELS[entry.category] : '오늘의운';
-      const topicText = escapeHtml(periodLabel + ' ' + categoryLabel);
+      const topicText = entry.mode === 'compatibility'
+        ? escapeHtml(COMPAT_SUBTYPE_LABELS[entry.subtype] + ' · ' + entry.tierLabel)
+        : escapeHtml(periodLabel + ' ' + categoryLabel);
 
       return '<div class="history-item">' +
         '<p class="history-date">' + dateText + '</p>' +

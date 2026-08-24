@@ -146,6 +146,10 @@ function calculateSaju(input) {
 const CHEONGAN_ELEMENT = ['목', '목', '화', '화', '토', '토', '금', '금', '수', '수'];
 const JIJI_ELEMENT = ['수', '토', '목', '목', '토', '화', '화', '토', '금', '금', '토', '수'];
 
+function getStemElement(stemIdx) {
+  return CHEONGAN_ELEMENT[stemIdx];
+}
+
 function getElementCounts(pillars) {
   const counts = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
   const list = [pillars.year, pillars.month, pillars.day];
@@ -203,5 +207,5 @@ function getDaeunList(monthStemIdx, monthBranchIdx, direction, startAge) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju, getElementCounts, classifyElementBalance, getDaeunDirection, getDaeunStartAge, getDaeunList };
+  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju, getElementCounts, classifyElementBalance, getDaeunDirection, getDaeunStartAge, getDaeunList, getStemElement };
 }
