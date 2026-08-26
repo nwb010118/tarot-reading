@@ -106,7 +106,7 @@ const TAROT_MAJOR_ARCANA = [
         business: { upright: "확고한 의지로 사업을 밀어붙여 성과를 내는 시기입니다.", reversed: "방향을 잃은 채 무리하게 확장하다 통제력을 잃을 수 있습니다." },
         study: { upright: "목표를 정하고 밀어붙이면 좋은 성적을 얻을 수 있는 시기입니다.", reversed: "조급하게 몰아붙이다 오히려 집중력이 흐트러질 수 있습니다." },
         health: { upright: "강한 의지로 체력 관리나 운동 목표를 달성할 수 있는 시기입니다.", reversed: "무리한 운동이나 과로로 몸에 탈이 날 수 있으니 주의하세요." },
-        relationships: { upright: "적극적으로 관계를 이끌어가는 시기입니다.", reversed: "밀어붕이는 태도가 관계에 부담을 줄 수 있습니다." },
+        relationships: { upright: "적극적으로 관계를 이끌어가는 시기입니다.", reversed: "밀어붙이는 태도가 관계에 부담을 줄 수 있습니다." },
         honor: { upright: "강한 성과로 뚜렷하게 인정받는 시기입니다.", reversed: "무리한 태도가 평판에 부정적으로 작용할 수 있습니다." },
         moving: { upright: "목표한 곳으로 확실하게 이동을 추진하는 시기입니다.", reversed: "성급한 이동 결정이 혼란을 만들 수 있습니다." },
         children: { upright: "아이를 위해 적극적으로 나서는 추진력 있는 시기입니다.", reversed: "지나친 강요가 아이와의 마찰로 이어질 수 있습니다." }
