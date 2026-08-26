@@ -1,6 +1,13 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+
+global.TAROT_MAJOR_ARCANA = require('../data/tarot-data-major.js').TAROT_MAJOR_ARCANA;
+global.TAROT_WANDS = require('../data/tarot-data-wands.js').TAROT_WANDS;
+global.TAROT_CUPS = require('../data/tarot-data-cups.js').TAROT_CUPS;
+global.TAROT_SWORDS = require('../data/tarot-data-swords.js').TAROT_SWORDS;
+global.TAROT_PENTACLES = require('../data/tarot-data-pentacles.js').TAROT_PENTACLES;
+
 const { getFullDeck } = require('../data/tarot-data.js');
 
 const deck = getFullDeck();
