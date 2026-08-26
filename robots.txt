@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://nwb010118.github.io/tarot-reading/sitemap.xml
