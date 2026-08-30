@@ -43,4 +43,41 @@ assert.strictEqual(hanggedManCard.image, 'images/RWS_Tarot_12_Hanged_Man.jpg', '
 const strengthCard = majorCards.find(function (c) { return c.cardId === 'major_8'; });
 assert.strictEqual(strengthCard.image, 'images/RWS_Tarot_08_Strength.jpg', 'Strength (no "The") should be unchanged');
 
+// 카드당 부가정보(keywords/advice)와 세분화 카테고리 구조 검증
+const SUBDIVIDED_CATEGORIES = {
+  love: ['solo', 'couple'], money: ['consumption', 'invest'], career: ['jobseek', 'switch'],
+  business: ['startup', 'running'], study: ['exam', 'path'], health: ['body', 'mind'],
+  relationships: ['new', 'existing'], workplace: ['team', 'personal']
+};
+const SINGLE_CATEGORIES = ['honor', 'moving', 'children'];
+
+deck.forEach(function (card) {
+  ['upright', 'reversed'].forEach(function (o) {
+    assert.ok(card.keywords && Array.isArray(card.keywords[o]) && card.keywords[o].length === 3,
+      card.name + ' keywords.' + o + ' must be an array of exactly 3 items');
+    assert.ok(card.advice && typeof card.advice[o] === 'string' && card.advice[o].length > 0,
+      card.name + ' advice.' + o + ' must be a non-empty string');
+  });
+
+  Object.keys(SUBDIVIDED_CATEGORIES).forEach(function (cat) {
+    const keys = SUBDIVIDED_CATEGORIES[cat];
+    ['upright', 'reversed'].forEach(function (o) {
+      const entry = card.categories[cat] && card.categories[cat][o];
+      assert.ok(entry && typeof entry === 'object', card.name + ' categories.' + cat + '.' + o + ' must be an object');
+      assert.ok(typeof entry[keys[0]] === 'string' && entry[keys[0]].length > 0, card.name + ' categories.' + cat + '.' + o + '.' + keys[0] + ' must be a non-empty string');
+      assert.ok(typeof entry[keys[1]] === 'string' && entry[keys[1]].length > 0, card.name + ' categories.' + cat + '.' + o + '.' + keys[1] + ' must be a non-empty string');
+      assert.notStrictEqual(entry[keys[0]], entry[keys[1]], card.name + ' categories.' + cat + '.' + o + ' sub-choices must not be identical');
+    });
+  });
+
+  SINGLE_CATEGORIES.forEach(function (cat) {
+    ['upright', 'reversed'].forEach(function (o) {
+      assert.ok(typeof card.categories[cat][o] === 'string' && card.categories[cat][o].length > 0,
+        card.name + ' categories.' + cat + '.' + o + ' must be a non-empty string');
+    });
+  });
+});
+
+console.log('All 78 cards have valid keywords/advice/subdivided-category structure');
+
 console.log('All tarot-data tests passed (' + deck.length + ' cards)');
