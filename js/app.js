@@ -21,6 +21,17 @@
     moving: '이사운', children: '자식운'
   };
 
+  const CATEGORY_SUBCHOICES = {
+    love: [{ key: 'solo', label: '솔로' }, { key: 'couple', label: '커플' }],
+    money: [{ key: 'consumption', label: '소비' }, { key: 'invest', label: '투자' }],
+    career: [{ key: 'jobseek', label: '구직' }, { key: 'switch', label: '이직' }],
+    business: [{ key: 'startup', label: '창업준비' }, { key: 'running', label: '운영중' }],
+    study: [{ key: 'exam', label: '시험준비' }, { key: 'path', label: '진로고민' }],
+    health: [{ key: 'body', label: '신체' }, { key: 'mind', label: '정신' }],
+    relationships: [{ key: 'new', label: '새로운 인연' }, { key: 'existing', label: '기존 관계' }],
+    workplace: [{ key: 'team', label: '팀워크' }, { key: 'personal', label: '개인성과' }]
+  };
+
   const PERIOD_LABELS = {
     today: '오늘', week: '이번주', month: '이번달', month3: '3개월', month6: '6개월', year: '1년'
   };
@@ -47,6 +58,7 @@
   let selectedCategory = null;
   let selectedPeriod = 'today';
   let selectedMode = 'tarot';
+  let selectedSubChoice = null;
   let selectedZodiac = 'aries';
   let selectedBirthYear = null;
   let flippedCount = 0;
@@ -107,6 +119,7 @@
   const categoryButtons = document.querySelectorAll('#category-select .category-btn');
   const periodButtons = document.querySelectorAll('#period-select .category-btn');
   const spreadSelect = document.getElementById('spread-select');
+  const subchoiceSelect = document.getElementById('subchoice-select');
   const spreadButtons = document.querySelectorAll('.spread-btn');
   const drawButton = document.getElementById('draw-button');
   const cardsContainer = document.getElementById('cards-container');
@@ -239,6 +252,28 @@
     });
   });
 
+  function renderSubChoices() {
+    const options = CATEGORY_SUBCHOICES[selectedCategory];
+    if (!options) {
+      subchoiceSelect.classList.add('hidden');
+      subchoiceSelect.innerHTML = '';
+      selectedSubChoice = null;
+      return;
+    }
+    selectedSubChoice = options[0].key;
+    subchoiceSelect.innerHTML = options.map(function (opt, idx) {
+      return '<button type="button" class="category-btn subchoice-btn' + (idx === 0 ? ' selected' : '') + '" data-subchoice="' + opt.key + '">' + opt.label + '</button>';
+    }).join('');
+    subchoiceSelect.classList.remove('hidden');
+    subchoiceSelect.querySelectorAll('.subchoice-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        subchoiceSelect.querySelectorAll('.subchoice-btn').forEach(function (b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        selectedSubChoice = btn.dataset.subchoice;
+      });
+    });
+  }
+
   function updatePeriodLock() {
     const locked = !selectedCategory;
     periodButtons.forEach(function (b) { b.disabled = locked; });
@@ -254,6 +289,7 @@
       categoryButtons.forEach(function (b) { b.classList.remove('selected'); });
       btn.classList.add('selected');
       selectedCategory = btn.dataset.category || null;
+      renderSubChoices();
       updatePeriodLock();
     });
   });
@@ -267,6 +303,7 @@
     });
   });
 
+  renderSubChoices();
   updatePeriodLock();
 
   drawButton.addEventListener('click', function () {
@@ -701,13 +738,27 @@
     const details = draw.map(function (item) {
       const orientationLabel = item.orientation === 'upright' ? '정방향' : '역방향';
       const categoryReading = category && item.card.categories && item.card.categories[category];
-      const baseMeaning = categoryReading
-        ? categoryReading[item.orientation]
-        : (item.orientation === 'upright' ? item.card.upright : item.card.reversed);
+      let baseMeaning;
+      if (categoryReading) {
+        const orientationValue = categoryReading[item.orientation];
+        baseMeaning = (CATEGORY_SUBCHOICES[category] && typeof orientationValue === 'object')
+          ? orientationValue[selectedSubChoice]
+          : orientationValue;
+      } else {
+        baseMeaning = item.orientation === 'upright' ? item.card.upright : item.card.reversed;
+      }
       const meaning = PERIOD_PREFIXES[period] + ' ' + baseMeaning;
+
+      const keywordsList = item.card.keywords && item.card.keywords[item.orientation];
+      const adviceText = item.card.advice && item.card.advice[item.orientation];
+      const extraHtml = (keywordsList && adviceText)
+        ? '<div class="card-extra"><p class="card-keywords">키워드: ' + keywordsList.join(' · ') + '</p><p class="card-advice">조언: ' + adviceText + '</p></div>'
+        : '';
+
       return '<div class="reading-detail">' +
         '<h4>' + item.card.name + ' (' + orientationLabel + ')</h4>' +
         '<p>' + meaning + '</p>' +
+        extraHtml +
         '</div>';
     });
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' + details.join('');
@@ -722,6 +773,7 @@
       mode: 'tarot',
       category: selectedCategory,
       period: selectedPeriod,
+      subChoice: selectedSubChoice,
       spreadType: String(selectedSpread),
       cards: draw.map(function (item) {
         return { name: item.card.name, orientation: item.orientation };
@@ -736,6 +788,7 @@
     categoryButtons.forEach(function (b) { b.classList.remove('selected'); });
     categoryButtons[0].classList.add('selected');
     selectedCategory = null;
+    renderSubChoices();
     updatePeriodLock();
     zodiacButtons.forEach(function (b) { b.classList.remove('selected'); });
     zodiacButtons[0].classList.add('selected');
