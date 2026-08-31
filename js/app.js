@@ -141,6 +141,7 @@
       sajuSelect.classList.toggle('hidden', selectedMode !== 'saju');
       compatibilitySelect.classList.toggle('hidden', selectedMode !== 'compatibility');
       spreadSelect.classList.toggle('hidden', selectedMode !== 'tarot');
+      subchoiceSelect.classList.toggle('hidden', selectedMode !== 'tarot' || !CATEGORY_SUBCHOICES[selectedCategory]);
       categorySection.classList.toggle('hidden', selectedMode === 'compatibility');
       periodSection.classList.toggle('hidden', selectedMode === 'compatibility');
       drawButton.textContent = MODE_BUTTON_LABELS[selectedMode];
