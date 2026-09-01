@@ -177,4 +177,149 @@ assert.strictEqual(openingCollisions.length, 0,
 
 console.log('No forbidden-pair opening-sentence skeleton collisions (word+trigram combined check)');
 
+// ---------------------------------------------------------------------------
+// 세 번째 보조 스윕: character-bigram Jaccard + 유의미 어간(stem) 중복 개수 +
+// LCS(최장 공통 부분문자열)를 OR로 결합한 검사.
+//
+// 최종 전수 리뷰에서 word+trigram 조합 스윕(0.20 AND 0.15)조차 놓친 4건의
+// 오프닝 문장 뼈대 충돌이 보고됐다(예: "세심하게 챙기" 같은 6글자 연속 어근
+// 공유, "기존...새로운...하는 시기입니다" 같은 산발적 두 단어 스켈레톤,
+// "상대/한번/깊은" 같은 약한 신호가 겹겹이 쌓이는 경우). 이런 경우들은
+// AND 결합 방식으로는 두 지표 중 하나가 문턱값에 못 미쳐 빠져나간다.
+// 그래서 이번에는 세 지표를 OR로 묶어 하나라도 강하게 반응하면 충돌로 본다:
+//   (a) LCS >= 5  : 어미/조사만 다르고 나머지가 그대로 이어지는 긴 어근 공유
+//   (b) 공유 유의어간 개수 >= 2 : 서로 다른 위치에 흩어진 두 개 이상의 실질
+//       내용어(명사/부사 등)가 동시에 겹치는 "스켈레톤 템플릿" 공유
+//   (c) 문자 bigram Jaccard >= 0.185 : 위 두 지표가 개별적으로는 문턱을
+//       못 넘지만 전체적으로 표현이 크게 겹치는 경우의 보완 신호
+//
+// 양자리는 잠긴 참조본이라 그대로 두되, 자기 자신의 keywords(예: 양자리의
+// "추진력")가 career.jobseek/workplace.personal처럼 여러 필드에 의도적으로
+// 반복되는 것은 실제 "우연한 뼈대 충돌"이 아니라 그 별자리의 정체성을 드러
+// 내려는 의도된 트레잇 echo다. 그래서 비교 전에 각 별자리 자신의 keywords
+// 문자열을 두 문장에서 제거한 뒤 세 지표를 계산해, 의도된 키워드 반복을
+// 오탐으로 잡지 않도록 한다.
+//
+// 아래 상수로 실행하면(스크래치패드에서 수동 검증한 결과):
+//   - 수정 전 데이터에 대해 실행 시 I-1의 4건(처녀자리 love.couple/love.solo
+//     <-> relationships.existing, 전갈자리 love.solo <-> relationships.new,
+//     물병자리 career.switch <-> workplace.team)을 모두 잡아낸다.
+//   - 양자리(잠긴 참조본)는 keywords 제외 처리 덕분에 오탐 0건.
+//   - 수정 후 데이터에 대해서는 전체 0건.
+const BOILERPLATE_SUFFIXES = ['시기입니다', '것입니다', '합니다'];
+function stripBoilerplateSuffix(s) {
+  const sorted = BOILERPLATE_SUFFIXES.slice().sort(function (a, b) { return b.length - a.length; });
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (let i = 0; i < sorted.length; i++) {
+      if (s.endsWith(sorted[i])) { s = s.slice(0, -sorted[i].length); changed = true; }
+    }
+  }
+  return s;
+}
+
+function stripOwnKeywords(text, keywords) {
+  let s = text.replace(/\s+/g, '').replace(/[.,!?]/g, '');
+  keywords.forEach(function (kw) { s = s.split(kw).join(''); });
+  return s;
+}
+
+function longestCommonSubstring(a, b) {
+  if (!a.length || !b.length) return 0;
+  let prev = new Array(b.length + 1).fill(0);
+  let max = 0;
+  for (let i = 1; i <= a.length; i++) {
+    const cur = new Array(b.length + 1).fill(0);
+    for (let j = 1; j <= b.length; j++) {
+      if (a[i - 1] === b[j - 1]) {
+        cur[j] = prev[j - 1] + 1;
+        if (cur[j] > max) max = cur[j];
+      }
+    }
+    prev = cur;
+  }
+  return max;
+}
+
+// 조사/약한 어미를 벗겨 "상대를"/"상대의" 같은 교착어 변이를 같은 어간으로
+// 수렴시키는 아주 단순한 stemmer. 완전한 형태소 분석기는 아니지만, 명사에
+// 흔히 붙는 조사 목록만 반복적으로 제거해도 이번 리뷰가 지적한 사례들을
+// 잡아내기에는 충분하다.
+const PARTICLES = ['에게는', '에서', '으로', '에게', '을', '를', '이', '가', '은', '는', '의', '에', '와', '과', '도', '만', '로'];
+const PARTICLES_SORTED = PARTICLES.slice().sort(function (a, b) { return b.length - a.length; });
+function stem(word) {
+  let w = word;
+  let changed = true;
+  while (changed && w.length > 2) {
+    changed = false;
+    for (let i = 0; i < PARTICLES_SORTED.length; i++) {
+      const p = PARTICLES_SORTED[i];
+      if (w.endsWith(p) && w.length - p.length >= 2) { w = w.slice(0, -p.length); changed = true; break; }
+    }
+  }
+  return w;
+}
+
+const STEM_STOPWORDS = ['시기입니다', '시기입니다.', '것입니다'];
+function significantStems(text, keywords) {
+  return text.replace(/[.,!?]/g, '').split(/\s+/).filter(Boolean)
+    .map(function (w) { return stem(w); })
+    .filter(function (w) { return w.length >= 2 && STEM_STOPWORDS.indexOf(w) === -1 && keywords.indexOf(w) === -1; });
+}
+
+function charBigramSet(s) {
+  const grams = new Set();
+  for (let i = 0; i < s.length - 1; i++) grams.add(s.slice(i, i + 2));
+  return grams;
+}
+
+function bigramJaccard(a, b) {
+  const setA = charBigramSet(a), setB = charBigramSet(b);
+  const inter = [...setA].filter(function (x) { return setB.has(x); }).length;
+  const union = new Set([...setA, ...setB]).size;
+  return union === 0 ? 0 : inter / union;
+}
+
+const LCS_THRESHOLD = 5;
+const STEM_OVERLAP_THRESHOLD = 2;
+const BIGRAM_JACCARD_THRESHOLD = 0.185;
+
+const bigramLcsCollisions = [];
+ZODIAC_DATA.forEach(function (zodiac) {
+  FORBIDDEN_PAIRS.forEach(function (pair) {
+    const catA = pair[0], subsA = pair[1], catB = pair[2], subsB = pair[3];
+    subsA.forEach(function (subA) {
+      subsB.forEach(function (subB) {
+        const openingA = splitSentences(zodiac.categories[catA][subA])[0];
+        const openingB = splitSentences(zodiac.categories[catB][subB])[0];
+
+        const kwStrippedA = stripOwnKeywords(openingA, zodiac.keywords);
+        const kwStrippedB = stripOwnKeywords(openingB, zodiac.keywords);
+        const trimmedA = stripBoilerplateSuffix(kwStrippedA);
+        const trimmedB = stripBoilerplateSuffix(kwStrippedB);
+        const lcs = longestCommonSubstring(trimmedA, trimmedB);
+
+        const stemsA = significantStems(openingA, zodiac.keywords);
+        const stemsB = significantStems(openingB, zodiac.keywords);
+        const sharedStems = [...new Set(stemsA.filter(function (s) { return stemsB.indexOf(s) !== -1; }))];
+
+        const bj = bigramJaccard(kwStrippedA, kwStrippedB);
+
+        if (lcs >= LCS_THRESHOLD || sharedStems.length >= STEM_OVERLAP_THRESHOLD || bj >= BIGRAM_JACCARD_THRESHOLD) {
+          bigramLcsCollisions.push(zodiac.name_kr + ' ' + catA + '.' + subA + ' <-> ' + catB + '.' + subB +
+            ' (lcs=' + lcs + ', sharedStems=[' + sharedStems.join(',') + '], bigramJaccard=' + bj.toFixed(3) + ')\n  ' +
+            openingA + '\n  ' + openingB);
+        }
+      });
+    });
+  });
+});
+
+assert.strictEqual(bigramLcsCollisions.length, 0,
+  'Found ' + bigramLcsCollisions.length + ' forbidden-pair opening-sentence collisions via bigram/LCS/stem-overlap sweep:\n' +
+  bigramLcsCollisions.join('\n'));
+
+console.log('No forbidden-pair opening-sentence collisions (bigram/LCS/stem-overlap sweep)');
+
 console.log('All zodiac-data tests passed');
