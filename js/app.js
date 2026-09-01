@@ -265,7 +265,7 @@
     subchoiceSelect.innerHTML = options.map(function (opt, idx) {
       return '<button type="button" class="category-btn subchoice-btn' + (idx === 0 ? ' selected' : '') + '" data-subchoice="' + opt.key + '">' + opt.label + '</button>';
     }).join('');
-    subchoiceSelect.classList.remove('hidden');
+    subchoiceSelect.classList.toggle('hidden', selectedMode !== 'tarot');
     subchoiceSelect.querySelectorAll('.subchoice-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
         subchoiceSelect.querySelectorAll('.subchoice-btn').forEach(function (b) { b.classList.remove('selected'); });
