@@ -32,6 +32,8 @@
     workplace: [{ key: 'team', label: '팀워크' }, { key: 'personal', label: '개인성과' }]
   };
 
+  const SUBCHOICE_ENABLED_MODES = new Set(['tarot', 'saju']);
+
   const PERIOD_LABELS = {
     today: '오늘', week: '이번주', month: '이번달', month3: '3개월', month6: '6개월', year: '1년'
   };
@@ -141,7 +143,7 @@
       sajuSelect.classList.toggle('hidden', selectedMode !== 'saju');
       compatibilitySelect.classList.toggle('hidden', selectedMode !== 'compatibility');
       spreadSelect.classList.toggle('hidden', selectedMode !== 'tarot');
-      subchoiceSelect.classList.toggle('hidden', selectedMode !== 'tarot' || !CATEGORY_SUBCHOICES[selectedCategory]);
+      subchoiceSelect.classList.toggle('hidden', !SUBCHOICE_ENABLED_MODES.has(selectedMode) || !CATEGORY_SUBCHOICES[selectedCategory]);
       categorySection.classList.toggle('hidden', selectedMode === 'compatibility');
       periodSection.classList.toggle('hidden', selectedMode === 'compatibility');
       drawButton.textContent = MODE_BUTTON_LABELS[selectedMode];
@@ -265,7 +267,7 @@
     subchoiceSelect.innerHTML = options.map(function (opt, idx) {
       return '<button type="button" class="category-btn subchoice-btn' + (idx === 0 ? ' selected' : '') + '" data-subchoice="' + opt.key + '">' + opt.label + '</button>';
     }).join('');
-    subchoiceSelect.classList.toggle('hidden', selectedMode !== 'tarot');
+    subchoiceSelect.classList.toggle('hidden', !SUBCHOICE_ENABLED_MODES.has(selectedMode));
     subchoiceSelect.querySelectorAll('.subchoice-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
         subchoiceSelect.querySelectorAll('.subchoice-btn').forEach(function (b) { b.classList.remove('selected'); });
@@ -628,14 +630,28 @@
 
     const balance = classifyElementBalance(counts);
     const balanceText = getElementBalanceText(balance);
-    const baseMeaning = category && ilgan.categories[category]
-      ? PERIOD_PREFIXES[period] + ' ' + ilgan.categories[category]
-      : ilgan.trait;
-    const meaning = baseMeaning + ' ' + balanceText;
+    let categoryMeaning;
+    if (category && ilgan.categories[category]) {
+      const categoryValue = ilgan.categories[category];
+      const readingText = (CATEGORY_SUBCHOICES[category] && typeof categoryValue === 'object')
+        ? categoryValue[selectedSubChoice]
+        : categoryValue;
+      categoryMeaning = PERIOD_PREFIXES[period] + ' ' + readingText;
+    } else {
+      categoryMeaning = ilgan.trait;
+    }
+    const meaning = categoryMeaning + ' ' + balanceText;
+
+    const keywordsList = ilgan.keywords;
+    const adviceText = ilgan.advice;
+    const extraHtml = (keywordsList && adviceText)
+      ? '<div class="card-extra"><p class="card-keywords">키워드: ' + keywordsList.join(' · ') + '</p><p class="card-advice">조언: ' + adviceText + '</p></div>'
+      : '';
 
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
       myeongsikHtml + elementHtml + daeunHtml +
-      '<div class="reading-detail"><p>' + meaning + '</p></div>';
+      '<div class="reading-detail"><p>' + meaning + '</p></div>' +
+      extraHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
   }
@@ -653,6 +669,7 @@
       dayIlganName: getIlganByIndex(saju.day.stemIdx).name_kr,
       category: selectedCategory,
       period: selectedPeriod,
+      subChoice: selectedSubChoice,
       cards: []
     };
     saveReading(storage, entry);
