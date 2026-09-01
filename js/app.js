@@ -32,7 +32,7 @@
     workplace: [{ key: 'team', label: '팀워크' }, { key: 'personal', label: '개인성과' }]
   };
 
-  const SUBCHOICE_ENABLED_MODES = new Set(['tarot', 'saju']);
+  const SUBCHOICE_ENABLED_MODES = new Set(['tarot', 'saju', 'zodiac']);
 
   const PERIOD_LABELS = {
     today: '오늘', week: '이번주', month: '이번달', month3: '3개월', month6: '6개월', year: '1년'
@@ -392,12 +392,26 @@
     const period = selectedPeriod;
     const heading = zodiac.name_kr + ' · ' + PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '오늘의운') + ' 리딩';
 
-    const meaning = category && zodiac.categories[category]
-      ? PERIOD_PREFIXES[period] + ' ' + zodiac.categories[category]
-      : zodiac.trait;
+    let meaning;
+    if (category && zodiac.categories[category]) {
+      const categoryValue = zodiac.categories[category];
+      const readingText = (CATEGORY_SUBCHOICES[category] && typeof categoryValue === 'object')
+        ? categoryValue[selectedSubChoice]
+        : categoryValue;
+      meaning = PERIOD_PREFIXES[period] + ' ' + readingText;
+    } else {
+      meaning = zodiac.trait;
+    }
+
+    const keywordsList = zodiac.keywords;
+    const adviceText = zodiac.advice;
+    const extraHtml = (keywordsList && adviceText)
+      ? '<div class="card-extra"><p class="card-keywords">키워드: ' + keywordsList.join(' · ') + '</p><p class="card-advice">조언: ' + adviceText + '</p></div>'
+      : '';
 
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
-      '<div class="reading-detail"><p>' + meaning + '</p></div>';
+      '<div class="reading-detail"><p>' + meaning + '</p></div>' +
+      extraHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
   }
@@ -410,6 +424,7 @@
       zodiac: selectedZodiac,
       category: selectedCategory,
       period: selectedPeriod,
+      subChoice: selectedSubChoice,
       cards: []
     };
     saveReading(storage, entry);
