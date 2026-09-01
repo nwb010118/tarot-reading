@@ -1175,3 +1175,169 @@ Expected: 위 7가지 모두 기대한 대로 동작, 콘솔 에러 없음
 - [ ] **Step 3: 문제 발견 시 수정 후 재확인, 문제 없으면 완료 보고**
 
 이 태스크는 코드 변경이 없으므로 별도 커밋 없음(Step 2에서 버그를 발견해 수정한 경우에만 해당 파일을 수정하고 `fix(tarot): ...` 커밋 추가).
+
+---
+
+## Task 12: 최종 브랜치 리뷰 findings 처리 — 메이저 아르카나 교차카테고리 중복(C1) + 재진술 패딩(I2) 제거
+
+**Background:** 최종 전체 브랜치 리뷰(merge-base c62e0d3..0c81186)에서, 컵/소드/펜타클과 달리 메이저 아르카나(`tarot-data-major.js`)에는 character-trigram n-gram 중복검사 도구를 한 번도 돌리지 않았던 것이 드러났다. 뒤늦게 실행한 결과 threshold≥0.4에서 69쌍의 교차카테고리 거의 복붙 수준 중복(C1, Critical)이 나왔고, 별도로 48개 필드에서 두 번째 문장이 첫 번째 문장을 재진술만 하는 패딩(I2, Important)도 발견됐다.
+
+**Files:**
+- Modify: `data/tarot-data-major.js`
+
+**Interfaces:**
+- Consumes: Task 2가 만든 22장 메이저 아르카나 데이터 구조(변경 없음)
+- Produces: 동일 구조, 텍스트 내용만 수정
+
+**Global Constraints (Task 2와 동일, 재확인):**
+- "바보"(The Fool, `id: 0`) 카드는 브리프에 명시된 정확한 텍스트로 잠긴 참조 예시다 — **절대 수정하지 않는다.** 이 카드는 이번 작업 범위에서 완전히 제외.
+- 카테고리 문장은 2~3문장 유지. 문장을 아예 삭제하거나 필드를 1문장으로 줄이지 않는다 — 기존 문장 개수를 유지한 채, 중복/재진술되는 문장만 다른 내용으로 교체한다.
+- `love`(연애)와 `relationships`(대인관계)는 같은 카드에서 절대 같은 오프닝 문장이나 문장 뼈대를 공유하면 안 된다(연애=연애 특정 상황, 관계=더 넓은 대인관계). `career`(구직/이직)와 `workplace`(현재 직장)도 마찬가지.
+- 같은 카드 내 어떤 두 카테고리/서브키 필드도 스켈레톤+명사교체나 스켈레톤+동의어교체 수준으로 겹치면 안 된다. 고쳐 쓸 때 겹치는 두 필드 중 하나만 바꾸면 되지만, 그 결과가 카드 내 다른 필드들과 또 겹치지 않는지 반드시 재확인한다.
+- 같은 필드 안에서 두 번째(또는 세 번째) 문장이 첫 번째 문장을 다른 단어로 반복하는 "재진술 패딩"은 금지 — 두 번째 문장은 반드시 조언, 구체적 뉘앙스, 다음 행동 등 새로운 내용을 담아야 한다.
+
+- [ ] **Step 1: 교차카테고리 중복(C1) 69쌍 수정**
+
+`.superpowers/sdd/2026-08-24-tarot-enrichment-implementation/major-audit-04-output.txt` 파일을 Read 도구로 읽는다. character-trigram Jaccard 유사도 ≥0.4로 잡힌 69개 필드 쌍이 카드명과 정확한 경로(`upright.카테고리.서브키` 또는 `reversed.카테고리`), 그리고 현재 텍스트 전문과 함께 나열되어 있다.
+
+각 쌍에 대해:
+1. 두 필드 중 의미상 더 카테고리에 특화된 쪽(보통 나중에 나열된 쪽)의 문장을 다시 쓴다. 특히 두 번째 문장(조언/디테일 부분)을 그 카테고리·서브키에 실제로 맞는 구체적 내용으로 교체한다.
+2. 같은 상황 묘사(첫 문장)는 그대로 둘 수 있지만, 뼈대가 똑같이 겹친다면 첫 문장도 손봐야 한다 — 목표는 Jaccard 유사도를 낮추는 게 아니라 실제로 다른 내용을 전달하는 것이다.
+3. 수정 후 그 필드가 같은 카드의 다른 필드들과 새로 겹치지 않는지 직접 대조한다.
+
+이 목록은 threshold 0.4 이상만 잡은 것이며, 리뷰에 따르면 소드/펜타클 작업 때도 자동 도구가 동의어 수준 재작성을 놓친 전례가 있다. 69쌍을 다 고친 뒤, 카드 22장(바보 제외 21장) 전체를 한 번 더 직접 읽으며 자동 도구가 놓쳤을 만한 교차카테고리 중복이 없는지 수동으로 점검한다(특히 `love`/`relationships`, `career`/`workplace`, `money`/`business` 쌍).
+
+- [ ] **Step 2: 재진술 패딩(I2) 수정**
+
+`.superpowers/sdd/2026-08-24-tarot-enrichment-implementation/major-restatement-output.txt` 파일을 Read 도구로 읽는다. 단어 단위 Jaccard 유사도 ≥0.3으로 잡힌 28개 필드(카드명, upright/reversed, 카테고리, 두 문장 전문)가 나열되어 있다. 이 목록은 자동 탐지 결과라 완전하지 않을 수 있다 — 리뷰는 "절제/죽음/세계/심판/별 카드에 집중"되어 있다고 명시했다.
+
+각 필드에 대해 두 번째 문장을 재작성해 첫 번째 문장과 다른 새로운 내용(구체적 조언, 다음 행동, 놓치기 쉬운 뉘앙스 등)을 담도록 한다. 목록 수정 후, 절제/죽음/세계/심판/별 5장은 특히 카드 전체(모든 카테고리, upright/reversed 양쪽)를 직접 다시 읽으며 자동 도구가 놓친 재진술 패딩이 더 있는지 확인하고 고친다.
+
+- [ ] **Step 3: 검증**
+
+1. `node .superpowers/sdd/2026-08-24-tarot-enrichment-implementation/audit-ngram-tool-major-04.js` 재실행 — 0쌍이어야 한다.
+2. 구조 검증: 22장 모두 `keywords`(upright/reversed 각 3개), `advice`(upright/reversed 각 1문장), 8개 세분화 카테고리의 서브키 2개가 비어있지 않고 서로 다른지, 3개 단일 카테고리가 존재하는지 확인.
+3. `node tests/tarot-data.test.js && node tests/deck-logic.test.js && node tests/history-store.test.js && node tests/saju-calc.test.js && node tests/lunar-convert.test.js && node tests/saju-data.test.js && node tests/compatibility-calc.test.js` 전부 통과.
+4. "바보" 카드 객체가 Task 2 브리프의 원문과 바이트 단위로 동일한지 재확인(diff).
+
+---
+
+## Task 13: 최종 브랜치 리뷰 findings 처리 — 완드 교차카테고리 중복(I4) 제거
+
+**Background:** 최종 리뷰에서 완드(`tarot-data-wands.js`)도 n-gram 중복검사 도구가 한 번도 실행되지 않았던 것이 드러났다. 뒤늦게 threshold≥0.4로 실행한 결과 6쌍의 교차카테고리 중복이 나왔다(리뷰가 수동으로 찾은 2쌍 포함).
+
+**Files:**
+- Modify: `data/tarot-data-wands.js`
+
+**Global Constraints:** Task 12와 동일한 규칙 적용. "완드 에이스"(`rank: "Ace"`) 카드는 잠긴 참조 예시이므로 절대 수정하지 않는다(이번 6쌍에는 애초에 에이스가 포함되어 있지 않음).
+
+- [ ] **Step 1: 교차카테고리 중복 6쌍 수정**
+
+`.superpowers/sdd/2026-08-24-tarot-enrichment-implementation/wands-audit-04-output.txt` 파일을 Read 도구로 읽는다. 6개 필드 쌍(카드명, 경로, 텍스트 전문)이 나열되어 있다. Task 12 Step 1과 같은 방식으로 각 쌍을 수정한다: 완드킹(reversed) money.consumption↔business.startup, 완드8(reversed) money.invest↔business.startup 포함.
+
+- [ ] **Step 2: 검증**
+
+1. `node .superpowers/sdd/2026-08-24-tarot-enrichment-implementation/audit-ngram-tool-wands-04.js` 재실행 — 0쌍이어야 한다.
+2. 구조 검증(Task 12 Step 3.2와 동일 패턴, 대상만 `TAROT_WANDS`).
+3. 전체 회귀 테스트(Task 12 Step 3.3과 동일 커맨드) 통과.
+4. "완드 에이스" 카드 객체가 Task 3 브리프의 원문과 바이트 단위로 동일한지 재확인(diff).
+
+---
+
+## Task 14: 최종 브랜치 리뷰 findings 처리 — 소드 카테고리 문장 2~3문장으로 확장(I1, 절반)
+
+**Background:** 최종 리뷰(I1)에서 소드(`tarot-data-swords.js`)의 카테고리 문장 중 87.8%(494개 non-Ace 필드 중 459개)가 원래 목표(2~3문장)를 채우지 못하고 여전히 1문장뿐인 것이 드러났다. 원인은 메이저 아르카나가 별도 커밋(8cb276a)으로 1→2~3문장 확장 작업을 거쳤으나, 소드/펜타클은 이 작업이 애초에 누락되었기 때문이다. `tests/tarot-data.test.js`는 필드의 존재/타입만 검증하고 문장 수는 검증하지 않아 이 gap을 잡지 못했다.
+
+**Files:**
+- Modify: `data/tarot-data-swords.js`
+
+**Interfaces:**
+- Consumes: Task 5가 만든 소드 14장 데이터 구조(필드 존재/타입은 변경 없음)
+- Produces: 동일 구조, 1문장이던 필드에 새 문장 추가
+
+**Global Constraints:**
+- **"소드 에이스"(`rank: "Ace"`) 카드는 절대 건드리지 않는다.** 잠긴 참조 예시이며, 이 카드 내부의 일부 1문장 필드(money.upright.consumption 등)는 브리프에 명시된 원문 그대로이므로 확장 대상이 아니다. 13장(2~King)만 대상.
+- 목표는 각 필드를 2~3문장으로 만드는 것. 현재 1문장인 필드에 문장을 하나(자연스러우면 둘) 추가한다. **기존 문장(들)의 표현은 그대로 유지**하고 뒤에 새 문장만 덧붙인다 — 기존 문장을 다시 쓰지 않는다(이미 리뷰를 통과한 문장이므로 재작성하면 새로운 중복 위험만 늘어난다).
+- 새로 추가하는 문장은 그 카테고리·서브키에 실제로 맞는 구체적 조언이나 다음 행동, 놓치기 쉬운 뉘앙스여야 한다 — 첫 문장을 다른 단어로 반복하는 재진술은 금지.
+- `love`(연애)와 `relationships`(대인관계)는 같은 카드에서 절대 같은 문장 뼈대를 공유하면 안 된다(연애=연애 특정 상황, 관계=더 넓은 대인관계). `career`(구직/이직)와 `workplace`(현재 직장)도 마찬가지. `money`와 `business`도 스켈레톤+명사교체 수준으로 겹치면 안 된다.
+- 새 문장을 추가한 결과, 같은 카드 안의 다른 필드나 다른 카드의 같은 카테고리 필드와 새로 겹치는 문장이 생기면 안 된다. 특히 "여러 X" "성급한 결정" "지친 마음에" 같은 상투적 문형을 카드 전체에 mad-libs식으로 반복해서 쓰지 않는다 — 소드 수트를 원래 작성할 때(Task 5) "소드 9 카드 한 장에서 같은 템플릿이 65곳에 mad-libs식으로 재사용된" 문제가 발생해 전면 재작성이 필요했던 전례가 있다.
+- 카드당 39개 필드(세분화 8개 카테고리×2서브키×2방향=32 + 단일 3개×2방향=6, 참고: 실제로는 love/money/career/business/study/health/relationships/workplace 8개×2서브키 + honor/moving/children 3개, upright/reversed 각각) × 13장 = 약 494개 필드 중 459개가 대상이다. 정확히 어떤 필드가 대상인지는 Step 1에서 스크립트로 확인한다.
+
+- [ ] **Step 1: 대상 필드 확인**
+
+다음 스크립트로 소드 13장(에이스 제외) 중 1문장인 필드 목록을 카드별로 출력한다:
+
+```javascript
+const data = require(process.cwd() + '/data/tarot-data-swords.js').TAROT_SWORDS;
+const subdivided = { love:['solo','couple'], money:['consumption','invest'], career:['jobseek','switch'], business:['startup','running'], study:['exam','path'], health:['body','mind'], relationships:['new','existing'], workplace:['team','personal'] };
+const single = ['honor','moving','children'];
+data.forEach(card => {
+  if (card.rank === 'Ace') return;
+  const lines = [];
+  ['upright','reversed'].forEach(o => {
+    Object.keys(subdivided).forEach(cat => {
+      subdivided[cat].forEach(sub => {
+        const t = card.categories[cat][o][sub];
+        if (t.split(/(?<=[.!?])\s+/).filter(Boolean).length <= 1) lines.push(`${o}.${cat}.${sub}: ${t}`);
+      });
+    });
+    single.forEach(cat => {
+      const t = card.categories[cat][o];
+      if (t.split(/(?<=[.!?])\s+/).filter(Boolean).length <= 1) lines.push(`${o}.${cat}: ${t}`);
+    });
+  });
+  if (lines.length) { console.log(`\n=== ${card.name_kr} (${lines.length}개) ===`); lines.forEach(l => console.log(' ', l)); }
+});
+```
+
+- [ ] **Step 2: 카드별로 순서대로 문장 추가**
+
+Step 1 목록을 카드 순서대로(2, 3, 4, ... King) 처리한다. 한 카드를 다 채운 뒤 그 카드 안에서 새로 추가한 문장들이 서로 겹치지 않는지 바로 확인하고, 다음 카드로 넘어간다(한 카드씩 self-check하며 진행하는 방식 — Task 6에서 이 방식이 가장 효과적이었다).
+
+- [ ] **Step 3: 검증**
+
+1. Step 1 스크립트를 재실행해 1문장 필드가 0개인지 확인(에이스 제외).
+2. `node .superpowers/sdd/2026-08-24-tarot-enrichment-implementation/audit-ngram-tool-swords-04.js` 및 `-swords-03.js` 재실행 — 에이스 관련 쌍을 제외하고 0쌍이어야 한다.
+3. 구조 검증 + 전체 회귀 테스트(Task 12 Step 3.2, 3.3과 동일).
+4. "소드 에이스" 카드 객체가 Task 5 브리프의 원문과 바이트 단위로 동일한지 재확인(diff).
+5. 카드 14장 전체(에이스 포함)를 처음부터 끝까지 직접 읽으며 자동 도구가 놓쳤을 반복 문형이 없는지 최종 수동 점검.
+
+---
+
+## Task 15: 최종 브랜치 리뷰 findings 처리 — 펜타클 카테고리 문장 2~3문장으로 확장(I1, 나머지 절반)
+
+**Background:** Task 14와 동일한 문제(I1)가 펜타클(`tarot-data-pentacles.js`)에도 있다 — 94.0%(494개 non-Ace 필드 중 484개)가 여전히 1문장이다.
+
+**Files:**
+- Modify: `data/tarot-data-pentacles.js`
+
+**Global Constraints:** Task 14와 완전히 동일한 규칙(대상 파일과 카드명만 교체): "펜타클 에이스"(`rank: "Ace"`)는 절대 건드리지 않음, 13장(2~King) 대상, 기존 문장 유지하고 새 문장만 추가, 재진술 금지, love/relationships·career/workplace·money/business 간 스켈레톤 공유 금지, mad-libs식 문형 반복 금지.
+
+- [ ] **Step 1: 대상 필드 확인**
+
+Task 14 Step 1과 동일한 스크립트를 사용하되 `tarot-data-swords.js`/`TAROT_SWORDS`를 `tarot-data-pentacles.js`/`TAROT_PENTACLES`로 교체.
+
+- [ ] **Step 2: 카드별로 순서대로 문장 추가**
+
+Task 14 Step 2와 동일한 방식.
+
+- [ ] **Step 3: 검증**
+
+Task 14 Step 3과 동일하되:
+1. 1문장 필드 0개 확인(펜타클, 에이스 제외).
+2. `node .superpowers/sdd/2026-08-24-tarot-enrichment-implementation/audit-ngram-tool-pentacles-04.js` 및 `-pentacles-03.js` 재실행 — 에이스 관련 쌍 제외 0쌍.
+3. 구조 검증 + 전체 회귀 테스트.
+4. "펜타클 에이스" 카드 객체가 Task 6 브리프의 원문과 바이트 단위로 동일한지 재확인(diff).
+5. 카드 14장 전체 최종 수동 점검.
+
+---
+
+## Task 16: `js/app.js` 모드 전환 시 하위 선택 버튼 숨김 처리 (I3 버그 수정)
+
+**Background:** 최종 리뷰(I3)에서 발견된 실제 버그: 타로 모드에서 다른 모드(별자리/띠운세/사주/궁합)로 전환할 때 `#subchoice-select`가 숨겨지지 않아, 무의미한 솔로/커플 등 하위 버튼이 다른 모드 화면에 그대로 남아있었다. **이 태스크는 이미 컨트롤러가 직접 수정하고 커밋함(커밋 800ca85) — 별도 구현 불필요, 기록용으로만 남김.**
+
+**Files:** `js/app.js` (수정 완료)
+
+- [x] **Step 1: `modeButtons` 클릭 핸들러에 한 줄 추가** — 완료 (커밋 800ca85)
+
+이 태스크는 코드 변경이 없으므로 별도 커밋 없음(Step 2에서 버그를 발견해 수정한 경우에만 해당 파일을 수정하고 `fix(tarot): ...` 커밋 추가).
