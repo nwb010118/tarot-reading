@@ -277,6 +277,26 @@
     });
   }
 
+  function resolveSubchoiceValue(category, value, selectedSubChoice) {
+    return (CATEGORY_SUBCHOICES[category] && typeof value === 'object')
+      ? value[selectedSubChoice]
+      : value;
+  }
+
+  function resolveCategoryMeaning(entity, category, period, selectedSubChoice) {
+    if (category && entity.categories[category]) {
+      const readingText = resolveSubchoiceValue(category, entity.categories[category], selectedSubChoice);
+      return PERIOD_PREFIXES[period] + ' ' + readingText;
+    }
+    return entity.trait;
+  }
+
+  function renderKeywordsAdviceHtml(keywordsList, adviceText) {
+    return (keywordsList && adviceText)
+      ? '<div class="card-extra"><p class="card-keywords">키워드: ' + keywordsList.join(' · ') + '</p><p class="card-advice">조언: ' + adviceText + '</p></div>'
+      : '';
+  }
+
   function updatePeriodLock() {
     const locked = !selectedCategory;
     periodButtons.forEach(function (b) { b.disabled = locked; });
@@ -392,22 +412,8 @@
     const period = selectedPeriod;
     const heading = zodiac.name_kr + ' · ' + PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '오늘의운') + ' 리딩';
 
-    let meaning;
-    if (category && zodiac.categories[category]) {
-      const categoryValue = zodiac.categories[category];
-      const readingText = (CATEGORY_SUBCHOICES[category] && typeof categoryValue === 'object')
-        ? categoryValue[selectedSubChoice]
-        : categoryValue;
-      meaning = PERIOD_PREFIXES[period] + ' ' + readingText;
-    } else {
-      meaning = zodiac.trait;
-    }
-
-    const keywordsList = zodiac.keywords;
-    const adviceText = zodiac.advice;
-    const extraHtml = (keywordsList && adviceText)
-      ? '<div class="card-extra"><p class="card-keywords">키워드: ' + keywordsList.join(' · ') + '</p><p class="card-advice">조언: ' + adviceText + '</p></div>'
-      : '';
+    const meaning = resolveCategoryMeaning(zodiac, category, period, selectedSubChoice);
+    const extraHtml = renderKeywordsAdviceHtml(zodiac.keywords, zodiac.advice);
 
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
       '<div class="reading-detail"><p>' + meaning + '</p></div>' +
@@ -645,23 +651,9 @@
 
     const balance = classifyElementBalance(counts);
     const balanceText = getElementBalanceText(balance);
-    let categoryMeaning;
-    if (category && ilgan.categories[category]) {
-      const categoryValue = ilgan.categories[category];
-      const readingText = (CATEGORY_SUBCHOICES[category] && typeof categoryValue === 'object')
-        ? categoryValue[selectedSubChoice]
-        : categoryValue;
-      categoryMeaning = PERIOD_PREFIXES[period] + ' ' + readingText;
-    } else {
-      categoryMeaning = ilgan.trait;
-    }
-    const meaning = categoryMeaning + ' ' + balanceText;
+    const meaning = resolveCategoryMeaning(ilgan, category, period, selectedSubChoice) + ' ' + balanceText;
 
-    const keywordsList = ilgan.keywords;
-    const adviceText = ilgan.advice;
-    const extraHtml = (keywordsList && adviceText)
-      ? '<div class="card-extra"><p class="card-keywords">키워드: ' + keywordsList.join(' · ') + '</p><p class="card-advice">조언: ' + adviceText + '</p></div>'
-      : '';
+    const extraHtml = renderKeywordsAdviceHtml(ilgan.keywords, ilgan.advice);
 
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
       myeongsikHtml + elementHtml + daeunHtml +
@@ -771,22 +763,14 @@
     const details = draw.map(function (item) {
       const orientationLabel = item.orientation === 'upright' ? '정방향' : '역방향';
       const categoryReading = category && item.card.categories && item.card.categories[category];
-      let baseMeaning;
-      if (categoryReading) {
-        const orientationValue = categoryReading[item.orientation];
-        baseMeaning = (CATEGORY_SUBCHOICES[category] && typeof orientationValue === 'object')
-          ? orientationValue[selectedSubChoice]
-          : orientationValue;
-      } else {
-        baseMeaning = item.orientation === 'upright' ? item.card.upright : item.card.reversed;
-      }
+      const baseMeaning = categoryReading
+        ? resolveSubchoiceValue(category, categoryReading[item.orientation], selectedSubChoice)
+        : (item.orientation === 'upright' ? item.card.upright : item.card.reversed);
       const meaning = PERIOD_PREFIXES[period] + ' ' + baseMeaning;
 
       const keywordsList = item.card.keywords && item.card.keywords[item.orientation];
       const adviceText = item.card.advice && item.card.advice[item.orientation];
-      const extraHtml = (keywordsList && adviceText)
-        ? '<div class="card-extra"><p class="card-keywords">키워드: ' + keywordsList.join(' · ') + '</p><p class="card-advice">조언: ' + adviceText + '</p></div>'
-        : '';
+      const extraHtml = renderKeywordsAdviceHtml(keywordsList, adviceText);
 
       return '<div class="reading-detail">' +
         '<h4>' + item.card.name + ' (' + orientationLabel + ')</h4>' +
