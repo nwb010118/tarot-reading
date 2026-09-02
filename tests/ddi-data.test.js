@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { DDI_DATA } = require('../data/ddi-data.js');
+const { DDI_DATA, getDdiByYear } = require('../data/ddi-data.js');
 
 const CATEGORY_KEYS = ['love', 'money', 'career', 'workplace', 'business', 'study', 'health', 'relationships', 'honor', 'moving', 'children'];
 const EXPECTED_KEYS = ['monkey', 'rooster', 'dog', 'pig', 'rat', 'ox', 'tiger', 'rabbit', 'dragon', 'snake', 'horse', 'goat'];
@@ -271,5 +271,18 @@ assert.strictEqual(bigramLcsCollisions.length, 0,
   bigramLcsCollisions.join('\n'));
 
 console.log('No forbidden-pair opening-sentence collisions (bigram/LCS/stem-overlap sweep)');
+
+// ---------------------------------------------------------------------------
+// getDdiByYear() regression check
+// ---------------------------------------------------------------------------
+
+// year % 12 === 0 -> index 0 -> 'monkey' (the locked monkey sign)
+assert.strictEqual(getDdiByYear(2004).key, 'monkey', 'getDdiByYear(2004) should resolve to monkey');
+// arbitrary year: 1996 % 12 === 4 -> index 4 -> 'rat'
+assert.strictEqual(getDdiByYear(1996).key, 'rat', 'getDdiByYear(1996) should resolve to rat');
+// negative-modulo edge case: -4 % 12 === -4 in JS, normalized via ((x % 12) + 12) % 12 -> 8 -> 'dragon'
+assert.strictEqual(getDdiByYear(-4).key, 'dragon', 'getDdiByYear(-4) should normalize negative modulo to dragon');
+
+console.log('getDdiByYear() correctly resolves known years including the negative-modulo edge case');
 
 console.log('All ddi-data tests passed');
