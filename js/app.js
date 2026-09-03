@@ -685,10 +685,12 @@
 
   function showCompatibilitySummary(label1, label2, tierInfo) {
     const heading = label1 + ' × ' + label2 + ' 궁합';
+    const extraHtml = renderKeywordsAdviceHtml(tierInfo.keywords, tierInfo.advice);
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
       '<p class="compat-score">' + tierInfo.score + '%</p>' +
       '<p class="compat-tier-label">' + tierInfo.tierLabel + '</p>' +
-      '<div class="reading-detail"><p>' + tierInfo.text + '</p></div>';
+      '<div class="reading-detail"><p>' + tierInfo.text + '</p></div>' +
+      extraHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
   }

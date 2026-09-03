@@ -83,7 +83,9 @@ function getCompatTierInfo(tier, labelA, labelB) {
   return {
     score: data.score,
     tierLabel: data.label,
-    text: data.text.replace('{a}', labelA).replace('{b}', labelB)
+    text: data.text.replace('{a}', labelA).replace('{b}', labelB),
+    keywords: data.keywords,
+    advice: data.advice
   };
 }
 
