@@ -283,17 +283,38 @@
       : value;
   }
 
+  function pickRandom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function resolveMeaningText(value) {
+    return (typeof value === 'string') ? value : (pickRandom(value.a) + ' ' + pickRandom(value.b));
+  }
+
+  function pickKeywords(keywordsPool, count) {
+    count = count || 3;
+    if (!keywordsPool || keywordsPool.length <= count) return keywordsPool;
+    const shuffled = keywordsPool.slice().sort(function () { return Math.random() - 0.5; });
+    return shuffled.slice(0, count);
+  }
+
+  function pickAdvice(advicePool) {
+    return Array.isArray(advicePool) ? pickRandom(advicePool) : advicePool;
+  }
+
   function resolveCategoryMeaning(entity, category, period, selectedSubChoice) {
     if (category && entity.categories[category]) {
       const readingText = resolveSubchoiceValue(category, entity.categories[category], selectedSubChoice);
-      return PERIOD_PREFIXES[period] + ' ' + readingText;
+      return PERIOD_PREFIXES[period] + ' ' + resolveMeaningText(readingText);
     }
-    return entity.trait;
+    return resolveMeaningText(entity.trait);
   }
 
   function renderKeywordsAdviceHtml(keywordsList, adviceText) {
-    return (keywordsList && adviceText)
-      ? '<div class="card-extra"><p class="card-keywords">키워드: ' + keywordsList.join(' · ') + '</p><p class="card-advice">조언: ' + adviceText + '</p></div>'
+    const resolvedKeywords = pickKeywords(keywordsList);
+    const resolvedAdvice = pickAdvice(adviceText);
+    return (resolvedKeywords && resolvedAdvice)
+      ? '<div class="card-extra"><p class="card-keywords">키워드: ' + resolvedKeywords.join(' · ') + '</p><p class="card-advice">조언: ' + resolvedAdvice + '</p></div>'
       : '';
   }
 
