@@ -1,0 +1,9 @@
+{
+  "name": "tarot-reading",
+  "private": true,
+  "version": "1.0.0",
+  "description": "타로/사주/별자리/띠운세/궁합 운세 웹앱",
+  "scripts": {
+    "test": "node scripts/run-tests.js"
+  }
+}
