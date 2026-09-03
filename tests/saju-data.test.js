@@ -53,43 +53,10 @@ console.log('All 10 ilgan have valid keywords/advice/subdivided-category structu
 // "공유된 문장1 + 다른 문장2" 충돌을 놓친다. 사주는 처음부터 문장 단위로 검증한다.
 // ---------------------------------------------------------------------------
 
+const { splitSentences, wordJaccard, charTrigrams, trigramJaccard } = require('./helpers/dedup.js');
+
 function isLockedIlgan(ilgan) {
   return ilgan.key === 'gap';
-}
-
-function splitSentences(text) {
-  return text.split(/(?<=[.!?])\s+/).filter(Boolean);
-}
-
-function wordJaccard(a, b) {
-  const setA = new Set(a.replace(/[.,!?]/g, '').split(/\s+/).filter(Boolean));
-  const setB = new Set(b.replace(/[.,!?]/g, '').split(/\s+/).filter(Boolean));
-  const inter = [...setA].filter(function (x) { return setB.has(x); }).length;
-  const union = new Set([...setA, ...setB]).size;
-  return union === 0 ? 0 : inter / union;
-}
-
-// 한국어는 교착어라 조사/어미가 붙으면 공백 토큰 단위 비교(wordJaccard)가
-// 같은 문장 뼈대를 놓친다 (예: "지출의" vs "시장의"는 절대 토큰 매치되지 않지만
-// 그 주변 문장 구조 "[큰 X를 V-는 안목으로] ... [V-는 시기입니다]"는 동일할 수 있다).
-// 이를 보완하기 위해 3글자 슬라이딩 윈도우(character trigram) 기반 유사도를
-// 추가한다. 문자 단위 비교라 조사/어미가 달라도 공유된 어절("안목으로" 등)이
-// 그대로 겹쳐 잡힌다.
-function charTrigrams(text) {
-  const norm = text.replace(/\s+/g, '').replace(/[.,!?]/g, '');
-  const grams = new Set();
-  for (let i = 0; i < norm.length - 2; i++) {
-    grams.add(norm.slice(i, i + 3));
-  }
-  return grams;
-}
-
-function trigramJaccard(a, b) {
-  const setA = charTrigrams(a);
-  const setB = charTrigrams(b);
-  const inter = [...setA].filter(function (x) { return setB.has(x); }).length;
-  const union = new Set([...setA, ...setB]).size;
-  return union === 0 ? 0 : inter / union;
 }
 
 // 모든 카테고리 필드는 정확히 2~3문장이어야 한다 (갑목 포함 — Task 1에서 갑목도

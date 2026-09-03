@@ -91,20 +91,10 @@ console.log('All 78 cards have valid keywords/advice/subdivided-category structu
 // that reuse this category-field pattern.
 // ---------------------------------------------------------------------------
 
+const { splitSentences, wordJaccard } = require('./helpers/dedup.js');
+
 function isLockedCard(card) {
   return card.cardId === 'major_0' || /_Ace$/.test(card.cardId);
-}
-
-function splitSentences(text) {
-  return text.split(/(?<=[.!?])\s+/).filter(Boolean);
-}
-
-function wordJaccard(a, b) {
-  const setA = new Set(a.replace(/[.,!?]/g, '').split(/\s+/).filter(Boolean));
-  const setB = new Set(b.replace(/[.,!?]/g, '').split(/\s+/).filter(Boolean));
-  const inter = [...setA].filter(function (x) { return setB.has(x); }).length;
-  const union = new Set([...setA, ...setB]).size;
-  return union === 0 ? 0 : inter / union;
 }
 
 // Test: every non-locked card's subdivided+single category field (both
