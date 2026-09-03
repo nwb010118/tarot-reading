@@ -75,15 +75,25 @@ EXPECTED_TIERS.forEach(function (tier) {
   const data = COMPAT_TIER_DATA[tier];
   const strippedLabel = stripLabelEchoWhitelist(normalizeForEcho(data.label));
   const fieldsToCheck = [
-    { name: 'text', value: data.text },
-    { name: 'advice', value: data.advice }
-  ].concat(data.keywords.map(function (kw) { return { name: 'keyword "' + kw + '"', value: kw }; }));
+    { name: 'text', value: data.text, isKeyword: false },
+    { name: 'advice', value: data.advice, isKeyword: false }
+  ].concat(data.keywords.map(function (kw) { return { name: 'keyword "' + kw + '"', value: kw, isKeyword: true }; }));
 
   fieldsToCheck.forEach(function (field) {
     const strippedField = stripLabelEchoWhitelist(normalizeForEcho(field.value));
-    const lcs = longestCommonSubstring(strippedLabel, strippedField);
-    if (lcs >= 4) {
-      labelEchoIssues.push(tier + ': label "' + data.label + '" shares a ' + lcs + '+ char substring with its own ' + field.name);
+    if (field.isKeyword) {
+      // keyword는 원자적 단위라 라벨에 그대로 포함되는지(부분 문자열)를 직접 검사한다 —
+      // LCS>=4는 4자 미만 키워드(이 데이터셋 대부분이 2~3자)를 구조적으로 못 잡는다.
+      // 실제로 complement의 "보완"(2자)이 자기 label에 포함됐던 원래 결함이
+      // 이 임계값 방식으로는 재현 시 걸리지 않았다.
+      if (strippedField.length > 0 && strippedLabel.includes(strippedField)) {
+        labelEchoIssues.push(tier + ': label "' + data.label + '" contains its own ' + field.name + ' verbatim');
+      }
+    } else {
+      const lcs = longestCommonSubstring(strippedLabel, strippedField);
+      if (lcs >= 4) {
+        labelEchoIssues.push(tier + ': label "' + data.label + '" shares a ' + lcs + '+ char substring with its own ' + field.name);
+      }
     }
   });
 });
