@@ -294,7 +294,11 @@
   function pickKeywords(keywordsPool, count) {
     count = count || 3;
     if (!keywordsPool || keywordsPool.length <= count) return keywordsPool;
-    const shuffled = keywordsPool.slice().sort(function () { return Math.random() - 0.5; });
+    const shuffled = keywordsPool.slice();
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = t;
+    }
     return shuffled.slice(0, count);
   }
 

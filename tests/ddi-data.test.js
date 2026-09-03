@@ -140,6 +140,35 @@ assert.strictEqual(adviceCollisions.length, 0,
 
 console.log('No advice-pool self-collisions (each sign\'s 3 advice variants are sufficiently distinct)');
 
+// advice가 trait/카테고리와 같은 화면에 함께 렌더되므로(showDdiSummary 등),
+// advice 각 항목이 모든 필드의 b-pool과 skeleton을 공유해 echo되지 않는지 확인
+const adviceBPoolCollisions = [];
+DDI_DATA.forEach(function (ddi) {
+  const bFields = [['trait', null]]
+    .concat(Object.keys(SUBDIVIDED_CATEGORIES).reduce(function (acc, cat) {
+      return acc.concat(SUBDIVIDED_CATEGORIES[cat].map(function (sub) { return [cat, sub]; }));
+    }, []))
+    .concat(SINGLE_CATEGORIES.map(function (cat) { return [cat, null]; }));
+
+  ddi.advice.forEach(function (adv, i) {
+    bFields.forEach(function (pair) {
+      const cat = pair[0], sub = pair[1];
+      const field = cat === 'trait' ? ddi.trait : getField(ddi, cat, sub);
+      field.b.forEach(function (sB, j) {
+        const wj = wordJaccard(adv, sB);
+        if (wj >= WORD_TH) {
+          adviceBPoolCollisions.push(ddi.name_kr + ' advice[' + i + '] <-> ' + cat + (sub ? '.' + sub : '') + '.b[' + j + '] (word=' + wj.toFixed(2) + ')\n  ' + adv + '\n  ' + sB);
+        }
+      });
+    });
+  });
+});
+
+assert.strictEqual(adviceBPoolCollisions.length, 0,
+  'Found ' + adviceBPoolCollisions.length + ' advice-pool vs b-pool echo collisions:\n' + adviceBPoolCollisions.join('\n'));
+
+console.log('No advice-pool vs b-pool echo collisions (advice never shares a skeleton with a rendered-together b-pool sentence)');
+
 const forbiddenACollisions = [];
 const forbiddenBCollisions = [];
 DDI_DATA.forEach(function (ddi) {
