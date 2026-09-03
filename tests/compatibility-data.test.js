@@ -28,14 +28,21 @@ console.log('All 11 compatibility tiers have valid structure (score/label/text p
 // keyword 자기중복 회귀 테스트 (Task 1 fix round 2에서 발견된 결함 유형:
 // 한 등급의 keyword 단어가 자기 자신의 text/advice에 그대로 다시 등장하는 경우)
 // ---------------------------------------------------------------------------
+function normalizeForEcho(s) {
+  return s.replace(/\s+/g, '').replace(/[.,!?]/g, '');
+}
+
 const keywordSelfEchoes = [];
 EXPECTED_TIERS.forEach(function (tier) {
   const data = COMPAT_TIER_DATA[tier];
+  const normText = normalizeForEcho(data.text);
+  const normAdvice = normalizeForEcho(data.advice);
   data.keywords.forEach(function (kw) {
-    if (data.text.includes(kw)) {
+    const normKw = normalizeForEcho(kw);
+    if (normText.includes(normKw)) {
       keywordSelfEchoes.push(tier + ': keyword "' + kw + '" appears in its own text');
     }
-    if (data.advice.includes(kw)) {
+    if (normAdvice.includes(normKw)) {
       keywordSelfEchoes.push(tier + ': keyword "' + kw + '" appears in its own advice');
     }
   });
@@ -44,7 +51,47 @@ EXPECTED_TIERS.forEach(function (tier) {
 assert.strictEqual(keywordSelfEchoes.length, 0,
   'Found ' + keywordSelfEchoes.length + ' keyword self-echoes:\n' + keywordSelfEchoes.join('\n'));
 
-console.log('No tier keyword self-echoes its own text or advice');
+console.log('No tier keyword self-echoes its own text or advice (whitespace/punctuation-normalized)');
+
+// ---------------------------------------------------------------------------
+// label 자기중복 회귀 테스트 (final review Finding 2 유형: 한 등급의 keyword가
+// 자기 자신의 label에 그대로 등장하는 경우, 예: complement의 keyword "보완"이
+// label "보완원소 — 좋은 궁합"의 부분 문자열인 경우). label은 text/advice와도
+// 비교한다. 단, 기법명 등 label과 text/advice에 원래 함께 등장해야 하는
+// 용어(삼합/육합/상생/상극/비화/충/원소/동일/궁합/최고의/좋은/무난한)는
+// 화이트리스트로 제외한 뒤 비교한다.
+// ---------------------------------------------------------------------------
+const LABEL_ECHO_WHITELIST = ['삼합', '육합', '상생', '상극', '비화', '충', '원소', '동일', '궁합', '최고의', '좋은', '무난한'];
+function stripLabelEchoWhitelist(s) {
+  let out = s;
+  LABEL_ECHO_WHITELIST.forEach(function (w) {
+    out = out.split(w).join('');
+  });
+  return out;
+}
+
+const labelEchoIssues = [];
+EXPECTED_TIERS.forEach(function (tier) {
+  const data = COMPAT_TIER_DATA[tier];
+  const strippedLabel = stripLabelEchoWhitelist(normalizeForEcho(data.label));
+  const fieldsToCheck = [
+    { name: 'text', value: data.text },
+    { name: 'advice', value: data.advice }
+  ].concat(data.keywords.map(function (kw) { return { name: 'keyword "' + kw + '"', value: kw }; }));
+
+  fieldsToCheck.forEach(function (field) {
+    const strippedField = stripLabelEchoWhitelist(normalizeForEcho(field.value));
+    const lcs = longestCommonSubstring(strippedLabel, strippedField);
+    if (lcs >= 4) {
+      labelEchoIssues.push(tier + ': label "' + data.label + '" shares a ' + lcs + '+ char substring with its own ' + field.name);
+    }
+  });
+});
+
+assert.strictEqual(labelEchoIssues.length, 0,
+  'Found ' + labelEchoIssues.length + ' label self-echo issues:\n' + labelEchoIssues.join('\n'));
+
+console.log('No tier label self-echoes its own text/advice/keywords (excluding whitelisted mechanism terms)');
 
 // ---------------------------------------------------------------------------
 // 문장 단위 회귀 테스트: 11개 등급 전체가 서로 문장 뼈대를 공유하지 않는지,
@@ -234,6 +281,35 @@ assert.strictEqual(selfEchoIssues.length, 0,
 console.log('No tier advice self-echoes its own text');
 
 console.log('All compatibility-data tests passed');
+
+// ---------------------------------------------------------------------------
+// score/label 고정값 회귀 테스트 (플랜 Global Constraint #1: "score/label은
+// 절대 변경하지 않는다"). same_element만 getCompatTierInfo()를 통해 개별
+// 검증되고 있었으므로, 11개 등급 전체의 score/label을 리터럴 테이블로 고정
+// 해서 향후 실수로 값이 바뀌면 즉시 실패하도록 한다.
+// ---------------------------------------------------------------------------
+const LOCKED_SCORE_LABELS = {
+  same_element: { score: 90, label: '동일원소 — 최고의 궁합' },
+  complement: { score: 82, label: '보완원소 — 좋은 궁합' },
+  other: { score: 60, label: '그 외 조합 — 무난한 궁합' },
+  samhap: { score: 96, label: '삼합 — 최고의 궁합' },
+  yukhap: { score: 86, label: '육합 — 좋은 궁합' },
+  same: { score: 74, label: '동일 띠 — 친근한 궁합' },
+  none: { score: 62, label: '무관계 — 무난한 궁합' },
+  chung: { score: 35, label: '충 — 주의가 필요한 궁합' },
+  sangsaeng: { score: 85, label: '상생 — 좋은 궁합' },
+  bihwa: { score: 70, label: '비화 — 무난한 궁합' },
+  sanggeuk: { score: 45, label: '상극 — 주의가 필요한 궁합' }
+};
+
+EXPECTED_TIERS.forEach(function (tier) {
+  const expected = LOCKED_SCORE_LABELS[tier];
+  const data = COMPAT_TIER_DATA[tier];
+  assert.strictEqual(data.score, expected.score, tier + '.score가 잠긴 값에서 변경됨');
+  assert.strictEqual(data.label, expected.label, tier + '.label이 잠긴 값에서 변경됨');
+});
+
+console.log('All 11 tiers match their locked score/label values');
 
 const info = getCompatTierInfo('same_element', '갑목', '을목');
 assert.strictEqual(info.score, 90, 'getCompatTierInfo score 회귀');
