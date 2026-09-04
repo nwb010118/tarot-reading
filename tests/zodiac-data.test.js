@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { ZODIAC_DATA } = require('../data/zodiac-data.js');
+const { ZODIAC_DATA, getZodiacByKey } = require('../data/zodiac-data.js');
 const {
   wordJaccard, trigramJaccard, stripOwnKeywords, longestCommonSubstring,
   bigramJaccard, makeStripBoilerplateSuffix, makeStem, makeSignificantStems
@@ -64,6 +64,15 @@ ZODIAC_DATA.forEach(function (z) {
   });
   SINGLE_CATEGORIES.forEach(function (cat) {
     assertPool(getField(z, cat, null), z.key + '.categories.' + cat);
+  });
+
+  Object.keys(SUBDIVIDED_CATEGORIES).forEach(function (cat) {
+    const keys = SUBDIVIDED_CATEGORIES[cat];
+    assert.notStrictEqual(
+      JSON.stringify(z.categories[cat][keys[0]]),
+      JSON.stringify(z.categories[cat][keys[1]]),
+      z.key + ' categories.' + cat + ' sub-choices must not be identical'
+    );
   });
 });
 
@@ -200,5 +209,15 @@ console.log('No forbidden-pair a-pool collisions (love/relationships, career/wor
 assert.strictEqual(forbiddenBCollisions.length, 0,
   'Found ' + forbiddenBCollisions.length + ' forbidden-pair b-pool collisions:\n' + forbiddenBCollisions.join('\n'));
 console.log('No forbidden-pair b-pool collisions (simple word-Jaccard sweep)');
+
+// ---------------------------------------------------------------------------
+// getZodiacByKey() 회귀 검사
+// ---------------------------------------------------------------------------
+
+assert.strictEqual(getZodiacByKey('aries').key, 'aries', 'getZodiacByKey(\'aries\') should resolve to aries');
+assert.strictEqual(getZodiacByKey('pisces').key, 'pisces', 'getZodiacByKey(\'pisces\') should resolve to pisces');
+assert.strictEqual(getZodiacByKey('nonexistent'), undefined, 'getZodiacByKey should return undefined for an unknown key');
+
+console.log('getZodiacByKey() correctly resolves known keys');
 
 console.log('All zodiac-data tests passed');
