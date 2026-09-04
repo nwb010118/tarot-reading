@@ -59,9 +59,9 @@ same_element: {
 
 `score`/`label`은 그대로 둔다.
 
-## `js/compatibility-calc.js` 코드 변경
+## `data/compatibility-data.js`의 `getCompatTierInfo()` 코드 변경
 
-이 프로젝트에서 유일하게 코드 변경이 필요한 단계다(띠운세 파일럿 이후 다른 두 단계는 코드 변경 0건이었음) — 이유는 `{a}`/`{b}` 이름 치환 로직이 `js/app.js`의 IIFE 밖, `getCompatTierInfo()` 안에 있어서 `resolveMeaningText` 같은 기존 헬퍼를 재사용할 수 없기 때문이다.
+이 프로젝트에서 유일하게(데이터 외에) 코드 변경이 필요한 단계다(띠운세 파일럿 이후 다른 두 단계는 코드 변경 0건이었음) — 이유는 `{a}`/`{b}` 이름 치환 로직이 `getCompatTierInfo()`(`js/compatibility-calc.js`가 아니라 **`data/compatibility-data.js` 자신에 정의되어 있다** — `module.exports`에서도 `COMPAT_TIER_DATA`와 함께 export됨) 안에 있어서, `js/app.js`의 IIFE 안에 갇힌 `resolveMeaningText` 같은 기존 헬퍼를 재사용할 수 없기 때문이다. `js/compatibility-calc.js`는 이번 변경과 무관하다(궁합 등급을 "판정"하는 로직만 있고, 등급의 문구를 "조회/치환"하는 `getCompatTierInfo`는 없음).
 
 ```js
 // 신규 헬퍼 2개 추가
@@ -116,13 +116,13 @@ function getCompatTierInfo(tier, labelA, labelB) {
 구현 완료 후 5개 모드 전부를 브라우저에서 확인한다:
 
 - 궁합: 같은 두 대상으로 반복 실행해 해설 문장(이름 치환 포함)·키워드·조언이 매번 달라지는지, 이름이 항상 올바르게 치환되는지, advice와 함께 봤을 때 자연스러운지 확인.
-- 타로/띠운세/별자리/사주: 기존과 동일한 동작(고정 또는 이미 검증된 랜덤화) 유지 확인 — 특히 `js/app.js`를 이번에도 건드리지 않으므로 회귀 리스크는 낮지만, `js/compatibility-calc.js` 변경이 다른 모드에 영향 없는지(다른 모드는 이 파일을 쓰지 않음, 확인 완료) 재확인.
+- 타로/띠운세/별자리/사주: 기존과 동일한 동작(고정 또는 이미 검증된 랜덤화) 유지 확인 — `js/app.js`와 `js/compatibility-calc.js` 둘 다 이번에도 건드리지 않으므로(변경은 `data/compatibility-data.js`에만 한정) 회귀 리스크는 낮지만 재확인.
 
 ## 기존 코드와의 통합 지점
 
-- `data/compatibility-data.js`: `text` 필드를 `{a:[...], b:[...]}` 구조로 변경(11개 티어), `keywords` 3→6개, `advice` 1→3개.
-- `js/compatibility-calc.js`: `pickRandom`/`resolveTierText` 헬퍼 추가, `getCompatTierInfo()`의 `text:` 반환 줄 수정.
-- `tests/compatibility-data.test.js`: 구조 검증 대상 변경, dedup 검사 4개 축으로 재작성, `getCompatTierInfo()` 회귀 확인 추가.
+- `data/compatibility-data.js`: `text` 필드를 `{a:[...], b:[...]}` 구조로 변경(11개 티어), `keywords` 3→6개, `advice` 1→3개. 같은 파일의 `pickRandom`/`resolveTierText` 헬퍼 추가, `getCompatTierInfo()`의 `text:` 반환 줄 수정.
+- `js/compatibility-calc.js`: 변경 없음.
+- `tests/compatibility-data.test.js`: 구조 검증 대상 변경, dedup 검사 4개 축으로 재작성(기존에 이미 있던 keyword/label 자기중복 검사, `getCompatTierInfo()` 회귀 검사, 잠긴 score/label 검사는 새 구조에 맞게 유지·조정), `getCompatTierInfo()` 회귀 확인 갱신(치환 후 `{a}`/`{b}`가 남아있지 않은지 확인).
 - `js/app.js`: 변경 없음.
 
 ## 롤아웃 계획
