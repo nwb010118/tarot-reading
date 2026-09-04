@@ -243,12 +243,20 @@ const COMPAT_TIER_DATA = {
   }
 };
 
+function pickRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function resolveTierText(data) {
+  return typeof data.text === 'string' ? data.text : (pickRandom(data.text.a) + ' ' + pickRandom(data.text.b));
+}
+
 function getCompatTierInfo(tier, labelA, labelB) {
   const data = COMPAT_TIER_DATA[tier];
   return {
     score: data.score,
     tierLabel: data.label,
-    text: data.text.replace('{a}', labelA).replace('{b}', labelB),
+    text: resolveTierText(data).replace('{a}', labelA).replace('{b}', labelB),
     keywords: data.keywords,
     advice: data.advice
   };
