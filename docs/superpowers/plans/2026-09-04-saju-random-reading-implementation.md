@@ -22,7 +22,7 @@
   2. **advice 풀 자기중복**: 일간당 advice 3개끼리 word-Jaccard≥0.3 단순 스윕.
   3. **advice↔b풀·오행문구 echo(강화)**: 모든 `advice[i]`를 그 일간의 모든 필드 `b[j]`(19개 카테고리 `b`풀 + `trait.b`) 및 `ELEMENT_BALANCE_TEXT` 13개 문구 전체와 비교. 판정: `word-Jaccard≥0.3 OR bigram≥0.30 OR LCS≥10`(비교 전 양쪽 모두 상투구 제거 — LCS/bigram 계산에 "~것이 좋습니다"/"~해보세요" 같은 흔한 종결구가 섞이면 오탐이 나므로 필수). **인덱스 0(잠긴 문장)끼리 비교, 또는 인덱스 0과 `ELEMENT_BALANCE_TEXT`(항상 고정) 비교는 스킵한다** — 둘 다 수정 불가능한 콘텐츠라 충돌이 나와도 고칠 수 없기 때문(갑목 검증 중 실제로 발견됨).
   4. **금지쌍(cross-category) 교차**: `a`풀은 3단 결합 전체(3×3 전수), `b`풀은 word-Jaccard≥0.3 단순 스윕만(이유: `b[0]`끼리는 이미 잠긴 문장이라 3단 결합 적용 시 수정 불가능한 충돌 발생 가능 — 띠운세에서 확인됨). **`a`풀 비교도 양쪽 다 인덱스 0인 경우는 스킵한다**(갑목 검증 중 `love.couple.a0`↔`relationships.new.a0` 충돌이 실제로 발견되었고 둘 다 수정 불가능한 잠긴 문장이었음 — 이 스킵 규칙은 spec에는 명시되지 않았으나 검증 과정에서 필요성이 확인되어 이 플랜에서 추가함).
-  5. **일간 간 완전동일 검사**: 전체 코퍼스(10개 일간 × 20필드 × a/b 각 3개 = 1,200개 문장)를 하나의 리스트로 모아 바이트 단위 완전 동일 문자열이 2개 이상이면 플래그(단순 카운트, 3단 결합 불필요).
+  5. **일간 간 완전동일 검사**: 전체 코퍼스(10개 일간 × 20필드 × a/b 각 3개 = 1,200개 문장)를 하나의 리스트로 모아 바이트 단위 완전 동일 문자열이 2개 이상이면 플래그(단순 카운트, 3단 결합 불필요). **모든 발생 위치가 인덱스 0(잠긴 문장)인 경우는 스킵한다** — 이미 배포된 두 문장이 우연히 같은 사례는 수정 불가능하기 때문(Task 2 실행 중 정화/신금의 `workplace.personal.b[0]`가 이미 동일했던 사례가 실제로 발견됨 — 이 스킵 규칙도 spec에는 없었으나 실행 중 필요성이 확인되어 이 플랜에서 추가함). 발생 위치 중 인덱스 0이 아닌 것이 하나라도 있으면(즉 신규 변형이 기존 문장 또는 다른 신규 변형과 완전히 같아진 경우) 정상적으로 플래그한다.
   6. **같은 일간 내 비금지쌍 근접축자 검사**: 같은 일간의 20개 필드(trait+19) 전체 쌍(190쌍)에 대해 `a`풀-`a`풀, `b`풀-`b`풀 조합에 LCS≥20만 적용(상투구 제거 후). 금지쌍(축 4에서 이미 커버)은 제외. **양쪽 다 인덱스 0인 경우는 스킵한다**(갑목 검증 중 3건 발견, 전부 이미 배포된 문장끼리의 우연한 겹침이라 수정 불가능했음).
 - `data/saju-data.js`는 기존에 작은따옴표(`'...'`) 스타일을 쓴다(다른 4개 데이터 파일과 다름 — 반드시 이 파일의 기존 스타일을 따른다).
 - `tests/zodiac-data.test.js`/`tests/ddi-data.test.js`와의 공유 dedup 헬퍼 추출은 이번 단계에서 하지 않는다(사용자 확인 완료, 궁합 단계에서 재검토).
@@ -446,7 +446,7 @@ ILGAN_DATA.filter(ilgan => typeof ilgan.trait === 'object').forEach(ilgan => {
           if (fullCombinedCheck(pool[i], pool[j], ilgan.keywords, ilgan.name_kr + ' AXIS1 ' + cat + (sub ? '.' + sub : '') + '.' + slot + '[' + i + ',' + j + ']')) found++;
         }
       }
-      pool.forEach(s => allSentences.push({ text: s, where: ilgan.name_kr + ' ' + cat + (sub ? '.' + sub : '') + '.' + slot }));
+      pool.forEach((s, idx) => allSentences.push({ text: s, where: ilgan.name_kr + ' ' + cat + (sub ? '.' + sub : '') + '.' + slot + '[' + idx + ']', locked: idx === 0 }));
     });
   });
 
@@ -516,15 +516,18 @@ ILGAN_DATA.filter(ilgan => typeof ilgan.trait === 'object').forEach(ilgan => {
 });
 
 // axis 5: 일간 간 완전동일 검사 (전체 코퍼스, 바이트 단위)
+// 모든 발생 위치가 인덱스 0(잠긴 문장)인 경우는 스킵한다 -- 이미 배포된
+// 두 문장이 우연히 같은 사례는 수정 불가능하기 때문(sin/jeong의
+// workplace.personal.b[0]에서 실제로 발견됨).
 const seen = new Map();
-allSentences.forEach(({ text, where }) => {
+allSentences.forEach(({ text, where, locked }) => {
   if (!seen.has(text)) seen.set(text, []);
-  seen.get(text).push(where);
+  seen.get(text).push({ where, locked });
 });
-seen.forEach((locations, text) => {
-  if (locations.length > 1) {
+seen.forEach((occurrences, text) => {
+  if (occurrences.length > 1 && occurrences.some(o => !o.locked)) {
     found++;
-    console.log('[AXIS5 EXACT-MATCH] "' + text + '" appears in: ' + locations.join(' | '));
+    console.log('[AXIS5 EXACT-MATCH] "' + text + '" appears in: ' + occurrences.map(o => o.where).join(' | '));
   }
 });
 
@@ -851,25 +854,26 @@ assert.strictEqual(forbiddenBCollisions.length, 0,
   'Found ' + forbiddenBCollisions.length + ' forbidden-pair b-pool collisions:\n' + forbiddenBCollisions.join('\n'));
 console.log('No forbidden-pair b-pool collisions');
 
-// axis 5: 일간 간 완전동일 검사
+// axis 5: 일간 간 완전동일 검사 (모든 발생 위치가 인덱스 0인 경우는 스킵 --
+// 이미 배포된 두 문장이 우연히 같은 사례는 수정 불가능하므로)
 const exactMatchMap = new Map();
 ILGAN_DATA.forEach(function (ilgan) {
   allFieldsOf().forEach(function (pair) {
     var cat = pair[0], sub = pair[1];
     var field = cat === 'trait' ? ilgan.trait : getField(ilgan, cat, sub);
     ['a', 'b'].forEach(function (slot) {
-      field[slot].forEach(function (s) {
-        var where = ilgan.name_kr + ' ' + cat + (sub ? '.' + sub : '') + '.' + slot;
+      field[slot].forEach(function (s, idx) {
+        var where = ilgan.name_kr + ' ' + cat + (sub ? '.' + sub : '') + '.' + slot + '[' + idx + ']';
         if (!exactMatchMap.has(s)) exactMatchMap.set(s, []);
-        exactMatchMap.get(s).push(where);
+        exactMatchMap.get(s).push({ where: where, locked: idx === 0 });
       });
     });
   });
 });
 const exactMatchCollisions = [];
-exactMatchMap.forEach(function (locations, text) {
-  if (locations.length > 1) {
-    exactMatchCollisions.push('"' + text + '" appears in: ' + locations.join(' | '));
+exactMatchMap.forEach(function (occurrences, text) {
+  if (occurrences.length > 1 && occurrences.some(function (o) { return !o.locked; })) {
+    exactMatchCollisions.push('"' + text + '" appears in: ' + occurrences.map(function (o) { return o.where; }).join(' | '));
   }
 });
 assert.strictEqual(exactMatchCollisions.length, 0,
