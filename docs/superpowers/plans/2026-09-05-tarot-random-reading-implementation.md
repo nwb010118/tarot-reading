@@ -101,10 +101,13 @@ function checkCard(card, issues) {
     }
     const catTexts = collectCategoryTexts(card, dir);
     advicePool.forEach(function (adv, i) {
+      const advLocked = (i === 0);
       card[dir].b.forEach(function (b, j) {
+        if (advLocked && j === 0) return; // locked-locked skip: both pre-existing, unfixable
         const found = echoIssue(adv, b);
         if (found) issues.push(card.name + ' advice.' + dir + '[' + i + '] vs ' + dir + '.b[' + j + '] (' + found + ')\n  ' + adv + '\n  ' + b);
       });
+      if (advLocked) return; // category text is always locked (untouched this phase); skip if advice is also locked
       catTexts.forEach(function (c, j) {
         const found = echoIssue(adv, c);
         if (found) issues.push(card.name + ' advice.' + dir + '[' + i + '] vs category-text[' + j + '] (' + found + ')\n  ' + adv + '\n  ' + c);
@@ -772,10 +775,13 @@ deck.forEach(function (card) {
     }
     const catTexts = collectCategoryTexts(card, dir);
     advicePool.forEach(function (adv, i) {
+      const advLocked = (i === 0);
       card[dir].b.forEach(function (b, j) {
+        if (advLocked && j === 0) return; // locked-locked skip: both pre-existing, unfixable
         const found = echoIssue(adv, b);
         if (found) withinCardIssues.push('AXIS3 ' + card.name + ' advice.' + dir + '[' + i + '] vs ' + dir + '.b[' + j + '] (' + found + ')\n  ' + adv + '\n  ' + b);
       });
+      if (advLocked) return; // category text is always locked (untouched this phase); skip if advice is also locked
       catTexts.forEach(function (c, j) {
         const found = echoIssue(adv, c);
         if (found) withinCardIssues.push('AXIS3 ' + card.name + ' advice.' + dir + '[' + i + '] vs category-text[' + j + '] (' + found + ')\n  ' + adv + '\n  ' + c);
