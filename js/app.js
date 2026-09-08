@@ -792,7 +792,7 @@
       const orientationLabel = item.orientation === 'upright' ? '정방향' : '역방향';
       const categoryReading = category && item.card.categories && item.card.categories[category];
       const baseMeaning = categoryReading
-        ? resolveSubchoiceValue(category, categoryReading[item.orientation], selectedSubChoice)
+        ? resolveMeaningText(resolveSubchoiceValue(category, categoryReading[item.orientation], selectedSubChoice))
         : resolveMeaningText(item.orientation === 'upright' ? item.card.upright : item.card.reversed);
       const meaning = PERIOD_PREFIXES[period] + ' ' + baseMeaning;
 
