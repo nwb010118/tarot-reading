@@ -33,6 +33,28 @@ module.exports.makeFullCombinedIssues = makeFullCombinedIssues;
 
 각 파일은 기존처럼 `stripBoilerplateSuffix`/`significantStems`를 자기 상수(BOILERPLATE_SUFFIXES 등)로 만든 뒤 `const fullCombinedIssues = makeFullCombinedIssues(stripBoilerplateSuffix, significantStems);`로 교체한다.
 
+### `tests/helpers/dedup.js`에 추가: `makeEchoIssue`
+
+saju/compat/tarot의 "echo" comparator(`word≥0.3` OR `bigram≥0.30` OR `lcs≥10`, 메시지 `'word='+wj.toFixed(2)+' bigram='+bj.toFixed(2)+' lcs='+lcs`)도 세 파일에서 임계값까지 완전히 동일하다. 같은 팩토리 패턴으로 추출한다.
+
+```js
+function makeEchoIssue(stripForEcho) {
+  const WORD_TH = 0.3, ECHO_BIGRAM_TH = 0.30, ECHO_LCS_TH = 10;
+  return function echoIssue(s1, s2) {
+    const wj = wordJaccard(s1, s2);
+    const t1 = stripForEcho(s1), t2 = stripForEcho(s2);
+    const bj = bigramJaccard(t1, t2);
+    const lcs = longestCommonSubstring(t1, t2);
+    if (wj >= WORD_TH || bj >= ECHO_BIGRAM_TH || lcs >= ECHO_LCS_TH) {
+      return 'word=' + wj.toFixed(2) + ' bigram=' + bj.toFixed(2) + ' lcs=' + lcs;
+    }
+    return null;
+  };
+}
+```
+
+`stripForEcho`는 파일마다 다른 정규화 함수(공백/구두점 제거 + boilerplate suffix 제거)이므로 그대로 각 파일에서 만들어 넘긴다.
+
 ## 공유 함수 6종 (`tests/helpers/dedup-axes.js`)
 
 ### 1. `checkPoolSelfCollisions(entries, comparatorFn)`
@@ -85,7 +107,7 @@ function checkCrossPoolCollisions(pairs, comparatorFn, skipFn) {
         if (skipFn && skipFn(i, j)) return;
         const found = comparatorFn(sA, sB);
         if (found) {
-          issues.push(pair.labelA + i + ' <-> ' + pair.labelB + j + ' (' + found + ')\n  ' + sA + '\n  ' + sB);
+          issues.push(pair.labelA + '[' + i + ']' + ' <-> ' + pair.labelB + '[' + j + ']' + ' (' + found + ')\n  ' + sA + '\n  ' + sB);
         }
       });
     });
@@ -218,7 +240,12 @@ function checkDanglingClausePool(entries, endsWithTerminalPunctuation, exception
 
 ## 알려진 사소한 정규화 (동작 변화 아님, 메시지 포맷 통일)
 
-타로 AXIS1의 이슈 join 구분자가 `found.join('|')`(공백 없음)로 다른 4개 파일의 `found.join(' | ')`(공백 있음)과 달랐다. 이 추출 과정에서 `checkPoolSelfCollisions`가 항상 `' | '`를 쓰도록 통일한다. 이 문자열은 **해당 축이 실패할 때만** assert 메시지에 나타나며 현재 5개 파일 전부 통과 상태이므로, 실질적 동작(통과/실패 여부)에는 아무 영향이 없다.
+두 가지 사소한 메시지 포맷 불일치를 발견했다. 판정 로직(어떤 조건에서 이슈로 잡히는가)은 5개 파일 전부 동일하고, 아래는 **실패 메시지 문자열의 표현**만 다른 것이다 — 현재 5개 파일 전부 해당 축을 통과하는 상태라 실제 동작에는 영향이 없다.
+
+1. 타로 AXIS1의 이슈 join 구분자가 `found.join('|')`(공백 없음)로 다른 4개 파일의 `found.join(' | ')`(공백 있음)과 달랐다. `checkPoolSelfCollisions`가 항상 `' | '`를 쓰도록 통일한다.
+2. `fullCombinedIssues`의 lcs 분기 메시지가 ddi/zodiac은 `'lcs=' + lcs + ' stems=' + shared.join(',') + ' bigram=' + bj.toFixed(3)`(bigram 포함)인데 saju/compat/tarot은 `'lcs=' + lcs + ' stems=' + shared.join(',')`(bigram 없음)이다. `makeFullCombinedIssues`는 더 정보량이 많은 ddi/zodiac 형태(`bigram=` 포함)로 통일한다.
+3. `checkCrossPoolCollisions`의 인덱스 표기 — advice↔b풀 echo 축은 원래부터 `advice[0] <-> love.solo.b[1]`처럼 대괄호를 쓰지만, 금지쌍 교차와 근접축자 축은 원래 `love.solo.a0 <-> relationships.new.a1`처럼 대괄호가 없다. `checkCrossPoolCollisions`는 항상 `label + '[' + i + ']'` 형태(대괄호 있음)로 통일한다 — `pair.labelA`/`labelB`는 인덱스·대괄호를 포함하지 않는 순수 접두사로 넘긴다.
+4. 타로 AXIS3(advice↔b풀/category-text echo)만 구분자로 `' vs '`를 쓰고 나머지 echo/교차 축은 전부 `' <-> '`를 쓴다. `checkCrossPoolCollisions`는 항상 `' <-> '`로 통일한다.
 
 ## 비범위
 
@@ -231,7 +258,7 @@ function checkDanglingClausePool(entries, endsWithTerminalPunctuation, exception
 ## 성공 기준
 
 - `node scripts/run-tests.js` 10/10 통과 유지.
-- 5개 파일 각각의 콘솔 로그 문구가 리팩터링 전과 완전히 동일(타로 AXIS1의 join 구분자 정규화 제외).
+- 5개 파일 각각의 `console.log` 문구(통과 시 항상 출력되는 것)는 리팩터링 전과 완전히 동일. `assert` 실패 메시지 포맷은 위 "알려진 사소한 정규화" 2건만 예외(현재 5개 파일 전부 통과 상태라 실제로 관찰되지 않음).
 - 5개 파일의 총 라인 수가 유의미하게 감소(현재 1,697줄 — 정확한 목표치는 두지 않되, 각 파일에서 비교 루프 보일러플레이트가 사라져야 함).
 - 최소 하나의 공유 함수(`checkDanglingClausePool` 권장 — 이미 검증된 패턴)에 대해, 인메모리로 합성 위반을 주입해 공유 함수가 실제로 위반을 잡아내는지 재확인(리팩터링이 겉보기에만 통과하는 게 아님을 증명).
 - 각 파일에서 제거된 inline 비교 함수(`fullCombinedIssues`, `echoIssue` 등)와 공유 함수 사용부가 정확히 위 매핑 표와 일치하는지 리뷰 시 표로 대조 가능해야 함.
