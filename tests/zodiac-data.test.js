@@ -6,7 +6,8 @@ const {
   endsWithTerminalPunctuation, makeFullCombinedIssues
 } = require('./helpers/dedup.js');
 const {
-  checkPoolSelfCollisions, simpleWordCollision, checkCrossPoolCollisions, checkDanglingClausePool
+  checkPoolSelfCollisions, simpleWordCollision, checkCrossPoolCollisions,
+  checkExactMatchCollisions, checkDanglingClausePool
 } = require('./helpers/dedup-axes.js');
 
 const EXPECTED_KEYS = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'];
@@ -220,6 +221,60 @@ console.log('No dangling-clause pool entries (all a[0..2]/b[0..2] end with termi
 const staleDanglingClauseExceptions = KNOWN_DANGLING_CLAUSE_LOCKED.filter(function (e) { return !danglingResult.usedExceptionKeys.has(danglingExceptionKey(e)); });
 assert.strictEqual(staleDanglingClauseExceptions.length, 0,
   'Found ' + staleDanglingClauseExceptions.length + ' stale dangling-clause exception(s) that no longer suppress any violation (safe to remove): ' + JSON.stringify(staleDanglingClauseExceptions));
+
+// ---------------------------------------------------------------------------
+// 엔티티 간 완전동일 + 근접축자 (2026-09-08 후속과제 2번 설계 참고)
+// ---------------------------------------------------------------------------
+
+const NEARVERBATIM_LCS_TH = 20;
+function stripForEcho(s) {
+  return stripBoilerplateSuffix(s.replace(/\s+/g, '').replace(/[.,!?]/g, ''));
+}
+
+const crossEntityOccurrences = [];
+ZODIAC_DATA.forEach(function (z) {
+  allFieldsOf(z).forEach(function (pair) {
+    const cat = pair[0], sub = pair[1];
+    const field = cat === 'trait' ? z.trait : getField(z, cat, sub);
+    const fieldLabel = cat + (sub ? '.' + sub : '');
+    ['a', 'b'].forEach(function (slot) {
+      field[slot].forEach(function (s, idx) {
+        crossEntityOccurrences.push({ value: s, where: z.name_kr + ' ' + fieldLabel + '.' + slot + '[' + idx + ']', locked: idx === 0 });
+      });
+    });
+  });
+});
+const crossEntityExactCollisions = checkExactMatchCollisions(crossEntityOccurrences);
+assert.strictEqual(crossEntityExactCollisions.length, 0,
+  'Found ' + crossEntityExactCollisions.length + ' cross-entity exact-match collisions:\n' + crossEntityExactCollisions.join('\n'));
+console.log('No cross-entity exact-match collisions');
+
+const crossEntityNearVerbatim = [];
+const nearVerbatimCmp = function (s1, s2) {
+  const t1 = stripForEcho(s1), t2 = stripForEcho(s2);
+  const lcs = longestCommonSubstring(t1, t2);
+  return lcs >= NEARVERBATIM_LCS_TH ? 'lcs=' + lcs : null;
+};
+for (let i = 0; i < ZODIAC_DATA.length; i++) {
+  for (let j = i + 1; j < ZODIAC_DATA.length; j++) {
+    const e1 = ZODIAC_DATA[i], e2 = ZODIAC_DATA[j];
+    allFieldsOf(e1).forEach(function (pair) {
+      const cat = pair[0], sub = pair[1];
+      const field1 = cat === 'trait' ? e1.trait : getField(e1, cat, sub);
+      const field2 = cat === 'trait' ? e2.trait : getField(e2, cat, sub);
+      const fieldLabel = cat + (sub ? '.' + sub : '');
+      ['a', 'b'].forEach(function (slot) {
+        crossEntityNearVerbatim.push.apply(crossEntityNearVerbatim, checkCrossPoolCollisions(
+          [{ labelA: e1.name_kr + ' ' + fieldLabel + '.' + slot, valuesA: field1[slot], labelB: e2.name_kr + ' ' + fieldLabel + '.' + slot, valuesB: field2[slot] }],
+          nearVerbatimCmp, function (x, y) { return x === 0 && y === 0; }
+        ));
+      });
+    });
+  }
+}
+assert.strictEqual(crossEntityNearVerbatim.length, 0,
+  'Found ' + crossEntityNearVerbatim.length + ' cross-entity near-verbatim collisions:\n' + crossEntityNearVerbatim.join('\n'));
+console.log('No cross-entity near-verbatim collisions');
 
 // ---------------------------------------------------------------------------
 // getZodiacByKey() 회귀 검사
