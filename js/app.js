@@ -793,7 +793,7 @@
       const categoryReading = category && item.card.categories && item.card.categories[category];
       const baseMeaning = categoryReading
         ? resolveSubchoiceValue(category, categoryReading[item.orientation], selectedSubChoice)
-        : (item.orientation === 'upright' ? item.card.upright : item.card.reversed);
+        : resolveMeaningText(item.orientation === 'upright' ? item.card.upright : item.card.reversed);
       const meaning = PERIOD_PREFIXES[period] + ' ' + baseMeaning;
 
       const keywordsList = item.card.keywords && item.card.keywords[item.orientation];
