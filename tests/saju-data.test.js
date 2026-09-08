@@ -2,7 +2,8 @@ const assert = require('assert');
 const { ILGAN_DATA, ELEMENT_BALANCE_TEXT, getIlganByIndex, getElementBalanceText } = require('../data/saju-data.js');
 const {
   wordJaccard, trigramJaccard, stripOwnKeywords, longestCommonSubstring,
-  bigramJaccard, makeStripBoilerplateSuffix, makeStem, makeSignificantStems
+  bigramJaccard, makeStripBoilerplateSuffix, makeStem, makeSignificantStems,
+  endsWithTerminalPunctuation
 } = require('./helpers/dedup.js');
 
 const EXPECTED_KEYS = ['gap', 'eul', 'byeong', 'jeong', 'mu', 'gi', 'gyeong', 'sin', 'im', 'gye'];
@@ -258,6 +259,35 @@ console.log('No forbidden-pair a-pool collisions');
 assert.strictEqual(forbiddenBCollisions.length, 0,
   'Found ' + forbiddenBCollisions.length + ' forbidden-pair b-pool collisions:\n' + forbiddenBCollisions.join('\n'));
 console.log('No forbidden-pair b-pool collisions');
+
+// axis 7: 조합 문법 검증 — 잠긴 원본(a[0]/b[0])이 완결되지 않은 절로 끝나면, 렌더링 시
+// 무작위로 붙는 형제 문장과 조합했을 때 비문이 될 수 있다 (2026-09-08 설계 참고)
+const KNOWN_DANGLING_CLAUSE_LOCKED = [
+  // 현재 없음
+];
+function isKnownDanglingClauseLocked(entityKey, fieldLabel, slot) {
+  return KNOWN_DANGLING_CLAUSE_LOCKED.some(function (e) {
+    return e.key === entityKey && e.field === fieldLabel && e.slot === slot;
+  });
+}
+const danglingClauseIssues = [];
+ILGAN_DATA.forEach(function (ilgan) {
+  allFieldsOf().forEach(function (pair) {
+    var cat = pair[0], sub = pair[1];
+    var field = cat === 'trait' ? ilgan.trait : getField(ilgan, cat, sub);
+    var fieldLabel = cat + (sub ? '.' + sub : '');
+    ['a', 'b'].forEach(function (slot) {
+      field[slot].forEach(function (s, idx) {
+        if (endsWithTerminalPunctuation(s)) return;
+        if (idx === 0 && isKnownDanglingClauseLocked(ilgan.key, fieldLabel, slot)) return;
+        danglingClauseIssues.push(ilgan.name_kr + ' ' + fieldLabel + '.' + slot + '[' + idx + '] (locked=' + (idx === 0) + ') does not end with terminal punctuation: ' + s);
+      });
+    });
+  });
+});
+assert.strictEqual(danglingClauseIssues.length, 0,
+  'Found ' + danglingClauseIssues.length + ' dangling-clause pool entries (would render a broken sentence when combined with a sibling variant):\n' + danglingClauseIssues.join('\n'));
+console.log('No dangling-clause pool entries (all a[0..2]/b[0..2] end with terminal punctuation, aside from known exceptions)');
 
 // axis 5: 일간 간 완전동일 검사 (모든 발생 위치가 인덱스 0인 경우는 스킵 --
 // 이미 배포된 두 문장이 우연히 같은 사례는 수정 불가능하므로)

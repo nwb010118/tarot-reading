@@ -2,7 +2,8 @@ const assert = require('assert');
 const { ZODIAC_DATA, getZodiacByKey } = require('../data/zodiac-data.js');
 const {
   wordJaccard, trigramJaccard, stripOwnKeywords, longestCommonSubstring,
-  bigramJaccard, makeStripBoilerplateSuffix, makeStem, makeSignificantStems
+  bigramJaccard, makeStripBoilerplateSuffix, makeStem, makeSignificantStems,
+  endsWithTerminalPunctuation
 } = require('./helpers/dedup.js');
 
 const EXPECTED_KEYS = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'];
@@ -209,6 +210,42 @@ console.log('No forbidden-pair a-pool collisions (love/relationships, career/wor
 assert.strictEqual(forbiddenBCollisions.length, 0,
   'Found ' + forbiddenBCollisions.length + ' forbidden-pair b-pool collisions:\n' + forbiddenBCollisions.join('\n'));
 console.log('No forbidden-pair b-pool collisions (simple word-Jaccard sweep)');
+
+// ---------------------------------------------------------------------------
+// 조합 문법 검증 — 잠긴 원본(a[0]/b[0])이 완결되지 않은 절로 끝나면, 렌더링 시
+// 무작위로 붙는 형제 문장과 조합했을 때 비문이 될 수 있다 (2026-09-08 설계 참고)
+// ---------------------------------------------------------------------------
+
+const KNOWN_DANGLING_CLAUSE_LOCKED = [
+  // 현재 없음
+];
+
+function isKnownDanglingClauseLocked(entityKey, fieldLabel, slot) {
+  return KNOWN_DANGLING_CLAUSE_LOCKED.some(function (e) {
+    return e.key === entityKey && e.field === fieldLabel && e.slot === slot;
+  });
+}
+
+const danglingClauseIssues = [];
+ZODIAC_DATA.forEach(function (z) {
+  allFieldsOf(z).forEach(function (pair) {
+    const cat = pair[0], sub = pair[1];
+    const field = cat === 'trait' ? z.trait : getField(z, cat, sub);
+    const fieldLabel = cat + (sub ? '.' + sub : '');
+    ['a', 'b'].forEach(function (slot) {
+      field[slot].forEach(function (s, idx) {
+        if (endsWithTerminalPunctuation(s)) return;
+        if (idx === 0 && isKnownDanglingClauseLocked(z.key, fieldLabel, slot)) return;
+        danglingClauseIssues.push(z.name_kr + ' ' + fieldLabel + '.' + slot + '[' + idx + '] (locked=' + (idx === 0) + ') does not end with terminal punctuation: ' + s);
+      });
+    });
+  });
+});
+
+assert.strictEqual(danglingClauseIssues.length, 0,
+  'Found ' + danglingClauseIssues.length + ' dangling-clause pool entries (would render a broken sentence when combined with a sibling variant):\n' + danglingClauseIssues.join('\n'));
+
+console.log('No dangling-clause pool entries (all a[0..2]/b[0..2] end with terminal punctuation, aside from known exceptions)');
 
 // ---------------------------------------------------------------------------
 // getZodiacByKey() 회귀 검사

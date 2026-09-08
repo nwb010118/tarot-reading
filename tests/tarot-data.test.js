@@ -11,7 +11,8 @@ global.TAROT_PENTACLES = require('../data/tarot-data-pentacles.js').TAROT_PENTAC
 const { getFullDeck } = require('../data/tarot-data.js');
 const {
   splitSentences, wordJaccard, trigramJaccard, stripOwnKeywords, longestCommonSubstring,
-  bigramJaccard, makeStripBoilerplateSuffix, makeStem, makeSignificantStems
+  bigramJaccard, makeStripBoilerplateSuffix, makeStem, makeSignificantStems,
+  endsWithTerminalPunctuation
 } = require('./helpers/dedup.js');
 
 const deck = getFullDeck();
@@ -326,5 +327,34 @@ for (let i = 0; i < deck.length; i++) {
 }
 assert.strictEqual(nearVerbatimIssues.length, 0, 'Found ' + nearVerbatimIssues.length + ' cross-card near-verbatim collisions:\n' + nearVerbatimIssues.join('\n'));
 console.log('No cross-card near-verbatim collisions');
+
+// axis 6: 조합 문법 검증 — 잠긴 원본(a[0]/b[0])이 완결되지 않은 절로 끝나면, 렌더링 시
+// 무작위로 붙는 형제 문장과 조합했을 때 비문이 될 수 있다 (완드2 역방향에서 실제 발견된 결함,
+// 2026-09-08 설계 참고)
+const KNOWN_DANGLING_CLAUSE_LOCKED = [
+  { cardId: 'wands_2', dir: 'reversed', slot: 'a' }
+  // "계획이 충분히 다져지지 않았거나,"(잠긴 a[0]) — 형제 b[1]/b[2]가 이 절과 자연스럽게
+  // 이어지도록 재작성됨. 2026-09-08 최종 리뷰 fix wave에서 9개 조합 전부 수동 검증됨(커밋 388f756).
+];
+function isKnownDanglingClauseLocked(cardId, dir, slot) {
+  return KNOWN_DANGLING_CLAUSE_LOCKED.some(function (e) {
+    return e.cardId === cardId && e.dir === dir && e.slot === slot;
+  });
+}
+const danglingClauseIssues = [];
+deck.forEach(function (card) {
+  ['upright', 'reversed'].forEach(function (dir) {
+    ['a', 'b'].forEach(function (slot) {
+      card[dir][slot].forEach(function (s, idx) {
+        if (endsWithTerminalPunctuation(s)) return;
+        if (idx === 0 && isKnownDanglingClauseLocked(card.cardId, dir, slot)) return;
+        danglingClauseIssues.push(card.name + ' ' + dir + '.' + slot + '[' + idx + '] (locked=' + (idx === 0) + ') does not end with terminal punctuation: ' + s);
+      });
+    });
+  });
+});
+assert.strictEqual(danglingClauseIssues.length, 0,
+  'Found ' + danglingClauseIssues.length + ' dangling-clause pool entries (would render a broken sentence when combined with a sibling variant):\n' + danglingClauseIssues.join('\n'));
+console.log('No dangling-clause pool entries (all upright/reversed a[0..2]/b[0..2] end with terminal punctuation, aside from the known wands_2 reversed exception)');
 
 console.log('All tarot-data tests passed');

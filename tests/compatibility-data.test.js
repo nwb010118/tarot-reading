@@ -2,7 +2,8 @@ const assert = require('assert');
 const { COMPAT_TIER_DATA, getCompatTierInfo } = require('../data/compatibility-data.js');
 const {
   wordJaccard, trigramJaccard, stripOwnKeywords, longestCommonSubstring,
-  bigramJaccard, makeStripBoilerplateSuffix, makeStem, makeSignificantStems
+  bigramJaccard, makeStripBoilerplateSuffix, makeStem, makeSignificantStems,
+  endsWithTerminalPunctuation
 } = require('./helpers/dedup.js');
 
 const EXPECTED_TIERS = ['same_element', 'complement', 'other', 'samhap', 'yukhap', 'same', 'none', 'chung', 'sangsaeng', 'bihwa', 'sanggeuk'];
@@ -239,6 +240,31 @@ EXPECTED_TIERS.forEach(function (tier) {
 assert.strictEqual(labelEchoIssues.length, 0,
   'Found ' + labelEchoIssues.length + ' label self-echo issues:\n' + labelEchoIssues.join('\n'));
 console.log('No tier label self-echoes its own text/advice/keywords (excluding whitelisted mechanism terms)');
+
+// axis 7: 조합 문법 검증 — 잠긴 원본(text.a[0]/text.b[0])이 완결되지 않은 절로 끝나면,
+// 렌더링 시 무작위로 붙는 형제 문장과 조합했을 때 비문이 될 수 있다 (2026-09-08 설계 참고)
+const KNOWN_DANGLING_CLAUSE_LOCKED = [
+  // 현재 없음
+];
+function isKnownDanglingClauseLocked(tierKey, slot) {
+  return KNOWN_DANGLING_CLAUSE_LOCKED.some(function (e) {
+    return e.tier === tierKey && e.slot === slot;
+  });
+}
+const danglingClauseIssues = [];
+EXPECTED_TIERS.forEach(function (tier) {
+  const data = COMPAT_TIER_DATA[tier];
+  ['a', 'b'].forEach(function (slot) {
+    data.text[slot].forEach(function (s, idx) {
+      if (endsWithTerminalPunctuation(s)) return;
+      if (idx === 0 && isKnownDanglingClauseLocked(tier, slot)) return;
+      danglingClauseIssues.push(tier + ' text.' + slot + '[' + idx + '] (locked=' + (idx === 0) + ') does not end with terminal punctuation: ' + s);
+    });
+  });
+});
+assert.strictEqual(danglingClauseIssues.length, 0,
+  'Found ' + danglingClauseIssues.length + ' dangling-clause pool entries (would render a broken sentence when combined with a sibling variant):\n' + danglingClauseIssues.join('\n'));
+console.log('No dangling-clause pool entries (all text.a[0..2]/text.b[0..2] end with terminal punctuation, aside from known exceptions)');
 
 // ---------------------------------------------------------------------------
 // getCompatTierInfo() 회귀 확인

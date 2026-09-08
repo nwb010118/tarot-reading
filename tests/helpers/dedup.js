@@ -69,6 +69,10 @@ function bigramJaccard(a, b) {
   return union === 0 ? 0 : inter / union;
 }
 
+function endsWithTerminalPunctuation(s) {
+  return /[.!?]$/.test(s.trim());
+}
+
 function makeStripBoilerplateSuffix(suffixes) {
   const sorted = suffixes.slice().sort(function (a, b) { return b.length - a.length; });
   return function stripBoilerplateSuffix(s) {
@@ -116,6 +120,7 @@ module.exports = {
   longestCommonSubstring,
   charBigramSet,
   bigramJaccard,
+  endsWithTerminalPunctuation,
   makeStripBoilerplateSuffix,
   makeStem,
   makeSignificantStems

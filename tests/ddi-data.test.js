@@ -2,7 +2,8 @@ const assert = require('assert');
 const { DDI_DATA, getDdiByYear } = require('../data/ddi-data.js');
 const {
   wordJaccard, trigramJaccard, stripOwnKeywords, longestCommonSubstring,
-  bigramJaccard, makeStripBoilerplateSuffix, makeStem, makeSignificantStems
+  bigramJaccard, makeStripBoilerplateSuffix, makeStem, makeSignificantStems,
+  endsWithTerminalPunctuation
 } = require('./helpers/dedup.js');
 
 const EXPECTED_KEYS = ['monkey', 'rooster', 'dog', 'pig', 'rat', 'ox', 'tiger', 'rabbit', 'dragon', 'snake', 'horse', 'goat'];
@@ -30,6 +31,14 @@ function assertPool(field, label) {
       assert.ok(typeof s === 'string' && s.length > 0, label + '.' + slot + '[' + i + '] must be a non-empty string');
     });
   });
+}
+
+function allFieldsOf() {
+  return [['trait', null]]
+    .concat(Object.keys(SUBDIVIDED_CATEGORIES).reduce(function (acc, cat) {
+      return acc.concat(SUBDIVIDED_CATEGORIES[cat].map(function (sub) { return [cat, sub]; }));
+    }, []))
+    .concat(SINGLE_CATEGORIES.map(function (cat) { return [cat, null]; }));
 }
 
 // ---------------------------------------------------------------------------
@@ -205,6 +214,43 @@ console.log('No forbidden-pair a-pool collisions (love/relationships, career/wor
 assert.strictEqual(forbiddenBCollisions.length, 0,
   'Found ' + forbiddenBCollisions.length + ' forbidden-pair b-pool collisions:\n' + forbiddenBCollisions.join('\n'));
 console.log('No forbidden-pair b-pool collisions (simple word-Jaccard sweep)');
+
+// ---------------------------------------------------------------------------
+// 조합 문법 검증 — 잠긴 원본(a[0]/b[0])이 완결되지 않은 절로 끝나면, 렌더링 시
+// 무작위로 붙는 형제 문장과 조합했을 때 비문이 될 수 있다 (2026-09-08 설계 참고)
+// ---------------------------------------------------------------------------
+
+const KNOWN_DANGLING_CLAUSE_LOCKED = [
+  // 현재 없음 — 위반이 발견되면 { key: '<ddi.key>', field: 'love.solo', slot: 'a' } 형태로
+  // 등록하고, 형제 문장이 이 절과 자연스럽게 이어지도록 재작성됐는지 등 왜 안전한지 주석을 남길 것.
+];
+
+function isKnownDanglingClauseLocked(entityKey, fieldLabel, slot) {
+  return KNOWN_DANGLING_CLAUSE_LOCKED.some(function (e) {
+    return e.key === entityKey && e.field === fieldLabel && e.slot === slot;
+  });
+}
+
+const danglingClauseIssues = [];
+DDI_DATA.forEach(function (ddi) {
+  allFieldsOf().forEach(function (pair) {
+    const cat = pair[0], sub = pair[1];
+    const field = cat === 'trait' ? ddi.trait : getField(ddi, cat, sub);
+    const fieldLabel = cat + (sub ? '.' + sub : '');
+    ['a', 'b'].forEach(function (slot) {
+      field[slot].forEach(function (s, idx) {
+        if (endsWithTerminalPunctuation(s)) return;
+        if (idx === 0 && isKnownDanglingClauseLocked(ddi.key, fieldLabel, slot)) return;
+        danglingClauseIssues.push(ddi.name_kr + ' ' + fieldLabel + '.' + slot + '[' + idx + '] (locked=' + (idx === 0) + ') does not end with terminal punctuation: ' + s);
+      });
+    });
+  });
+});
+
+assert.strictEqual(danglingClauseIssues.length, 0,
+  'Found ' + danglingClauseIssues.length + ' dangling-clause pool entries (would render a broken sentence when combined with a sibling variant):\n' + danglingClauseIssues.join('\n'));
+
+console.log('No dangling-clause pool entries (all a[0..2]/b[0..2] end with terminal punctuation, aside from known exceptions)');
 
 // ---------------------------------------------------------------------------
 // getDdiByYear() 회귀 확인
