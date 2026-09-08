@@ -12,8 +12,12 @@ const { getFullDeck } = require('../data/tarot-data.js');
 const {
   splitSentences, wordJaccard, trigramJaccard, stripOwnKeywords, longestCommonSubstring,
   bigramJaccard, makeStripBoilerplateSuffix, makeStem, makeSignificantStems,
-  endsWithTerminalPunctuation
+  endsWithTerminalPunctuation, makeFullCombinedIssues, makeEchoIssue
 } = require('./helpers/dedup.js');
+const {
+  checkPoolSelfCollisions, simpleWordCollision, checkCrossPoolCollisions,
+  checkExactMatchCollisions, checkKeywordSelfEcho, checkDanglingClausePool
+} = require('./helpers/dedup-axes.js');
 
 const deck = getFullDeck();
 
@@ -187,27 +191,14 @@ const PARTICLES = ['에게는', '에서', '으로', '에게', '을', '를', '이
 const stem = makeStem(PARTICLES);
 const STEM_STOPWORDS = ['시기입니다', '것입니다', '서로', '관계', '사이', '함께', '다른', '같은', '수', '있는', '있습니다'];
 const significantStems = makeSignificantStems(stem, STEM_STOPWORDS);
+const fullCombinedIssues = makeFullCombinedIssues(stripBoilerplateSuffix, significantStems);
 
-const WORD_TH = 0.3, OPEN_WORD_TH = 0.20, OPEN_TRI_TH = 0.15, LCS_TH = 5, STEM_TH = 2, BIGRAM_TH = 0.185;
-const ECHO_BIGRAM_TH = 0.30, ECHO_LCS_TH = 10, NEARVERBATIM_LCS_TH = 20;
-
+const WORD_TH = 0.3;
+const NEARVERBATIM_LCS_TH = 20;
 function normalizeForEcho(s) { return s.replace(/\s+/g, '').replace(/[.,!?]/g, ''); }
-
-function fullCombinedIssues(s1, s2, keywords) {
-  const issues = [];
-  const wj = wordJaccard(s1, s2);
-  if (wj >= WORD_TH) issues.push('word=' + wj.toFixed(2));
-  const tj = trigramJaccard(s1, s2);
-  if (wj >= OPEN_WORD_TH && tj >= OPEN_TRI_TH) issues.push('word+tri=' + wj.toFixed(2) + '/' + tj.toFixed(2));
-  const kw1 = stripOwnKeywords(s1, keywords), kw2 = stripOwnKeywords(s2, keywords);
-  const t1 = stripBoilerplateSuffix(kw1), t2 = stripBoilerplateSuffix(kw2);
-  const lcs = longestCommonSubstring(t1, t2);
-  const bj = bigramJaccard(t1, t2);
-  const st1 = significantStems(s1, keywords), st2 = significantStems(s2, keywords);
-  const shared = [...new Set(st1.filter(function (x) { return st2.indexOf(x) !== -1; }))];
-  if (lcs >= LCS_TH || shared.length >= STEM_TH || bj >= BIGRAM_TH) issues.push('lcs=' + lcs + ' stems=' + shared.join(','));
-  return issues;
-}
+function stripForEcho(s) { return stripBoilerplateSuffix(normalizeForEcho(s)); }
+const echoIssue = makeEchoIssue(stripForEcho);
+const simpleWord = simpleWordCollision(wordJaccard, WORD_TH);
 
 function collectCategoryTexts(card, orientation) {
   const texts = [];
@@ -224,60 +215,38 @@ const withinCardIssues = [];
 deck.forEach(function (card) {
   ['upright', 'reversed'].forEach(function (dir) {
     const keywords = card.keywords[dir];
+    const cmp = function (s1, s2) { return fullCombinedIssues(s1, s2, keywords); };
 
-    ['a', 'b'].forEach(function (slot) {
-      const pool = card[dir][slot];
-      for (let i = 0; i < pool.length; i++) {
-        for (let j = i + 1; j < pool.length; j++) {
-          const found = fullCombinedIssues(pool[i], pool[j], keywords);
-          if (found.length) withinCardIssues.push('AXIS1 ' + card.name + ' ' + dir + '.' + slot + '[' + i + ',' + j + '] (' + found.join('|') + ')\n  ' + pool[i] + '\n  ' + pool[j]);
-        }
-      }
-    });
+    withinCardIssues.push.apply(withinCardIssues, checkPoolSelfCollisions([
+      { label: 'AXIS1 ' + card.name + ' ' + dir + '.a', values: card[dir].a },
+      { label: 'AXIS1 ' + card.name + ' ' + dir + '.b', values: card[dir].b }
+    ], cmp));
 
     const advicePool = card.advice[dir];
-    for (let i = 0; i < advicePool.length; i++) {
-      for (let j = i + 1; j < advicePool.length; j++) {
-        const wj = wordJaccard(advicePool[i], advicePool[j]);
-        if (wj >= WORD_TH) withinCardIssues.push('AXIS2 ' + card.name + ' advice.' + dir + '[' + i + ',' + j + '] (word=' + wj.toFixed(2) + ')\n  ' + advicePool[i] + '\n  ' + advicePool[j]);
-      }
-    }
+    withinCardIssues.push.apply(withinCardIssues, checkPoolSelfCollisions(
+      [{ label: 'AXIS2 ' + card.name + ' advice.' + dir, values: advicePool }], simpleWord
+    ));
 
-    function echoIssue(s1, s2) {
-      const wj = wordJaccard(s1, s2);
-      const t1 = stripBoilerplateSuffix(normalizeForEcho(s1));
-      const t2 = stripBoilerplateSuffix(normalizeForEcho(s2));
-      const bj = bigramJaccard(t1, t2), lcs = longestCommonSubstring(t1, t2);
-      if (wj >= WORD_TH || bj >= ECHO_BIGRAM_TH || lcs >= ECHO_LCS_TH) return 'word=' + wj.toFixed(2) + ' bigram=' + bj.toFixed(2) + ' lcs=' + lcs;
-      return null;
-    }
     const catTexts = collectCategoryTexts(card, dir);
-    advicePool.forEach(function (adv, i) {
-      const advLocked = (i === 0);
-      card[dir].b.forEach(function (b, j) {
-        if (advLocked && j === 0) return; // locked-locked skip: both pre-existing, unfixable
-        const found = echoIssue(adv, b);
-        if (found) withinCardIssues.push('AXIS3 ' + card.name + ' advice.' + dir + '[' + i + '] vs ' + dir + '.b[' + j + '] (' + found + ')\n  ' + adv + '\n  ' + b);
-      });
-      if (advLocked) return; // category text is always locked (untouched this phase); skip if advice is also locked
-      catTexts.forEach(function (c, j) {
-        const found = echoIssue(adv, c);
-        if (found) withinCardIssues.push('AXIS3 ' + card.name + ' advice.' + dir + '[' + i + '] vs category-text[' + j + '] (' + found + ')\n  ' + adv + '\n  ' + c);
-      });
-    });
+    withinCardIssues.push.apply(withinCardIssues, checkCrossPoolCollisions(
+      [{ labelA: 'AXIS3 ' + card.name + ' advice.' + dir, valuesA: advicePool, labelB: dir + '.b', valuesB: card[dir].b }],
+      echoIssue, function (i, j) { return i === 0 && j === 0; }
+    ));
+    withinCardIssues.push.apply(withinCardIssues, checkCrossPoolCollisions(
+      [{ labelA: 'AXIS3 ' + card.name + ' advice.' + dir, valuesA: advicePool, labelB: 'category-text', valuesB: catTexts }],
+      echoIssue, function (i, j) { return i === 0; }
+    ));
 
     const ownTexts = [
       { s: card[dir].a[0], locked: true }, { s: card[dir].a[1], locked: false }, { s: card[dir].a[2], locked: false },
       { s: card[dir].b[0], locked: true }, { s: card[dir].b[1], locked: false }, { s: card[dir].b[2], locked: false },
       { s: advicePool[0], locked: true }, { s: advicePool[1], locked: false }, { s: advicePool[2], locked: false }
     ].concat(catTexts.map(function (s) { return { s: s, locked: true }; }));
-    keywords.forEach(function (kw, ki) {
-      const nk = normalizeForEcho(kw);
-      const kwLocked = ki < 3;
-      ownTexts.forEach(function (t) {
-        if (kwLocked && t.locked) return;
-        if (normalizeForEcho(t.s).indexOf(nk) !== -1) withinCardIssues.push('AXIS5 ' + card.name + ' ' + dir + ': keyword "' + kw + '" appears in its own pool (locked=' + t.locked + '): ' + t.s);
-      });
+    const keywordEntries = keywords.map(function (kw, ki) { return { value: kw, locked: ki < 3 }; });
+    const textEntries = ownTexts.map(function (t) { return { value: t.s, locked: t.locked }; });
+    const echoMatches = checkKeywordSelfEcho(keywordEntries, textEntries, normalizeForEcho, function (kw, t) { return kw.locked && t.locked; });
+    echoMatches.forEach(function (m) {
+      withinCardIssues.push('AXIS5 ' + card.name + ' ' + dir + ': keyword "' + m.keyword.value + '" appears in its own pool (locked=' + m.text.locked + '): ' + m.text.value);
     });
   });
 });
@@ -285,42 +254,35 @@ assert.strictEqual(withinCardIssues.length, 0, 'Found ' + withinCardIssues.lengt
 console.log('No within-card self-collisions (axis 1), advice self-collisions (axis 2), advice<->b/category echo (axis 3), or keyword self-echo (axis 5)');
 
 // axis 4: 카드 간 완전동일 + 근접축자
-const seen = new Map();
+const occurrences = [];
 deck.forEach(function (card) {
   ['upright', 'reversed'].forEach(function (dir) {
     ['a', 'b'].forEach(function (slot) {
       card[dir][slot].forEach(function (s, idx) {
-        const where = card.name + ' ' + dir + '.' + slot + '[' + idx + ']';
-        if (!seen.has(s)) seen.set(s, []);
-        seen.get(s).push({ where: where, locked: idx === 0 });
+        occurrences.push({ value: s, where: card.name + ' ' + dir + '.' + slot + '[' + idx + ']', locked: idx === 0 });
       });
     });
   });
 });
-const exactIssues = [];
-seen.forEach(function (occ, text) {
-  if (occ.length > 1 && occ.some(function (o) { return !o.locked; })) {
-    exactIssues.push('"' + text + '" appears in: ' + occ.map(function (o) { return o.where; }).join(' | '));
-  }
-});
+const exactIssues = checkExactMatchCollisions(occurrences);
 assert.strictEqual(exactIssues.length, 0, 'Found ' + exactIssues.length + ' cross-card exact-match collisions:\n' + exactIssues.join('\n'));
 console.log('No cross-card exact-match collisions');
 
 const nearVerbatimIssues = [];
+const lcsCmp = function (s1, s2) {
+  const t1 = stripForEcho(s1), t2 = stripForEcho(s2);
+  const lcs = longestCommonSubstring(t1, t2);
+  return lcs >= NEARVERBATIM_LCS_TH ? 'lcs=' + lcs : null;
+};
 for (let i = 0; i < deck.length; i++) {
   for (let j = i + 1; j < deck.length; j++) {
     const c1 = deck[i], c2 = deck[j];
     ['upright', 'reversed'].forEach(function (dir) {
       ['a', 'b'].forEach(function (slot) {
-        c1[dir][slot].forEach(function (s1, x) {
-          c2[dir][slot].forEach(function (s2, y) {
-            if (x === 0 && y === 0) return;
-            const lcs = longestCommonSubstring(stripBoilerplateSuffix(normalizeForEcho(s1)), stripBoilerplateSuffix(normalizeForEcho(s2)));
-            if (lcs >= NEARVERBATIM_LCS_TH) {
-              nearVerbatimIssues.push(c1.name + ' ' + dir + '.' + slot + x + ' <-> ' + c2.name + ' ' + dir + '.' + slot + y + ' (lcs=' + lcs + ')\n  ' + s1 + '\n  ' + s2);
-            }
-          });
-        });
+        nearVerbatimIssues.push.apply(nearVerbatimIssues, checkCrossPoolCollisions(
+          [{ labelA: c1.name + ' ' + dir + '.' + slot, valuesA: c1[dir][slot], labelB: c2.name + ' ' + dir + '.' + slot, valuesB: c2[dir][slot] }],
+          lcsCmp, function (x, y) { return x === 0 && y === 0; }
+        ));
       });
     });
   }
@@ -336,31 +298,26 @@ const KNOWN_DANGLING_CLAUSE_LOCKED = [
   // "계획이 충분히 다져지지 않았거나,"(잠긴 a[0]) — 형제 b[1]/b[2]가 이 절과 자연스럽게
   // 이어지도록 재작성됨. 2026-09-08 최종 리뷰 fix wave에서 9개 조합 전부 수동 검증됨(커밋 388f756).
 ];
-const usedDanglingClauseExceptions = new Set();
-function isKnownDanglingClauseLocked(cardId, dir, slot) {
-  const idx = KNOWN_DANGLING_CLAUSE_LOCKED.findIndex(function (e) {
-    return e.cardId === cardId && e.dir === dir && e.slot === slot;
-  });
-  if (idx !== -1) usedDanglingClauseExceptions.add(idx);
-  return idx !== -1;
-}
-const danglingClauseIssues = [];
+const danglingExceptionKey = function (e) { return e.cardId + '|' + e.dir + '|' + e.slot; };
+const danglingExceptionKeySet = new Set(KNOWN_DANGLING_CLAUSE_LOCKED.map(danglingExceptionKey));
+const danglingEntries = [];
 deck.forEach(function (card) {
   ['upright', 'reversed'].forEach(function (dir) {
     ['a', 'b'].forEach(function (slot) {
       card[dir][slot].forEach(function (s, idx) {
-        if (endsWithTerminalPunctuation(s)) return;
-        if (idx === 0 && isKnownDanglingClauseLocked(card.cardId, dir, slot)) return;
-        danglingClauseIssues.push(card.name + ' ' + dir + '.' + slot + '[' + idx + '] (locked=' + (idx === 0) + ') does not end with terminal punctuation: ' + s);
+        danglingEntries.push({
+          label: card.name + ' ' + dir + '.' + slot + '[' + idx + ']', value: s, idx: idx,
+          exceptionKey: danglingExceptionKey({ cardId: card.cardId, dir: dir, slot: slot })
+        });
       });
     });
   });
 });
-assert.strictEqual(danglingClauseIssues.length, 0,
-  'Found ' + danglingClauseIssues.length + ' dangling-clause pool entries (would render a broken sentence when combined with a sibling variant):\n' + danglingClauseIssues.join('\n'));
+const danglingResult = checkDanglingClausePool(danglingEntries, endsWithTerminalPunctuation, danglingExceptionKeySet);
+assert.strictEqual(danglingResult.issues.length, 0,
+  'Found ' + danglingResult.issues.length + ' dangling-clause pool entries (would render a broken sentence when combined with a sibling variant):\n' + danglingResult.issues.join('\n'));
 console.log('No dangling-clause pool entries (all upright/reversed a[0..2]/b[0..2] end with terminal punctuation, aside from the known wands_2 reversed exception)');
-
-const staleDanglingClauseExceptions = KNOWN_DANGLING_CLAUSE_LOCKED.filter(function (_, i) { return !usedDanglingClauseExceptions.has(i); });
+const staleDanglingClauseExceptions = KNOWN_DANGLING_CLAUSE_LOCKED.filter(function (e) { return !danglingResult.usedExceptionKeys.has(danglingExceptionKey(e)); });
 assert.strictEqual(staleDanglingClauseExceptions.length, 0,
   'Found ' + staleDanglingClauseExceptions.length + ' stale dangling-clause exception(s) that no longer suppress any violation (safe to remove): ' + JSON.stringify(staleDanglingClauseExceptions));
 
