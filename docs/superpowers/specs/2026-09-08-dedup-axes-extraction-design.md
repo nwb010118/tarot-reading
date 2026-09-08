@@ -202,7 +202,7 @@ function checkDanglingClausePool(entries, endsWithTerminalPunctuation, exception
 | ddi/zodiac | advice↔b풀 echo | `checkCrossPoolCollisions` | simple | 없음 |
 | saju | advice↔b풀 echo (axis3) | `checkCrossPoolCollisions` | enhanced echo(word/bigram/lcs) | `(i,j)=>i===0&&j===0` |
 | saju | advice↔BALANCE_TEXTS (axis3) | `checkCrossPoolCollisions` | enhanced echo | `(i,j)=>i===0` |
-| saju | b풀↔BALANCE_TEXTS (axis3) | `checkCrossPoolCollisions` | enhanced echo | `(i,j)=>j===0` |
+| saju | b풀↔BALANCE_TEXTS (axis3) | `checkCrossPoolCollisions` | enhanced echo | `(i,j)=>i===0` |
 | compat | advice↔text.b echo (axis3) | `checkCrossPoolCollisions` | enhanced echo | 없음 |
 | tarot | advice↔b풀 echo (AXIS3) | `checkCrossPoolCollisions` | enhanced echo | `(i,j)=>i===0&&j===0` |
 | tarot | advice↔category-text echo (AXIS3) | `checkCrossPoolCollisions` | enhanced echo | `(i,j)=>i===0` |

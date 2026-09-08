@@ -33,7 +33,7 @@ function checkCrossPoolCollisions(pairs, comparatorFn, skipFn) {
       pair.valuesB.forEach(function (sB, j) {
         if (skipFn && skipFn(i, j)) return;
         const found = comparatorFn(sA, sB);
-        if (found) {
+        if (found && found.length) {
           issues.push(pair.labelA + '[' + i + ']' + ' <-> ' + pair.labelB + '[' + j + ']' + ' (' + found + ')\n  ' + sA + '\n  ' + sB);
         }
       });
