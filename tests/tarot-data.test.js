@@ -336,10 +336,13 @@ const KNOWN_DANGLING_CLAUSE_LOCKED = [
   // "계획이 충분히 다져지지 않았거나,"(잠긴 a[0]) — 형제 b[1]/b[2]가 이 절과 자연스럽게
   // 이어지도록 재작성됨. 2026-09-08 최종 리뷰 fix wave에서 9개 조합 전부 수동 검증됨(커밋 388f756).
 ];
+const usedDanglingClauseExceptions = new Set();
 function isKnownDanglingClauseLocked(cardId, dir, slot) {
-  return KNOWN_DANGLING_CLAUSE_LOCKED.some(function (e) {
+  const idx = KNOWN_DANGLING_CLAUSE_LOCKED.findIndex(function (e) {
     return e.cardId === cardId && e.dir === dir && e.slot === slot;
   });
+  if (idx !== -1) usedDanglingClauseExceptions.add(idx);
+  return idx !== -1;
 }
 const danglingClauseIssues = [];
 deck.forEach(function (card) {
@@ -356,5 +359,9 @@ deck.forEach(function (card) {
 assert.strictEqual(danglingClauseIssues.length, 0,
   'Found ' + danglingClauseIssues.length + ' dangling-clause pool entries (would render a broken sentence when combined with a sibling variant):\n' + danglingClauseIssues.join('\n'));
 console.log('No dangling-clause pool entries (all upright/reversed a[0..2]/b[0..2] end with terminal punctuation, aside from the known wands_2 reversed exception)');
+
+const staleDanglingClauseExceptions = KNOWN_DANGLING_CLAUSE_LOCKED.filter(function (_, i) { return !usedDanglingClauseExceptions.has(i); });
+assert.strictEqual(staleDanglingClauseExceptions.length, 0,
+  'Found ' + staleDanglingClauseExceptions.length + ' stale dangling-clause exception(s) that no longer suppress any violation (safe to remove): ' + JSON.stringify(staleDanglingClauseExceptions));
 
 console.log('All tarot-data tests passed');

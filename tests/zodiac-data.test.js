@@ -220,10 +220,13 @@ const KNOWN_DANGLING_CLAUSE_LOCKED = [
   // 현재 없음
 ];
 
+const usedDanglingClauseExceptions = new Set();
 function isKnownDanglingClauseLocked(entityKey, fieldLabel, slot) {
-  return KNOWN_DANGLING_CLAUSE_LOCKED.some(function (e) {
+  const idx = KNOWN_DANGLING_CLAUSE_LOCKED.findIndex(function (e) {
     return e.key === entityKey && e.field === fieldLabel && e.slot === slot;
   });
+  if (idx !== -1) usedDanglingClauseExceptions.add(idx);
+  return idx !== -1;
 }
 
 const danglingClauseIssues = [];
@@ -246,6 +249,10 @@ assert.strictEqual(danglingClauseIssues.length, 0,
   'Found ' + danglingClauseIssues.length + ' dangling-clause pool entries (would render a broken sentence when combined with a sibling variant):\n' + danglingClauseIssues.join('\n'));
 
 console.log('No dangling-clause pool entries (all a[0..2]/b[0..2] end with terminal punctuation, aside from known exceptions)');
+
+const staleDanglingClauseExceptions = KNOWN_DANGLING_CLAUSE_LOCKED.filter(function (_, i) { return !usedDanglingClauseExceptions.has(i); });
+assert.strictEqual(staleDanglingClauseExceptions.length, 0,
+  'Found ' + staleDanglingClauseExceptions.length + ' stale dangling-clause exception(s) that no longer suppress any violation (safe to remove): ' + JSON.stringify(staleDanglingClauseExceptions));
 
 // ---------------------------------------------------------------------------
 // getZodiacByKey() 회귀 검사

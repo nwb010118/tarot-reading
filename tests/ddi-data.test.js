@@ -225,10 +225,13 @@ const KNOWN_DANGLING_CLAUSE_LOCKED = [
   // 등록하고, 형제 문장이 이 절과 자연스럽게 이어지도록 재작성됐는지 등 왜 안전한지 주석을 남길 것.
 ];
 
+const usedDanglingClauseExceptions = new Set();
 function isKnownDanglingClauseLocked(entityKey, fieldLabel, slot) {
-  return KNOWN_DANGLING_CLAUSE_LOCKED.some(function (e) {
+  const idx = KNOWN_DANGLING_CLAUSE_LOCKED.findIndex(function (e) {
     return e.key === entityKey && e.field === fieldLabel && e.slot === slot;
   });
+  if (idx !== -1) usedDanglingClauseExceptions.add(idx);
+  return idx !== -1;
 }
 
 const danglingClauseIssues = [];
@@ -251,6 +254,10 @@ assert.strictEqual(danglingClauseIssues.length, 0,
   'Found ' + danglingClauseIssues.length + ' dangling-clause pool entries (would render a broken sentence when combined with a sibling variant):\n' + danglingClauseIssues.join('\n'));
 
 console.log('No dangling-clause pool entries (all a[0..2]/b[0..2] end with terminal punctuation, aside from known exceptions)');
+
+const staleDanglingClauseExceptions = KNOWN_DANGLING_CLAUSE_LOCKED.filter(function (_, i) { return !usedDanglingClauseExceptions.has(i); });
+assert.strictEqual(staleDanglingClauseExceptions.length, 0,
+  'Found ' + staleDanglingClauseExceptions.length + ' stale dangling-clause exception(s) that no longer suppress any violation (safe to remove): ' + JSON.stringify(staleDanglingClauseExceptions));
 
 // ---------------------------------------------------------------------------
 // getDdiByYear() 회귀 확인
