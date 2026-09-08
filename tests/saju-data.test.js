@@ -3,8 +3,12 @@ const { ILGAN_DATA, ELEMENT_BALANCE_TEXT, getIlganByIndex, getElementBalanceText
 const {
   wordJaccard, trigramJaccard, stripOwnKeywords, longestCommonSubstring,
   bigramJaccard, makeStripBoilerplateSuffix, makeStem, makeSignificantStems,
-  endsWithTerminalPunctuation
+  endsWithTerminalPunctuation, makeFullCombinedIssues, makeEchoIssue
 } = require('./helpers/dedup.js');
+const {
+  checkPoolSelfCollisions, simpleWordCollision, checkCrossPoolCollisions,
+  checkExactMatchCollisions, checkDanglingClausePool
+} = require('./helpers/dedup-axes.js');
 
 const EXPECTED_KEYS = ['gap', 'eul', 'byeong', 'jeong', 'mu', 'gi', 'gyeong', 'sin', 'im', 'gye'];
 const SUBDIVIDED_CATEGORIES = {
@@ -30,18 +34,6 @@ function allFieldsOf() {
     }, []))
     .concat(SINGLE_CATEGORIES.map(function (cat) { return [cat, null]; }));
 }
-
-const FORBIDDEN_FIELD_SET = new Set();
-FORBIDDEN_PAIRS.forEach(function (pairDef) {
-  var catA = pairDef[0], subsA = pairDef[1], catB = pairDef[2], subsB = pairDef[3];
-  subsA.forEach(function (subA) {
-    subsB.forEach(function (subB) {
-      var f1 = catA + (subA ? '.' + subA : ''), f2 = catB + (subB ? '.' + subB : '');
-      FORBIDDEN_FIELD_SET.add(f1 + '|' + f2);
-      FORBIDDEN_FIELD_SET.add(f2 + '|' + f1);
-    });
-  });
-});
 
 function assertPool(field, label) {
   assert.ok(field && typeof field === 'object' && !Array.isArray(field), label + ' must be an {a,b} object');
@@ -95,7 +87,7 @@ assert.ok(typeof ELEMENT_BALANCE_TEXT.balanced === 'string' && ELEMENT_BALANCE_T
 console.log('ELEMENT_BALANCE_TEXT structure unchanged (13 fixed strings)');
 
 // ---------------------------------------------------------------------------
-// 중복 검사 — 6개 축
+// 중복 검사 — 공유 dedup-axes 헬퍼로 구현 (2026-09-08 dedup-axes 추출 설계 참고)
 // ---------------------------------------------------------------------------
 
 const BOILERPLATE_SUFFIXES = ['시기입니다', '것입니다', '합니다', '해보세요', '주세요', '두세요', '하세요', '보세요', '세요'];
@@ -104,52 +96,30 @@ const PARTICLES = ['에게는', '에서', '으로', '에게', '을', '를', '이
 const stem = makeStem(PARTICLES);
 const STEM_STOPWORDS = ['시기입니다', '시기입니다.', '것입니다'];
 const significantStems = makeSignificantStems(stem, STEM_STOPWORDS);
+const fullCombinedIssues = makeFullCombinedIssues(stripBoilerplateSuffix, significantStems);
 
-const WORD_TH = 0.3, OPEN_WORD_TH = 0.20, OPEN_TRI_TH = 0.15;
-const LCS_TH = 5, STEM_TH = 2, BIGRAM_TH = 0.185;
-const ECHO_BIGRAM_TH = 0.30, ECHO_LCS_TH = 10;
+const WORD_TH = 0.3;
 const NEARVERBATIM_LCS_TH = 20;
-
 function stripForEcho(s) {
   return stripBoilerplateSuffix(s.replace(/\s+/g, '').replace(/[.,!?]/g, ''));
 }
-
-function fullCombinedIssues(s1, s2, keywords) {
-  const issues = [];
-  const wj = wordJaccard(s1, s2);
-  if (wj >= WORD_TH) issues.push('word=' + wj.toFixed(2));
-  const tj = trigramJaccard(s1, s2);
-  if (wj >= OPEN_WORD_TH && tj >= OPEN_TRI_TH) issues.push('word+tri=' + wj.toFixed(2) + '/' + tj.toFixed(2));
-  const kw1 = stripOwnKeywords(s1, keywords), kw2 = stripOwnKeywords(s2, keywords);
-  const t1 = stripBoilerplateSuffix(kw1), t2 = stripBoilerplateSuffix(kw2);
-  const lcs = longestCommonSubstring(t1, t2);
-  const bj = bigramJaccard(t1, t2);
-  const st1 = significantStems(s1, keywords), st2 = significantStems(s2, keywords);
-  const shared = [...new Set(st1.filter(function (x) { return st2.indexOf(x) !== -1; }))];
-  if (lcs >= LCS_TH || shared.length >= STEM_TH || bj >= BIGRAM_TH) {
-    issues.push('lcs=' + lcs + ' stems=' + shared.join(','));
-  }
-  return issues;
-}
+const echoIssue = makeEchoIssue(stripForEcho);
+const simpleWord = simpleWordCollision(wordJaccard, WORD_TH);
 
 // axis 1: 필드 내부 자기중복
 const withinFieldCollisions = [];
 ILGAN_DATA.forEach(function (ilgan) {
+  var cmp = function (s1, s2) { return fullCombinedIssues(s1, s2, ilgan.keywords); };
+  var entries = [];
   allFieldsOf().forEach(function (pair) {
     var cat = pair[0], sub = pair[1];
     var field = cat === 'trait' ? ilgan.trait : getField(ilgan, cat, sub);
+    var fieldLabel = cat + (sub ? '.' + sub : '');
     ['a', 'b'].forEach(function (slot) {
-      var pool = field[slot];
-      for (let i = 0; i < pool.length; i++) {
-        for (let j = i + 1; j < pool.length; j++) {
-          var issues = fullCombinedIssues(pool[i], pool[j], ilgan.keywords);
-          if (issues.length) {
-            withinFieldCollisions.push(ilgan.name_kr + ' ' + cat + (sub ? '.' + sub : '') + '.' + slot + '[' + i + ',' + j + '] (' + issues.join(' | ') + ')\n  ' + pool[i] + '\n  ' + pool[j]);
-          }
-        }
-      }
+      entries.push({ label: ilgan.name_kr + ' ' + fieldLabel + '.' + slot, values: field[slot] });
     });
   });
+  withinFieldCollisions.push.apply(withinFieldCollisions, checkPoolSelfCollisions(entries, cmp));
 });
 assert.strictEqual(withinFieldCollisions.length, 0,
   'Found ' + withinFieldCollisions.length + ' within-field pool self-collisions:\n' + withinFieldCollisions.join('\n'));
@@ -158,65 +128,43 @@ console.log('No within-field a/b pool self-collisions');
 // axis 2: advice 풀 자기중복
 const adviceCollisions = [];
 ILGAN_DATA.forEach(function (ilgan) {
-  for (let i = 0; i < ilgan.advice.length; i++) {
-    for (let j = i + 1; j < ilgan.advice.length; j++) {
-      var wj = wordJaccard(ilgan.advice[i], ilgan.advice[j]);
-      if (wj >= WORD_TH) {
-        adviceCollisions.push(ilgan.name_kr + ' advice[' + i + ',' + j + '] (word=' + wj.toFixed(2) + ')\n  ' + ilgan.advice[i] + '\n  ' + ilgan.advice[j]);
-      }
-    }
-  }
+  adviceCollisions.push.apply(adviceCollisions, checkPoolSelfCollisions(
+    [{ label: ilgan.name_kr + ' advice', values: ilgan.advice }], simpleWord
+  ));
 });
 assert.strictEqual(adviceCollisions.length, 0,
   'Found ' + adviceCollisions.length + ' advice-pool self-collisions:\n' + adviceCollisions.join('\n'));
 console.log('No advice-pool self-collisions');
 
 // axis 3: advice <-> 모든 b풀 + ELEMENT_BALANCE_TEXT echo (강화 지표, 잠긴-잠긴 스킵)
-function echoIssue(s1, s2) {
-  var wj = wordJaccard(s1, s2);
-  var t1 = stripForEcho(s1), t2 = stripForEcho(s2);
-  var bj = bigramJaccard(t1, t2);
-  var lcs = longestCommonSubstring(t1, t2);
-  if (wj >= WORD_TH || bj >= ECHO_BIGRAM_TH || lcs >= ECHO_LCS_TH) {
-    return 'word=' + wj.toFixed(2) + ' bigram=' + bj.toFixed(2) + ' lcs=' + lcs;
-  }
-  return null;
-}
-
 const BALANCE_TEXTS = Object.values(ELEMENT_BALANCE_TEXT.excess)
   .concat(Object.values(ELEMENT_BALANCE_TEXT.deficient))
   .concat([ELEMENT_BALANCE_TEXT.balanced]);
 
 const echoCollisions = [];
 ILGAN_DATA.forEach(function (ilgan) {
+  var advBPairs = [];
   allFieldsOf().forEach(function (pair) {
     var cat = pair[0], sub = pair[1];
     var field = cat === 'trait' ? ilgan.trait : getField(ilgan, cat, sub);
-    field.b.forEach(function (sB, j) {
-      ilgan.advice.forEach(function (adv, i) {
-        if (i === 0 && j === 0) return;
-        var issue = echoIssue(adv, sB);
-        if (issue) echoCollisions.push(ilgan.name_kr + ' advice[' + i + '] <-> ' + cat + (sub ? '.' + sub : '') + '.b[' + j + '] (' + issue + ')\n  ' + adv + '\n  ' + sB);
-      });
-    });
+    var fieldLabel = cat + (sub ? '.' + sub : '');
+    advBPairs.push({ labelA: ilgan.name_kr + ' advice', valuesA: ilgan.advice, labelB: fieldLabel + '.b', valuesB: field.b });
   });
-  ilgan.advice.forEach(function (adv, i) {
-    if (i === 0) return;
-    BALANCE_TEXTS.forEach(function (bt, k) {
-      var issue = echoIssue(adv, bt);
-      if (issue) echoCollisions.push(ilgan.name_kr + ' advice[' + i + '] <-> balance[' + k + '] (' + issue + ')\n  ' + adv + '\n  ' + bt);
-    });
-  });
+  echoCollisions.push.apply(echoCollisions, checkCrossPoolCollisions(advBPairs, echoIssue, function (i, j) { return i === 0 && j === 0; }));
+
+  echoCollisions.push.apply(echoCollisions, checkCrossPoolCollisions(
+    [{ labelA: ilgan.name_kr + ' advice', valuesA: ilgan.advice, labelB: 'balance', valuesB: BALANCE_TEXTS }],
+    echoIssue, function (i, j) { return i === 0; }
+  ));
+
   allFieldsOf().forEach(function (pair) {
     var cat = pair[0], sub = pair[1];
     var field = cat === 'trait' ? ilgan.trait : getField(ilgan, cat, sub);
-    field.b.forEach(function (sB, j) {
-      if (j === 0) return;
-      BALANCE_TEXTS.forEach(function (bt, k) {
-        var issue = echoIssue(sB, bt);
-        if (issue) echoCollisions.push(ilgan.name_kr + ' ' + cat + (sub ? '.' + sub : '') + '.b[' + j + '] <-> balance[' + k + '] (' + issue + ')\n  ' + sB + '\n  ' + bt);
-      });
-    });
+    var fieldLabel = cat + (sub ? '.' + sub : '');
+    echoCollisions.push.apply(echoCollisions, checkCrossPoolCollisions(
+      [{ labelA: ilgan.name_kr + ' ' + fieldLabel + '.b', valuesA: field.b, labelB: 'balance', valuesB: BALANCE_TEXTS }],
+      echoIssue, function (i, j) { return j === 0; }
+    ));
   });
 });
 assert.strictEqual(echoCollisions.length, 0,
@@ -227,28 +175,23 @@ console.log('No advice<->b-pool/balance-text render-together echo collisions');
 const forbiddenACollisions = [];
 const forbiddenBCollisions = [];
 ILGAN_DATA.forEach(function (ilgan) {
+  var cmp = function (s1, s2) {
+    var found = fullCombinedIssues(s1, s2, ilgan.keywords);
+    return found.length ? found.join(' | ') : null;
+  };
   FORBIDDEN_PAIRS.forEach(function (pairDef) {
     var catA = pairDef[0], subsA = pairDef[1], catB = pairDef[2], subsB = pairDef[3];
     subsA.forEach(function (subA) {
       subsB.forEach(function (subB) {
         var fA = getField(ilgan, catA, subA), fB = getField(ilgan, catB, subB);
-        fA.a.forEach(function (sA, i) {
-          fB.a.forEach(function (sB, j) {
-            if (i === 0 && j === 0) return;
-            var issues = fullCombinedIssues(sA, sB, ilgan.keywords);
-            if (issues.length) {
-              forbiddenACollisions.push(ilgan.name_kr + ' ' + catA + '.' + subA + '.a' + i + ' <-> ' + catB + '.' + subB + '.a' + j + ' (' + issues.join(' | ') + ')\n  ' + sA + '\n  ' + sB);
-            }
-          });
-        });
-        fA.b.forEach(function (sA, i) {
-          fB.b.forEach(function (sB, j) {
-            var wj = wordJaccard(sA, sB);
-            if (wj >= WORD_TH) {
-              forbiddenBCollisions.push(ilgan.name_kr + ' ' + catA + '.' + subA + '.b' + i + ' <-> ' + catB + '.' + subB + '.b' + j + ' (word=' + wj.toFixed(2) + ')\n  ' + sA + '\n  ' + sB);
-            }
-          });
-        });
+        forbiddenACollisions.push.apply(forbiddenACollisions, checkCrossPoolCollisions(
+          [{ labelA: ilgan.name_kr + ' ' + catA + '.' + subA + '.a', valuesA: fA.a, labelB: catB + '.' + subB + '.a', valuesB: fB.a }],
+          cmp, function (i, j) { return i === 0 && j === 0; }
+        ));
+        forbiddenBCollisions.push.apply(forbiddenBCollisions, checkCrossPoolCollisions(
+          [{ labelA: ilgan.name_kr + ' ' + catA + '.' + subA + '.b', valuesA: fA.b, labelB: catB + '.' + subB + '.b', valuesB: fB.b }],
+          function (s1, s2) { var wj = wordJaccard(s1, s2); return wj >= WORD_TH ? 'word=' + wj.toFixed(2) : null; }, null
+        ));
       });
     });
   });
@@ -265,15 +208,9 @@ console.log('No forbidden-pair b-pool collisions');
 const KNOWN_DANGLING_CLAUSE_LOCKED = [
   // 현재 없음
 ];
-const usedDanglingClauseExceptions = new Set();
-function isKnownDanglingClauseLocked(entityKey, fieldLabel, slot) {
-  var idx = KNOWN_DANGLING_CLAUSE_LOCKED.findIndex(function (e) {
-    return e.key === entityKey && e.field === fieldLabel && e.slot === slot;
-  });
-  if (idx !== -1) usedDanglingClauseExceptions.add(idx);
-  return idx !== -1;
-}
-const danglingClauseIssues = [];
+const danglingExceptionKey = function (e) { return e.key + '|' + e.field + '|' + e.slot; };
+const danglingExceptionKeySet = new Set(KNOWN_DANGLING_CLAUSE_LOCKED.map(danglingExceptionKey));
+const danglingEntries = [];
 ILGAN_DATA.forEach(function (ilgan) {
   allFieldsOf().forEach(function (pair) {
     var cat = pair[0], sub = pair[1];
@@ -281,49 +218,61 @@ ILGAN_DATA.forEach(function (ilgan) {
     var fieldLabel = cat + (sub ? '.' + sub : '');
     ['a', 'b'].forEach(function (slot) {
       field[slot].forEach(function (s, idx) {
-        if (endsWithTerminalPunctuation(s)) return;
-        if (idx === 0 && isKnownDanglingClauseLocked(ilgan.key, fieldLabel, slot)) return;
-        danglingClauseIssues.push(ilgan.name_kr + ' ' + fieldLabel + '.' + slot + '[' + idx + '] (locked=' + (idx === 0) + ') does not end with terminal punctuation: ' + s);
+        danglingEntries.push({
+          label: ilgan.name_kr + ' ' + fieldLabel + '.' + slot + '[' + idx + ']',
+          value: s, idx: idx,
+          exceptionKey: danglingExceptionKey({ key: ilgan.key, field: fieldLabel, slot: slot })
+        });
       });
     });
   });
 });
-assert.strictEqual(danglingClauseIssues.length, 0,
-  'Found ' + danglingClauseIssues.length + ' dangling-clause pool entries (would render a broken sentence when combined with a sibling variant):\n' + danglingClauseIssues.join('\n'));
+const danglingResult = checkDanglingClausePool(danglingEntries, endsWithTerminalPunctuation, danglingExceptionKeySet);
+assert.strictEqual(danglingResult.issues.length, 0,
+  'Found ' + danglingResult.issues.length + ' dangling-clause pool entries (would render a broken sentence when combined with a sibling variant):\n' + danglingResult.issues.join('\n'));
 console.log('No dangling-clause pool entries (all a[0..2]/b[0..2] end with terminal punctuation, aside from known exceptions)');
-
-const staleDanglingClauseExceptions = KNOWN_DANGLING_CLAUSE_LOCKED.filter(function (_, i) { return !usedDanglingClauseExceptions.has(i); });
+const staleDanglingClauseExceptions = KNOWN_DANGLING_CLAUSE_LOCKED.filter(function (e) { return !danglingResult.usedExceptionKeys.has(danglingExceptionKey(e)); });
 assert.strictEqual(staleDanglingClauseExceptions.length, 0,
   'Found ' + staleDanglingClauseExceptions.length + ' stale dangling-clause exception(s) that no longer suppress any violation (safe to remove): ' + JSON.stringify(staleDanglingClauseExceptions));
 
 // axis 5: 일간 간 완전동일 검사 (모든 발생 위치가 인덱스 0인 경우는 스킵 --
 // 이미 배포된 두 문장이 우연히 같은 사례는 수정 불가능하므로)
-const exactMatchMap = new Map();
+const occurrences = [];
 ILGAN_DATA.forEach(function (ilgan) {
   allFieldsOf().forEach(function (pair) {
     var cat = pair[0], sub = pair[1];
     var field = cat === 'trait' ? ilgan.trait : getField(ilgan, cat, sub);
+    var fieldLabel = cat + (sub ? '.' + sub : '');
     ['a', 'b'].forEach(function (slot) {
       field[slot].forEach(function (s, idx) {
-        var where = ilgan.name_kr + ' ' + cat + (sub ? '.' + sub : '') + '.' + slot + '[' + idx + ']';
-        if (!exactMatchMap.has(s)) exactMatchMap.set(s, []);
-        exactMatchMap.get(s).push({ where: where, locked: idx === 0 });
+        occurrences.push({ value: s, where: ilgan.name_kr + ' ' + fieldLabel + '.' + slot + '[' + idx + ']', locked: idx === 0 });
       });
     });
   });
 });
-const exactMatchCollisions = [];
-exactMatchMap.forEach(function (occurrences, text) {
-  if (occurrences.length > 1 && occurrences.some(function (o) { return !o.locked; })) {
-    exactMatchCollisions.push('"' + text + '" appears in: ' + occurrences.map(function (o) { return o.where; }).join(' | '));
-  }
-});
+const exactMatchCollisions = checkExactMatchCollisions(occurrences);
 assert.strictEqual(exactMatchCollisions.length, 0,
   'Found ' + exactMatchCollisions.length + ' cross-entity exact-match collisions:\n' + exactMatchCollisions.join('\n'));
 console.log('No cross-entity exact-match collisions');
 
 // axis 6: 같은 일간 내 비금지쌍 근접축자 (LCS>=20, 잠긴-잠긴 스킵)
+const FORBIDDEN_FIELD_SET = new Set();
+FORBIDDEN_PAIRS.forEach(function (pairDef) {
+  var catA = pairDef[0], subsA = pairDef[1], catB = pairDef[2], subsB = pairDef[3];
+  subsA.forEach(function (subA) {
+    subsB.forEach(function (subB) {
+      var f1 = catA + (subA ? '.' + subA : ''), f2 = catB + (subB ? '.' + subB : '');
+      FORBIDDEN_FIELD_SET.add(f1 + '|' + f2);
+      FORBIDDEN_FIELD_SET.add(f2 + '|' + f1);
+    });
+  });
+});
 const nearVerbatimCollisions = [];
+const lcsCmp = function (s1, s2) {
+  var t1 = stripForEcho(s1), t2 = stripForEcho(s2);
+  var lcs = longestCommonSubstring(t1, t2);
+  return lcs >= NEARVERBATIM_LCS_TH ? 'lcs=' + lcs : null;
+};
 ILGAN_DATA.forEach(function (ilgan) {
   var fields = allFieldsOf();
   for (let i = 0; i < fields.length; i++) {
@@ -334,16 +283,10 @@ ILGAN_DATA.forEach(function (ilgan) {
       var F1 = cat1 === 'trait' ? ilgan.trait : getField(ilgan, cat1, sub1);
       var F2 = cat2 === 'trait' ? ilgan.trait : getField(ilgan, cat2, sub2);
       ['a', 'b'].forEach(function (slot) {
-        F1[slot].forEach(function (s1, x) {
-          F2[slot].forEach(function (s2, y) {
-            if (x === 0 && y === 0) return;
-            var t1 = stripForEcho(s1), t2 = stripForEcho(s2);
-            var lcs = longestCommonSubstring(t1, t2);
-            if (lcs >= NEARVERBATIM_LCS_TH) {
-              nearVerbatimCollisions.push(ilgan.name_kr + ' ' + f1name + '.' + slot + x + ' <-> ' + f2name + '.' + slot + y + ' (lcs=' + lcs + ')\n  ' + s1 + '\n  ' + s2);
-            }
-          });
-        });
+        nearVerbatimCollisions.push.apply(nearVerbatimCollisions, checkCrossPoolCollisions(
+          [{ labelA: ilgan.name_kr + ' ' + f1name + '.' + slot, valuesA: F1[slot], labelB: f2name + '.' + slot, valuesB: F2[slot] }],
+          lcsCmp, function (x, y) { return x === 0 && y === 0; }
+        ));
       });
     }
   }
