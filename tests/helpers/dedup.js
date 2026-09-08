@@ -111,6 +111,42 @@ function makeSignificantStems(stemFn, stopwords) {
   };
 }
 
+function makeFullCombinedIssues(stripBoilerplateSuffix, significantStems) {
+  const WORD_TH = 0.3, OPEN_WORD_TH = 0.20, OPEN_TRI_TH = 0.15;
+  const LCS_TH = 5, STEM_TH = 2, BIGRAM_TH = 0.185;
+  return function fullCombinedIssues(s1, s2, keywords) {
+    const issues = [];
+    const wj = wordJaccard(s1, s2);
+    if (wj >= WORD_TH) issues.push('word=' + wj.toFixed(2));
+    const tj = trigramJaccard(s1, s2);
+    if (wj >= OPEN_WORD_TH && tj >= OPEN_TRI_TH) issues.push('word+tri=' + wj.toFixed(2) + '/' + tj.toFixed(2));
+    const kw1 = stripOwnKeywords(s1, keywords), kw2 = stripOwnKeywords(s2, keywords);
+    const t1 = stripBoilerplateSuffix(kw1), t2 = stripBoilerplateSuffix(kw2);
+    const lcs = longestCommonSubstring(t1, t2);
+    const bj = bigramJaccard(t1, t2);
+    const st1 = significantStems(s1, keywords), st2 = significantStems(s2, keywords);
+    const shared = [...new Set(st1.filter(function (x) { return st2.indexOf(x) !== -1; }))];
+    if (lcs >= LCS_TH || shared.length >= STEM_TH || bj >= BIGRAM_TH) {
+      issues.push('lcs=' + lcs + ' stems=' + shared.join(',') + ' bigram=' + bj.toFixed(3));
+    }
+    return issues;
+  };
+}
+
+function makeEchoIssue(stripForEcho) {
+  const WORD_TH = 0.3, ECHO_BIGRAM_TH = 0.30, ECHO_LCS_TH = 10;
+  return function echoIssue(s1, s2) {
+    const wj = wordJaccard(s1, s2);
+    const t1 = stripForEcho(s1), t2 = stripForEcho(s2);
+    const bj = bigramJaccard(t1, t2);
+    const lcs = longestCommonSubstring(t1, t2);
+    if (wj >= WORD_TH || bj >= ECHO_BIGRAM_TH || lcs >= ECHO_LCS_TH) {
+      return 'word=' + wj.toFixed(2) + ' bigram=' + bj.toFixed(2) + ' lcs=' + lcs;
+    }
+    return null;
+  };
+}
+
 module.exports = {
   splitSentences,
   wordJaccard,
@@ -123,5 +159,7 @@ module.exports = {
   endsWithTerminalPunctuation,
   makeStripBoilerplateSuffix,
   makeStem,
-  makeSignificantStems
+  makeSignificantStems,
+  makeFullCombinedIssues,
+  makeEchoIssue
 };
