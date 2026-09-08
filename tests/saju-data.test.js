@@ -295,6 +295,29 @@ assert.strictEqual(nearVerbatimCollisions.length, 0,
   'Found ' + nearVerbatimCollisions.length + ' same-entity non-forbidden-pair near-verbatim collisions:\n' + nearVerbatimCollisions.join('\n'));
 console.log('No same-entity non-forbidden-pair near-verbatim collisions');
 
+// axis 9: 일간 간 근접축자 (같은 필드·같은 슬롯끼리만, LCS>=20, 잠긴-잠긴 스킵)
+const crossEntityNearVerbatim = [];
+for (let i = 0; i < ILGAN_DATA.length; i++) {
+  for (let j = i + 1; j < ILGAN_DATA.length; j++) {
+    const e1 = ILGAN_DATA[i], e2 = ILGAN_DATA[j];
+    allFieldsOf().forEach(function (pair) {
+      var cat = pair[0], sub = pair[1];
+      var field1 = cat === 'trait' ? e1.trait : getField(e1, cat, sub);
+      var field2 = cat === 'trait' ? e2.trait : getField(e2, cat, sub);
+      var fieldLabel = cat + (sub ? '.' + sub : '');
+      ['a', 'b'].forEach(function (slot) {
+        crossEntityNearVerbatim.push.apply(crossEntityNearVerbatim, checkCrossPoolCollisions(
+          [{ labelA: e1.name_kr + ' ' + fieldLabel + '.' + slot, valuesA: field1[slot], labelB: e2.name_kr + ' ' + fieldLabel + '.' + slot, valuesB: field2[slot] }],
+          lcsCmp, function (x, y) { return x === 0 && y === 0; }
+        ));
+      });
+    });
+  }
+}
+assert.strictEqual(crossEntityNearVerbatim.length, 0,
+  'Found ' + crossEntityNearVerbatim.length + ' cross-entity near-verbatim collisions:\n' + crossEntityNearVerbatim.join('\n'));
+console.log('No cross-entity near-verbatim collisions');
+
 // ---------------------------------------------------------------------------
 // 조회 함수 회귀 확인
 // ---------------------------------------------------------------------------
