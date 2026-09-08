@@ -3,8 +3,11 @@ const { ZODIAC_DATA, getZodiacByKey } = require('../data/zodiac-data.js');
 const {
   wordJaccard, trigramJaccard, stripOwnKeywords, longestCommonSubstring,
   bigramJaccard, makeStripBoilerplateSuffix, makeStem, makeSignificantStems,
-  endsWithTerminalPunctuation
+  endsWithTerminalPunctuation, makeFullCombinedIssues
 } = require('./helpers/dedup.js');
+const {
+  checkPoolSelfCollisions, simpleWordCollision, checkCrossPoolCollisions, checkDanglingClausePool
+} = require('./helpers/dedup-axes.js');
 
 const EXPECTED_KEYS = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'];
 const SUBDIVIDED_CATEGORIES = {
@@ -80,8 +83,7 @@ ZODIAC_DATA.forEach(function (z) {
 console.log('All 12 zodiac signs have valid a/b pool structure (trait + 19 category fields), 6 keywords, 3 advice variants');
 
 // ---------------------------------------------------------------------------
-// 중복 검사 — 네 축: (1) 필드 내부 자기중복, (2) advice 풀 자기중복,
-// (3) advice ↔ 모든 b풀 echo(신규), (4) 금지쌍(a는 3단 결합, b는 단순)
+// 중복 검사 — 공유 dedup-axes 헬퍼로 구현 (2026-09-08 dedup-axes 추출 설계 참고)
 // ---------------------------------------------------------------------------
 
 const BOILERPLATE_SUFFIXES = ['시기입니다', '것입니다', '합니다', '해보세요', '주세요', '두세요', '하세요', '보세요', '세요'];
@@ -90,45 +92,27 @@ const PARTICLES = ['에게는', '에서', '으로', '에게', '을', '를', '이
 const stem = makeStem(PARTICLES);
 const STEM_STOPWORDS = ['시기입니다', '시기입니다.', '것입니다'];
 const significantStems = makeSignificantStems(stem, STEM_STOPWORDS);
-
-const WORD_TH = 0.3, OPEN_WORD_TH = 0.20, OPEN_TRI_TH = 0.15;
-const LCS_TH = 5, STEM_TH = 2, BIGRAM_TH = 0.185;
-
-function fullCombinedIssues(s1, s2, keywords) {
-  const issues = [];
+const fullCombinedIssues = makeFullCombinedIssues(stripBoilerplateSuffix, significantStems);
+const WORD_TH = 0.3;
+const simpleWord = simpleWordCollision(wordJaccard, WORD_TH);
+const simpleWordEcho = function (s1, s2) {
   const wj = wordJaccard(s1, s2);
-  if (wj >= WORD_TH) issues.push('word=' + wj.toFixed(2));
-  const tj = trigramJaccard(s1, s2);
-  if (wj >= OPEN_WORD_TH && tj >= OPEN_TRI_TH) issues.push('word+tri=' + wj.toFixed(2) + '/' + tj.toFixed(2));
-  const kw1 = stripOwnKeywords(s1, keywords), kw2 = stripOwnKeywords(s2, keywords);
-  const t1 = stripBoilerplateSuffix(kw1), t2 = stripBoilerplateSuffix(kw2);
-  const lcs = longestCommonSubstring(t1, t2);
-  const bj = bigramJaccard(t1, t2);
-  const st1 = significantStems(s1, keywords), st2 = significantStems(s2, keywords);
-  const shared = [...new Set(st1.filter(function (x) { return st2.indexOf(x) !== -1; }))];
-  if (lcs >= LCS_TH || shared.length >= STEM_TH || bj >= BIGRAM_TH) {
-    issues.push('lcs=' + lcs + ' stems=' + shared.join(',') + ' bigram=' + bj.toFixed(3));
-  }
-  return issues;
-}
+  return wj >= WORD_TH ? 'word=' + wj.toFixed(2) : null;
+};
 
 const withinFieldCollisions = [];
 ZODIAC_DATA.forEach(function (z) {
+  const cmp = function (s1, s2) { return fullCombinedIssues(s1, s2, z.keywords); };
+  const entries = [];
   allFieldsOf(z).forEach(function (pair) {
     const cat = pair[0], sub = pair[1];
     const field = cat === 'trait' ? z.trait : getField(z, cat, sub);
+    const fieldLabel = cat + (sub ? '.' + sub : '');
     ['a', 'b'].forEach(function (slot) {
-      const pool = field[slot];
-      for (let i = 0; i < pool.length; i++) {
-        for (let j = i + 1; j < pool.length; j++) {
-          const issues = fullCombinedIssues(pool[i], pool[j], z.keywords);
-          if (issues.length) {
-            withinFieldCollisions.push(z.name_kr + ' ' + cat + (sub ? '.' + sub : '') + '.' + slot + '[' + i + ',' + j + '] (' + issues.join(' | ') + ')\n  ' + pool[i] + '\n  ' + pool[j]);
-          }
-        }
-      }
+      entries.push({ label: z.name_kr + ' ' + fieldLabel + '.' + slot, values: field[slot] });
     });
   });
+  withinFieldCollisions.push.apply(withinFieldCollisions, checkPoolSelfCollisions(entries, cmp));
 });
 
 assert.strictEqual(withinFieldCollisions.length, 0,
@@ -138,14 +122,9 @@ console.log('No within-field a/b pool self-collisions (each field\'s own 3 varia
 
 const adviceCollisions = [];
 ZODIAC_DATA.forEach(function (z) {
-  for (let i = 0; i < z.advice.length; i++) {
-    for (let j = i + 1; j < z.advice.length; j++) {
-      const wj = wordJaccard(z.advice[i], z.advice[j]);
-      if (wj >= WORD_TH) {
-        adviceCollisions.push(z.name_kr + ' advice[' + i + ',' + j + '] (word=' + wj.toFixed(2) + ')\n  ' + z.advice[i] + '\n  ' + z.advice[j]);
-      }
-    }
-  }
+  adviceCollisions.push.apply(adviceCollisions, checkPoolSelfCollisions(
+    [{ label: z.name_kr + ' advice', values: z.advice }], simpleWord
+  ));
 });
 
 assert.strictEqual(adviceCollisions.length, 0,
@@ -155,18 +134,14 @@ console.log('No advice-pool self-collisions (each sign\'s 3 advice variants are 
 
 const adviceEchoCollisions = [];
 ZODIAC_DATA.forEach(function (z) {
+  const pairs = [];
   allFieldsOf(z).forEach(function (pair) {
     const cat = pair[0], sub = pair[1];
     const field = cat === 'trait' ? z.trait : getField(z, cat, sub);
-    field.b.forEach(function (sB, j) {
-      z.advice.forEach(function (adv, i) {
-        const wj = wordJaccard(adv, sB);
-        if (wj >= WORD_TH) {
-          adviceEchoCollisions.push(z.name_kr + ' advice[' + i + '] <-> ' + cat + (sub ? '.' + sub : '') + '.b[' + j + '] (word=' + wj.toFixed(2) + ')\n  ' + adv + '\n  ' + sB);
-        }
-      });
-    });
+    const fieldLabel = cat + (sub ? '.' + sub : '');
+    pairs.push({ labelA: z.name_kr + ' advice', valuesA: z.advice, labelB: fieldLabel + '.b', valuesB: field.b });
   });
+  adviceEchoCollisions.push.apply(adviceEchoCollisions, checkCrossPoolCollisions(pairs, simpleWordEcho, null));
 });
 
 assert.strictEqual(adviceEchoCollisions.length, 0,
@@ -177,27 +152,23 @@ console.log('No advice<->b-pool render-together echo collisions (advice and trai
 const forbiddenACollisions = [];
 const forbiddenBCollisions = [];
 ZODIAC_DATA.forEach(function (z) {
+  const cmp = function (s1, s2) {
+    const found = fullCombinedIssues(s1, s2, z.keywords);
+    return found.length ? found.join(' | ') : null;
+  };
   FORBIDDEN_PAIRS.forEach(function (pairDef) {
     const catA = pairDef[0], subsA = pairDef[1], catB = pairDef[2], subsB = pairDef[3];
     subsA.forEach(function (subA) {
       subsB.forEach(function (subB) {
         const fA = getField(z, catA, subA), fB = getField(z, catB, subB);
-        fA.a.forEach(function (sA, i) {
-          fB.a.forEach(function (sB, j) {
-            const issues = fullCombinedIssues(sA, sB, z.keywords);
-            if (issues.length) {
-              forbiddenACollisions.push(z.name_kr + ' ' + catA + '.' + subA + '.a' + i + ' <-> ' + catB + '.' + subB + '.a' + j + ' (' + issues.join(' | ') + ')\n  ' + sA + '\n  ' + sB);
-            }
-          });
-        });
-        fA.b.forEach(function (sA, i) {
-          fB.b.forEach(function (sB, j) {
-            const wj = wordJaccard(sA, sB);
-            if (wj >= WORD_TH) {
-              forbiddenBCollisions.push(z.name_kr + ' ' + catA + '.' + subA + '.b' + i + ' <-> ' + catB + '.' + subB + '.b' + j + ' (word=' + wj.toFixed(2) + ')\n  ' + sA + '\n  ' + sB);
-            }
-          });
-        });
+        forbiddenACollisions.push.apply(forbiddenACollisions, checkCrossPoolCollisions(
+          [{ labelA: z.name_kr + ' ' + catA + '.' + subA + '.a', valuesA: fA.a, labelB: catB + '.' + subB + '.a', valuesB: fB.a }],
+          cmp, null
+        ));
+        forbiddenBCollisions.push.apply(forbiddenBCollisions, checkCrossPoolCollisions(
+          [{ labelA: z.name_kr + ' ' + catA + '.' + subA + '.b', valuesA: fA.b, labelB: catB + '.' + subB + '.b', valuesB: fB.b }],
+          simpleWordEcho, null
+        ));
       });
     });
   });
@@ -219,17 +190,10 @@ console.log('No forbidden-pair b-pool collisions (simple word-Jaccard sweep)');
 const KNOWN_DANGLING_CLAUSE_LOCKED = [
   // 현재 없음
 ];
+const danglingExceptionKey = function (e) { return e.key + '|' + e.field + '|' + e.slot; };
+const danglingExceptionKeySet = new Set(KNOWN_DANGLING_CLAUSE_LOCKED.map(danglingExceptionKey));
 
-const usedDanglingClauseExceptions = new Set();
-function isKnownDanglingClauseLocked(entityKey, fieldLabel, slot) {
-  const idx = KNOWN_DANGLING_CLAUSE_LOCKED.findIndex(function (e) {
-    return e.key === entityKey && e.field === fieldLabel && e.slot === slot;
-  });
-  if (idx !== -1) usedDanglingClauseExceptions.add(idx);
-  return idx !== -1;
-}
-
-const danglingClauseIssues = [];
+const danglingEntries = [];
 ZODIAC_DATA.forEach(function (z) {
   allFieldsOf(z).forEach(function (pair) {
     const cat = pair[0], sub = pair[1];
@@ -237,20 +201,23 @@ ZODIAC_DATA.forEach(function (z) {
     const fieldLabel = cat + (sub ? '.' + sub : '');
     ['a', 'b'].forEach(function (slot) {
       field[slot].forEach(function (s, idx) {
-        if (endsWithTerminalPunctuation(s)) return;
-        if (idx === 0 && isKnownDanglingClauseLocked(z.key, fieldLabel, slot)) return;
-        danglingClauseIssues.push(z.name_kr + ' ' + fieldLabel + '.' + slot + '[' + idx + '] (locked=' + (idx === 0) + ') does not end with terminal punctuation: ' + s);
+        danglingEntries.push({
+          label: z.name_kr + ' ' + fieldLabel + '.' + slot + '[' + idx + ']',
+          value: s, idx: idx,
+          exceptionKey: danglingExceptionKey({ key: z.key, field: fieldLabel, slot: slot })
+        });
       });
     });
   });
 });
+const danglingResult = checkDanglingClausePool(danglingEntries, endsWithTerminalPunctuation, danglingExceptionKeySet);
 
-assert.strictEqual(danglingClauseIssues.length, 0,
-  'Found ' + danglingClauseIssues.length + ' dangling-clause pool entries (would render a broken sentence when combined with a sibling variant):\n' + danglingClauseIssues.join('\n'));
+assert.strictEqual(danglingResult.issues.length, 0,
+  'Found ' + danglingResult.issues.length + ' dangling-clause pool entries (would render a broken sentence when combined with a sibling variant):\n' + danglingResult.issues.join('\n'));
 
 console.log('No dangling-clause pool entries (all a[0..2]/b[0..2] end with terminal punctuation, aside from known exceptions)');
 
-const staleDanglingClauseExceptions = KNOWN_DANGLING_CLAUSE_LOCKED.filter(function (_, i) { return !usedDanglingClauseExceptions.has(i); });
+const staleDanglingClauseExceptions = KNOWN_DANGLING_CLAUSE_LOCKED.filter(function (e) { return !danglingResult.usedExceptionKeys.has(danglingExceptionKey(e)); });
 assert.strictEqual(staleDanglingClauseExceptions.length, 0,
   'Found ' + staleDanglingClauseExceptions.length + ' stale dangling-clause exception(s) that no longer suppress any violation (safe to remove): ' + JSON.stringify(staleDanglingClauseExceptions));
 
