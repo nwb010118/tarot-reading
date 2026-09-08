@@ -752,7 +752,7 @@ ILGAN_DATA.forEach(function (ilgan) {
     var fieldLabel = cat + (sub ? '.' + sub : '');
     echoCollisions.push.apply(echoCollisions, checkCrossPoolCollisions(
       [{ labelA: ilgan.name_kr + ' ' + fieldLabel + '.b', valuesA: field.b, labelB: 'balance', valuesB: BALANCE_TEXTS }],
-      echoIssue, function (i, j) { return j === 0; }
+      echoIssue, function (i, j) { return i === 0; }
     ));
   });
 });
