@@ -204,6 +204,15 @@ deck.forEach(function (card) {
       ));
     });
 
+    const catStringTexts = collectStringCategoryTexts(card, dir);
+    if (catStringTexts.length) {
+      withinCardIssues.push.apply(withinCardIssues, checkCrossPoolCollisions(
+        [{ labelA: 'AXIS3 ' + card.name + ' advice.' + dir, valuesA: advicePool,
+           labelB: 'category-text(unconverted)', valuesB: catStringTexts }],
+        echoIssue, function (i, j) { return i === 0; }
+      ));
+    }
+
     const catPoolTexts = [];
     catPools.forEach(function (cp) {
       catPoolTexts.push({ s: cp.field.a[0], locked: true }, { s: cp.field.a[1], locked: false }, { s: cp.field.a[2], locked: false });
