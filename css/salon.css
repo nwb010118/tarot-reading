@@ -163,3 +163,36 @@ label, .category-btn, .spread-btn { font-size: 15px; }
   #category-select { grid-template-columns: repeat(3, 1fr); }.category-btn { font-size: 14px; }
   .section-heading { margin-bottom: 16px; }#summary .reading-lead { font-size: 20px; }.reading-options { padding: 0 12px; }
 }
+/* 타로 카드 백과사전 페이지 */
+.site-nav { display: flex; gap: 18px; font-size: 13px; }
+.site-nav a { color: var(--muted); text-decoration: none; }
+.site-nav a:hover { color: var(--gold); }
+.card-page-main, .hub-main { border: 1px solid var(--line); background: linear-gradient(135deg, #142235, #0f1b2b); border-radius: 20px; padding: 36px; margin-top: 24px; }
+.card-hero-page { text-align: center; margin: 24px 0 32px; }
+.card-hero-page img { max-width: 240px; width: 100%; height: auto; border-radius: 10px; box-shadow: 0 20px 50px #00000040; }
+.orientation-block { border-top: 1px solid var(--line); padding-top: 24px; margin-top: 24px; }
+.orientation-block h2 { font-family: Batang, 'AppleMyungjo', serif; color: var(--gold); font-weight: 400; }
+.category-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
+.category-item { background: #0e1a2a; border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.category-item h3 { margin: 0 0 8px; font-size: 15px; color: var(--gold); }
+.subchoice-block { margin-top: 10px; }
+.subchoice-block h4 { margin: 0 0 4px; font-size: 12px; color: var(--muted); font-weight: 500; }
+.subchoice-block p { margin: 0; font-size: 14px; line-height: 1.75; color: #d2d9e2; word-break: keep-all; }
+.card-pager { display: flex; justify-content: space-between; gap: 12px; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13px; }
+.card-pager a { color: var(--muted); text-decoration: none; }
+.card-pager a:hover { color: var(--gold); }
+.suit-links { margin-top: 16px; font-size: 13px; color: var(--muted); word-break: keep-all; }
+.suit-links a { color: var(--muted); }
+.suit-links a.current { color: var(--gold); }
+.cta-home { display: inline-block; margin-top: 24px; padding: 12px 22px; background: linear-gradient(110deg, #e2cda5, #c8ac79); color: #172131; border-radius: 8px; text-decoration: none; font-weight: 700; }
+.hub-suit-group { margin-top: 32px; }
+.hub-suit-group h2 { font-family: Batang, 'AppleMyungjo', serif; color: var(--gold); font-weight: 400; }
+.hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px; margin-top: 16px; }
+.hub-card-link { display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; color: var(--ink); font-size: 12px; text-align: center; }
+.hub-card-link img { width: 90px; height: auto; border-radius: 6px; border: 1px solid var(--line); }
+.hub-card-link:hover img { border-color: var(--gold); }
+@media (max-width: 700px) {
+  .card-page-main, .hub-main { padding: 20px; }
+  .category-list { grid-template-columns: 1fr; }
+  .site-nav { gap: 12px; font-size: 12px; }
+}
