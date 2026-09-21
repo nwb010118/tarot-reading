@@ -7,9 +7,12 @@ global.TAROT_SWORDS = require('../data/tarot-data-swords.js').TAROT_SWORDS;
 global.TAROT_PENTACLES = require('../data/tarot-data-pentacles.js').TAROT_PENTACLES;
 
 const { getFullDeck } = require('../data/tarot-data.js');
-const { slugify, buildCardViewModel, CATEGORY_ORDER } = require('../scripts/lib/tarot-page-data.js');
+const { slugify, buildCardViewModel, CATEGORY_ORDER, SITE_BASE } = require('../scripts/lib/tarot-page-data.js');
 
 const deck = getFullDeck();
+
+// --- SITE_BASE validation ---
+assert.strictEqual(SITE_BASE, 'https://nwb010118.github.io/tarot-reading/');
 
 // --- slugify ---
 assert.strictEqual(slugify(deck.find(function (c) { return c.cardId === 'major_19'; })), 'major-19-sun');
@@ -34,6 +37,7 @@ deck.forEach(function (card) {
   assert.ok(vm.title.length > 0);
   assert.ok(vm.description.length > 0);
   assert.ok(vm.image.startsWith('images/'));
+  assert.strictEqual(vm.canonicalUrl, 'https://nwb010118.github.io/tarot-reading/tarot/' + vm.slug + '.html', card.cardId + ' canonicalUrl');
 
   ['upright', 'reversed'].forEach(function (orientation) {
     const view = vm[orientation];

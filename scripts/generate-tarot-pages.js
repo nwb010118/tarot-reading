@@ -8,12 +8,11 @@ global.TAROT_SWORDS = require('../data/tarot-data-swords.js').TAROT_SWORDS;
 global.TAROT_PENTACLES = require('../data/tarot-data-pentacles.js').TAROT_PENTACLES;
 
 const { getFullDeck } = require('../data/tarot-data.js');
-const { buildCardViewModel } = require('./lib/tarot-page-data.js');
+const { buildCardViewModel, SITE_BASE } = require('./lib/tarot-page-data.js');
 const { renderCardPage, renderHubPage } = require('./lib/render-tarot-pages.js');
 
 const ROOT = path.join(__dirname, '..');
 const TAROT_DIR = path.join(ROOT, 'tarot');
-const SITE_BASE = 'https://nwb010118.github.io/tarot-reading/';
 
 function buildNavFor(index, viewModels) {
   const total = viewModels.length;
@@ -50,7 +49,7 @@ function generate(options) {
     fs.writeFileSync(path.join(tarotDir, vm.slug + '.html'), html, 'utf8');
   });
 
-  const hubHtml = renderHubPage(viewModels);
+  const hubHtml = renderHubPage(viewModels, SITE_BASE + 'tarot/index.html');
   fs.writeFileSync(path.join(tarotDir, 'index.html'), hubHtml, 'utf8');
 
   writeSitemap(viewModels, sitemapPath, today);

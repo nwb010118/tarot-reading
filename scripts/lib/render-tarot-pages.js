@@ -66,6 +66,11 @@ function renderCardPage(vm, nav) {
     '<meta name="theme-color" content="#0b1422">\n' +
     '<link rel="icon" type="image/svg+xml" href="../images/moon-mark.svg">\n' +
     '<meta name="description" content="' + escapeHtml(vm.description) + '">\n' +
+    '<link rel="canonical" href="' + vm.canonicalUrl + '">\n' +
+    '<meta property="og:type" content="website">\n' +
+    '<meta property="og:title" content="' + escapeHtml(vm.title) + '">\n' +
+    '<meta property="og:description" content="' + escapeHtml(vm.description) + '">\n' +
+    '<meta property="og:url" content="' + vm.canonicalUrl + '">\n' +
     '<link rel="stylesheet" href="../css/style.css">\n' +
     '<link rel="stylesheet" href="../css/salon.css">\n' +
     '</head>\n' +
@@ -92,9 +97,11 @@ function renderCardPage(vm, nav) {
     '</html>\n';
 }
 
-function renderHubPage(allViewModels) {
+function renderHubPage(allViewModels, canonicalUrl) {
   const suitOrder = ['major', 'wands', 'cups', 'swords', 'pentacles'];
   const suitLabels = { major: '메이저 아르카나', wands: '완드', cups: '컵', swords: '소드', pentacles: '펜타클' };
+  const hubTitle = '타로 카드 78장 백과사전 | 점집';
+  const hubDescription = '메이저 아르카나 22장과 마이너 아르카나(완드·컵·소드·펜타클) 56장, 타로 78장 전체의 정방향·역방향 키워드와 운세를 확인해보세요.';
 
   const sections = suitOrder.map(function (suitKey) {
     const cards = allViewModels.filter(function (vm) { return vm.suitKey === suitKey; });
@@ -114,10 +121,15 @@ function renderHubPage(allViewModels) {
     '<head>\n' +
     '<meta charset="UTF-8">\n' +
     '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
-    '<title>타로 카드 78장 백과사전 | 점집</title>\n' +
+    '<title>' + hubTitle + '</title>\n' +
     '<meta name="theme-color" content="#0b1422">\n' +
     '<link rel="icon" type="image/svg+xml" href="../images/moon-mark.svg">\n' +
-    '<meta name="description" content="메이저 아르카나 22장과 마이너 아르카나(완드·컵·소드·펜타클) 56장, 타로 78장 전체의 정방향·역방향 키워드와 운세를 확인해보세요.">\n' +
+    '<meta name="description" content="' + hubDescription + '">\n' +
+    '<link rel="canonical" href="' + canonicalUrl + '">\n' +
+    '<meta property="og:type" content="website">\n' +
+    '<meta property="og:title" content="' + hubTitle + '">\n' +
+    '<meta property="og:description" content="' + hubDescription + '">\n' +
+    '<meta property="og:url" content="' + canonicalUrl + '">\n' +
     '<link rel="stylesheet" href="../css/style.css">\n' +
     '<link rel="stylesheet" href="../css/salon.css">\n' +
     '</head>\n' +

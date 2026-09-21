@@ -24,6 +24,7 @@ assert.ok(files.includes('wands-ace.html'), 'sample minor card page must exist')
 const sunHtml = fs.readFileSync(path.join(tarotDir, 'major-19-sun.html'), 'utf8');
 assert.ok(sunHtml.includes('태양'));
 assert.ok(sunHtml.includes('../images/RWS_Tarot_19_Sun.jpg'));
+assert.ok(sunHtml.includes('<link rel="canonical" href="https://nwb010118.github.io/tarot-reading/tarot/major-19-sun.html">'));
 
 const wandsAceHtml = fs.readFileSync(path.join(tarotDir, 'wands-ace.html'), 'utf8');
 assert.ok(wandsAceHtml.includes('완드 에이스'));
@@ -31,6 +32,9 @@ assert.ok(wandsAceHtml.includes('완드 에이스'));
 // 순환 이전/다음 링크: 메이저 0번의 이전은 마지막 카드(pentacles-king)여야 함
 const foolHtml = fs.readFileSync(path.join(tarotDir, 'major-0-fool.html'), 'utf8');
 assert.ok(foolHtml.includes('pentacles-king.html'), 'first card (major-0) must link back to the last card as prev');
+
+const hubHtml = fs.readFileSync(path.join(tarotDir, 'index.html'), 'utf8');
+assert.ok(hubHtml.includes('<link rel="canonical" href="https://nwb010118.github.io/tarot-reading/tarot/index.html">'));
 
 // sitemap.xml 갱신 확인
 const sitemap = fs.readFileSync(sitemapPath, 'utf8');

@@ -2,6 +2,8 @@
 // js/app.js도 동일한 파일을 전역으로 로드해서 쓴다 — 여기서 사본을 만들지 않는다.
 const { CATEGORY_LABELS, CATEGORY_SUBCHOICES } = require('../../data/category-labels.js');
 
+const SITE_BASE = 'https://nwb010118.github.io/tarot-reading/';
+
 const CATEGORY_ORDER = [
   'love', 'money', 'career', 'workplace', 'business',
   'study', 'health', 'relationships', 'honor', 'moving', 'children'
@@ -76,7 +78,8 @@ function buildCardViewModel(deckCard) {
     title: titleName + ' 카드 의미 — 정방향·역방향 키워드와 운세 | 점집',
     description: '타로 ' + deckCard.name + ' 카드의 정방향·역방향 의미와 키워드(' + upKeywordsPreview + '), 조언, 연애·재물·직장 등 상황별 운세를 확인해보세요.',
     upright: buildOrientationView(deckCard, 'upright'),
-    reversed: buildOrientationView(deckCard, 'reversed')
+    reversed: buildOrientationView(deckCard, 'reversed'),
+    canonicalUrl: SITE_BASE + 'tarot/' + slug + '.html'
   };
 }
 
@@ -85,6 +88,7 @@ module.exports = {
   CATEGORY_ORDER,
   CATEGORY_SUBCHOICES,
   SUIT_LABEL_KR,
+  SITE_BASE,
   slugify,
   resolveCanonical,
   buildCardViewModel

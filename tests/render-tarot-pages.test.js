@@ -25,6 +25,11 @@ const html = renderCardPage(vm, nav);
 assert.ok(html.startsWith('<!DOCTYPE html>'));
 assert.ok(html.includes('<html lang="ko">'));
 assert.ok(html.includes(vm.title), 'title must appear in <title>');
+assert.ok(html.includes('<link rel="canonical" href="' + vm.canonicalUrl + '">'), 'canonical link must use vm.canonicalUrl');
+assert.ok(html.includes('<meta property="og:title" content="' + vm.title + '">'), 'og:title must match vm.title');
+assert.ok(html.includes('<meta property="og:description" content="' + vm.description + '">'), 'og:description must match vm.description');
+assert.ok(html.includes('<meta property="og:url" content="' + vm.canonicalUrl + '">'), 'og:url must match vm.canonicalUrl');
+assert.ok(html.includes('<meta property="og:type" content="website">'));
 assert.ok(html.includes('<h1>태양 (The Sun)</h1>'), 'h1 must show card name');
 assert.ok(html.includes('../images/RWS_Tarot_19_Sun.jpg'), 'image src must be relative (../images/...)');
 assert.ok(html.includes('href="../index.html">홈'), 'nav must link home via ../index.html');
@@ -41,11 +46,14 @@ assert.ok(html.includes(vm.upright.categories[0].items[0].text), 'first upright 
 assert.ok(html.includes(vm.reversed.categories[0].items[0].text), 'first reversed category text must render');
 
 // 허브 페이지
-const hubHtml = renderHubPage(deck.map(buildCardViewModel));
+const hubCanonicalUrl = 'https://nwb010118.github.io/tarot-reading/tarot/index.html';
+const hubHtml = renderHubPage(deck.map(buildCardViewModel), hubCanonicalUrl);
 assert.ok(hubHtml.includes('메이저 아르카나'));
 assert.ok(hubHtml.includes('완드'));
 assert.ok(hubHtml.includes('major-19-sun.html'));
 assert.ok(hubHtml.includes('wands-ace.html'));
 assert.ok(!/href="\/[^/]/.test(hubHtml), 'hub must not contain a root-absolute href="/..."');
+assert.ok(hubHtml.includes('<link rel="canonical" href="' + hubCanonicalUrl + '">'));
+assert.ok(hubHtml.includes('<meta property="og:url" content="' + hubCanonicalUrl + '">'));
 
 console.log('render-tarot-pages.test.js: all assertions passed');
