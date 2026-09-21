@@ -33,25 +33,30 @@ function buildNavFor(index, viewModels) {
   };
 }
 
-function generate() {
+function generate(options) {
+  const opts = options || {};
+  const tarotDir = opts.tarotDir || TAROT_DIR;
+  const sitemapPath = opts.sitemapPath || path.join(ROOT, 'sitemap.xml');
+  const today = opts.today || new Date().toISOString().slice(0, 10);
+
   const deck = getFullDeck();
   const viewModels = deck.map(buildCardViewModel);
 
-  if (!fs.existsSync(TAROT_DIR)) fs.mkdirSync(TAROT_DIR);
+  if (!fs.existsSync(tarotDir)) fs.mkdirSync(tarotDir, { recursive: true });
 
   viewModels.forEach(function (vm, index) {
     const nav = buildNavFor(index, viewModels);
     const html = renderCardPage(vm, nav);
-    fs.writeFileSync(path.join(TAROT_DIR, vm.slug + '.html'), html, 'utf8');
+    fs.writeFileSync(path.join(tarotDir, vm.slug + '.html'), html, 'utf8');
   });
 
   const hubHtml = renderHubPage(viewModels);
-  fs.writeFileSync(path.join(TAROT_DIR, 'index.html'), hubHtml, 'utf8');
+  fs.writeFileSync(path.join(tarotDir, 'index.html'), hubHtml, 'utf8');
 
-  writeSitemap(viewModels);
+  writeSitemap(viewModels, sitemapPath, today);
 }
 
-function writeSitemap(viewModels) {
+function writeSitemap(viewModels, sitemapPath, today) {
   const staticUrls = [
     { loc: SITE_BASE, changefreq: 'weekly', priority: '1.0' },
     { loc: SITE_BASE + 'about.html', changefreq: 'monthly', priority: '0.5' },
@@ -61,7 +66,6 @@ function writeSitemap(viewModels) {
   const cardUrls = viewModels.map(function (vm) {
     return { loc: SITE_BASE + 'tarot/' + vm.slug + '.html', changefreq: 'monthly', priority: '0.6' };
   });
-  const today = new Date().toISOString().slice(0, 10);
 
   const urlsXml = staticUrls.concat(cardUrls).map(function (u) {
     return '  <url>\n' +
@@ -77,7 +81,7 @@ function writeSitemap(viewModels) {
     urlsXml + '\n' +
     '</urlset>\n';
 
-  fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), xml, 'utf8');
+  fs.writeFileSync(sitemapPath, xml, 'utf8');
 }
 
 if (require.main === module) {

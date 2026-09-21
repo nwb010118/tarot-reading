@@ -57,6 +57,7 @@ function renderCardPage(vm, nav) {
   }).join(' · ');
 
   return '<!DOCTYPE html>\n' +
+    '<!-- 이 파일은 scripts/generate-tarot-pages.js가 자동 생성합니다. 직접 수정하지 마세요 — 데이터를 고친 뒤 `npm run build:tarot-pages`로 재생성하세요. -->\n' +
     '<html lang="ko">\n' +
     '<head>\n' +
     '<meta charset="UTF-8">\n' +
@@ -108,6 +109,7 @@ function renderHubPage(allViewModels) {
   }).join('');
 
   return '<!DOCTYPE html>\n' +
+    '<!-- 이 파일은 scripts/generate-tarot-pages.js가 자동 생성합니다. 직접 수정하지 마세요 — 데이터를 고친 뒤 `npm run build:tarot-pages`로 재생성하세요. -->\n' +
     '<html lang="ko">\n' +
     '<head>\n' +
     '<meta charset="UTF-8">\n' +
