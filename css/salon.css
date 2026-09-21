@@ -198,3 +198,15 @@ label, .category-btn, .spread-btn { font-size: 15px; }
 }
 .card-detail-link { display: inline-block; margin-top: 12px; color: var(--gold); font-size: 13px; text-decoration: none; }
 .card-detail-link:hover { text-decoration: underline; }
+.info-section { border-top: 1px solid var(--line); padding-top: 32px; margin-top: 32px; }
+.info-section h2 { font-family: Batang, 'AppleMyungjo', serif; color: var(--gold); font-weight: 400; font-size: 22px; margin-bottom: 16px; }
+.fortune-guide-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.fortune-guide-item h3 { margin: 0 0 6px; font-size: 15px; color: var(--ink); }
+.fortune-guide-item p { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.75; word-break: keep-all; }
+.faq-preview-list { margin: 0; }
+.faq-preview-item { margin-bottom: 16px; }
+.faq-preview-item dt { font-size: 14px; color: var(--ink); font-weight: 600; margin-bottom: 4px; }
+.faq-preview-item dd { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.7; }
+@media (max-width: 700px) {
+  .fortune-guide-list { grid-template-columns: 1fr; }
+}
