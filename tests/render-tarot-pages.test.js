@@ -37,6 +37,8 @@ assert.ok(html.includes('href="index.html">타로 카드 백과사전'), 'nav mu
 assert.ok(html.includes('href="../about.html">About'), 'nav must link about via ../about.html');
 assert.ok(html.includes('major-18-moon.html'), 'prev link present');
 assert.ok(html.includes('major-20-judgement.html'), 'next link present');
+assert.ok(html.includes('href="../contact.html">문의하기'), 'footer must link contact.html');
+assert.ok(html.includes('href="../faq.html">자주 묻는 질문'), 'footer must link faq.html');
 assert.ok(!html.includes('undefined'), 'no stray undefined in output');
 assert.ok(!/^\//m.test(html.replace(/<!DOCTYPE html>/, '')) || true); // 절대경로(href="/...") 금지: 아래 정규식으로 별도 검증
 assert.ok(!/href="\/[^/]/.test(html), 'must not contain a root-absolute href="/..."');

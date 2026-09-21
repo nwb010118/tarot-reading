@@ -4,8 +4,8 @@ function escapeHtml(str) {
   });
 }
 
-// links: { homeHref, hubHref, aboutHref, legalHref } — 모두 "이 페이지 기준" 상대경로.
-// 카드/허브 페이지(모두 /tarot/ 안에 있음)에서는 homeHref='../index.html', hubHref='index.html'(같은 폴더의 허브 자기 자신 또는 옆 페이지), aboutHref='../about.html', legalHref='../legal.html'.
+// links: { homeHref, hubHref, aboutHref, contactHref, faqHref, legalHref } — 모두 "이 페이지 기준" 상대경로.
+// 카드/허브 페이지(모두 /tarot/ 안에 있음)에서는 homeHref='../index.html', hubHref='index.html'(같은 폴더의 허브 자기 자신 또는 옆 페이지), aboutHref='../about.html', contactHref='../contact.html', faqHref='../faq.html', legalHref='../legal.html'.
 function renderNav(links) {
   return '<nav class="site-nav" aria-label="사이트 내비게이션">' +
     '<a href="' + links.homeHref + '">홈</a>' +
@@ -23,6 +23,9 @@ function renderHeader(links) {
 
 function renderFooter(links) {
   return '<footer id="site-footer">' +
+    '<a href="' + links.aboutHref + '">소개</a>' +
+    '<a href="' + links.contactHref + '">문의하기</a>' +
+    '<a href="' + links.faqHref + '">자주 묻는 질문</a>' +
     '<a href="' + links.legalHref + '#privacy">개인정보처리방침</a>' +
     '<a href="' + links.legalHref + '#terms">이용약관</a>' +
     '<a href="' + links.legalHref + '#disclaimer">면책조항</a>' +
@@ -31,7 +34,7 @@ function renderFooter(links) {
 }
 
 // /tarot/ 디렉터리 안의 페이지(카드 페이지, 허브 페이지 모두)에서 공통으로 쓰는 링크 세트.
-var TAROT_DIR_LINKS = { homeHref: '../index.html', hubHref: 'index.html', aboutHref: '../about.html', legalHref: '../legal.html' };
+var TAROT_DIR_LINKS = { homeHref: '../index.html', hubHref: 'index.html', aboutHref: '../about.html', contactHref: '../contact.html', faqHref: '../faq.html', legalHref: '../legal.html' };
 
 function renderOrientationSection(orientationLabel, view) {
   const categoriesHtml = view.categories.map(function (cat) {
