@@ -196,3 +196,5 @@ label, .category-btn, .spread-btn { font-size: 15px; }
   .category-list { grid-template-columns: 1fr; }
   .site-nav { gap: 12px; font-size: 12px; }
 }
+.card-detail-link { display: inline-block; margin-top: 12px; color: var(--gold); font-size: 13px; text-decoration: none; }
+.card-detail-link:hover { text-decoration: underline; }

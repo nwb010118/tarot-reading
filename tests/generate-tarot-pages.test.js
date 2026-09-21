@@ -9,8 +9,9 @@ const { generate } = require('../scripts/generate-tarot-pages.js');
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tarot-pages-test-'));
 const tarotDir = path.join(tmpDir, 'tarot');
 const sitemapPath = path.join(tmpDir, 'sitemap.xml');
+const slugMapPath = path.join(tmpDir, 'tarot-slugs.js');
 
-generate({ tarotDir: tarotDir, sitemapPath: sitemapPath, today: '2026-09-21' });
+generate({ tarotDir: tarotDir, sitemapPath: sitemapPath, slugMapPath: slugMapPath, today: '2026-09-21' });
 
 const files = fs.readdirSync(tarotDir).filter(function (f) { return f.endsWith('.html'); });
 
@@ -43,6 +44,13 @@ assert.ok(sitemap.includes('tarot-reading/tarot/index.html'));
 assert.ok(sitemap.includes('tarot-reading/contact.html'), 'sitemap must include contact.html');
 assert.ok(sitemap.includes('tarot-reading/faq.html'), 'sitemap must include faq.html');
 assert.ok((sitemap.match(/<url>/g) || []).length >= 80, 'sitemap must contain at least 80 <url> entries (2 existing + 78 cards + hub, about.html added in a later task)');
+
+// TAROT_SLUGS 검증 (임시 디렉터리 정리 전에)
+const { TAROT_SLUGS } = require(slugMapPath);
+assert.strictEqual(Object.keys(TAROT_SLUGS).length, 78, 'TAROT_SLUGS must have exactly 78 entries');
+assert.strictEqual(TAROT_SLUGS['major_19'], 'major-19-sun');
+assert.strictEqual(TAROT_SLUGS['wands_Ace'], 'wands-ace');
+assert.strictEqual(TAROT_SLUGS['pentacles_King'], 'pentacles-king');
 
 // 임시 디렉터리 정리
 fs.rmSync(tmpDir, { recursive: true, force: true });

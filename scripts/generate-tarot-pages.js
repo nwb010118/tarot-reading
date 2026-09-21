@@ -8,7 +8,7 @@ global.TAROT_SWORDS = require('../data/tarot-data-swords.js').TAROT_SWORDS;
 global.TAROT_PENTACLES = require('../data/tarot-data-pentacles.js').TAROT_PENTACLES;
 
 const { getFullDeck } = require('../data/tarot-data.js');
-const { buildCardViewModel, SITE_BASE } = require('./lib/tarot-page-data.js');
+const { buildCardViewModel, SITE_BASE, slugify } = require('./lib/tarot-page-data.js');
 const { renderCardPage, renderHubPage } = require('./lib/render-tarot-pages.js');
 
 const ROOT = path.join(__dirname, '..');
@@ -53,6 +53,19 @@ function generate(options) {
   fs.writeFileSync(path.join(tarotDir, 'index.html'), hubHtml, 'utf8');
 
   writeSitemap(viewModels, sitemapPath, today);
+  writeSlugMap(deck, opts.slugMapPath || path.join(ROOT, 'data', 'tarot-slugs.js'));
+}
+
+function writeSlugMap(deck, slugMapPath) {
+  const entries = deck.map(function (card) {
+    return '  ' + JSON.stringify(card.cardId) + ': ' + JSON.stringify(slugify(card));
+  });
+  const js = '// 이 파일은 scripts/generate-tarot-pages.js가 자동 생성합니다. 직접 수정하지 마세요.\n' +
+    'const TAROT_SLUGS = {\n' + entries.join(',\n') + '\n};\n\n' +
+    'if (typeof module !== \'undefined\' && module.exports) {\n' +
+    '  module.exports = { TAROT_SLUGS };\n' +
+    '}\n';
+  fs.writeFileSync(slugMapPath, js, 'utf8');
 }
 
 function writeSitemap(viewModels, sitemapPath, today) {

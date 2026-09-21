@@ -793,11 +793,16 @@
       const keywordsList = item.card.keywords && item.card.keywords[item.orientation];
       const adviceText = item.card.advice && item.card.advice[item.orientation];
       const extraHtml = renderKeywordsAdviceHtml(keywordsList, adviceText);
+      const slug = (typeof TAROT_SLUGS !== 'undefined') ? TAROT_SLUGS[item.card.cardId] : null;
+      const detailLinkHtml = slug
+        ? '<a class="card-detail-link" href="tarot/' + slug + '.html">이 카드 자세히 보기 →</a>'
+        : '';
 
       return '<div class="reading-detail">' +
         '<h4>' + item.card.name + ' (' + orientationLabel + ')</h4>' +
         renderReadingMeaning(meaning) +
         extraHtml +
+        detailLinkHtml +
         '</div>';
     });
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' + details.join('');
