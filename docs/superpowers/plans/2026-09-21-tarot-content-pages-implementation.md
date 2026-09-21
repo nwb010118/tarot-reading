@@ -17,23 +17,97 @@
 - 사주(saju)·궁합(compatibility)의 정적 페이지화는 이번 계획 범위 밖이다.
 - 기존 `node scripts/run-tests.js`는 이 작업이 끝난 뒤에도 항상 전부 통과해야 한다(회귀 금지).
 - 카테고리 순서는 항상 `love, money, career, workplace, business, study, health, relationships, honor, moving, children` (기존 `index.html`의 카테고리 버튼 순서 및 `js/app.js`의 `CATEGORY_LABELS` 순서와 동일).
-- 카테고리별 하위 항목(subchoice) 키/라벨은 `js/app.js`의 `CATEGORY_SUBCHOICES`(js/app.js:24-33)와 **정확히 동일**해야 한다. 두 파일 중 하나만 고치면 안 되며, `js/app.js`가 바뀌면 이 계획에서 만드는 사본도 함께 갱신해야 한다.
+- `CATEGORY_LABELS`/`CATEGORY_SUBCHOICES`는 **단일 출처**(`data/category-labels.js`, Task 1에서 신규 추출)에만 존재해야 한다. `js/app.js`와 `scripts/lib/tarot-page-data.js` 양쪽 모두 이 파일을 가져다 쓰며, 어느 쪽도 자체 사본을 갖지 않는다.
 
 ---
 
-## Task 1: 카드 데이터 → 뷰모델 변환 모듈
+## Task 1: 카테고리 라벨 공유 모듈 추출 + 카드 데이터 → 뷰모델 변환 모듈
 
 **Files:**
+- Create: `data/category-labels.js`
+- Modify: `js/app.js:18-33`
+- Modify: `index.html` (스크립트 태그 순서)
 - Create: `scripts/lib/tarot-page-data.js`
 - Test: `tests/tarot-page-data.test.js`
 
 **Interfaces:**
-- Consumes: `getFullDeck()`, `TAROT_DATA` (`data/tarot-data.js`가 내보내는 것과 동일한 방식으로 `data/tarot-data-major.js`, `data/tarot-data-wands.js`, `data/tarot-data-cups.js`, `data/tarot-data-swords.js`, `data/tarot-data-pentacles.js`를 `global`에 올린 뒤 `require('../data/tarot-data.js')`)
+- Consumes: `getFullDeck()`, `TAROT_DATA` (`data/tarot-data.js`가 내보내는 것과 동일한 방식으로 `data/tarot-data-major.js`, `data/tarot-data-wands.js`, `data/tarot-data-cups.js`, `data/tarot-data-swords.js`, `data/tarot-data-pentacles.js`를 `global`에 올린 뒤 `require('../data/tarot-data.js')`), `data/category-labels.js`의 `CATEGORY_LABELS`/`CATEGORY_SUBCHOICES`
 - Produces:
+  - `data/category-labels.js`: 브라우저에서는 전역 `CATEGORY_LABELS`/`CATEGORY_SUBCHOICES`, Node에서는 `require('../data/category-labels.js')`로 `{ CATEGORY_LABELS, CATEGORY_SUBCHOICES }` — Task 2/3/4와 `js/app.js`가 함께 가져다 쓰는 유일한 출처.
   - `slugify(deckCard)` → `string` (예: `'major-19-sun'`, `'wands-ace'`, `'cups-10'`)
   - `buildCardViewModel(deckCard)` → `{ slug, title, description, image, name, nameEn, type, suitLabel, upright: OrientationView, reversed: OrientationView }`
   - `OrientationView` = `{ keywords: string[], advice: string, categories: Array<{ label: string, items: Array<{ subLabel: string|null, text: string }> }> }`
   - 이 두 함수를 Task 2/3/4에서 그대로 가져다 쓴다.
+
+- [ ] **Step 0a: 공유 카테고리 라벨 모듈 추출**
+
+`data/category-labels.js` 새로 작성 (다른 `data/*.js` 파일들과 동일한 전역 선언 + `module.exports` 가드 패턴):
+
+```js
+const CATEGORY_LABELS = {
+  love: '연애운', money: '재물운', career: '취업운', workplace: '직장운', business: '사업운',
+  study: '학업운', health: '건강운', relationships: '대인관계운', honor: '명예운',
+  moving: '이사운', children: '자식운'
+};
+
+const CATEGORY_SUBCHOICES = {
+  love: [{ key: 'solo', label: '솔로' }, { key: 'couple', label: '커플' }],
+  money: [{ key: 'consumption', label: '소비' }, { key: 'invest', label: '투자' }],
+  career: [{ key: 'jobseek', label: '구직' }, { key: 'switch', label: '이직' }],
+  business: [{ key: 'startup', label: '창업준비' }, { key: 'running', label: '운영중' }],
+  study: [{ key: 'exam', label: '시험준비' }, { key: 'path', label: '진로고민' }],
+  health: [{ key: 'body', label: '신체' }, { key: 'mind', label: '정신' }],
+  relationships: [{ key: 'new', label: '새로운 인연' }, { key: 'existing', label: '기존 관계' }],
+  workplace: [{ key: 'team', label: '팀워크' }, { key: 'personal', label: '개인성과' }]
+};
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { CATEGORY_LABELS, CATEGORY_SUBCHOICES };
+}
+```
+
+- [ ] **Step 0b: `js/app.js`에서 로컬 선언 제거**
+
+`js/app.js`의 기존 코드(`js/app.js:18-33`):
+
+```js
+  const CATEGORY_LABELS = {
+    love: '연애운', money: '재물운', career: '취업운', workplace: '직장운', business: '사업운',
+    study: '학업운', health: '건강운', relationships: '대인관계운', honor: '명예운',
+    moving: '이사운', children: '자식운'
+  };
+
+  const CATEGORY_SUBCHOICES = {
+    love: [{ key: 'solo', label: '솔로' }, { key: 'couple', label: '커플' }],
+    money: [{ key: 'consumption', label: '소비' }, { key: 'invest', label: '투자' }],
+    career: [{ key: 'jobseek', label: '구직' }, { key: 'switch', label: '이직' }],
+    business: [{ key: 'startup', label: '창업준비' }, { key: 'running', label: '운영중' }],
+    study: [{ key: 'exam', label: '시험준비' }, { key: 'path', label: '진로고민' }],
+    health: [{ key: 'body', label: '신체' }, { key: 'mind', label: '정신' }],
+    relationships: [{ key: 'new', label: '새로운 인연' }, { key: 'existing', label: '기존 관계' }],
+    workplace: [{ key: 'team', label: '팀워크' }, { key: 'personal', label: '개인성과' }]
+  };
+```
+
+다음으로 교체 (값은 `data/category-labels.js`가 index.html에서 이 스크립트보다 먼저 로드되어 전역에 이미 존재함):
+
+```js
+  // CATEGORY_LABELS / CATEGORY_SUBCHOICES는 data/category-labels.js(이 스크립트보다 먼저 로드됨)의 전역 선언을 그대로 사용한다.
+```
+
+- [ ] **Step 0c: `index.html`에 스크립트 태그 추가**
+
+`index.html`의 기존 스크립트 목록 중 `<script src="data/compatibility-data.js"></script>` 바로 다음 줄에 추가:
+
+```html
+<script src="data/category-labels.js"></script>
+```
+
+(반드시 `<script src="js/app.js"></script>`보다 앞에 위치해야 한다.)
+
+- [ ] **Step 0d: 브라우저로 회귀 확인**
+
+`static-preview`(포트 8080)로 `index.html`을 열어, 아무 모드나 골라 카드/운세를 뽑아보고 연애운·재물운 등 카테고리 버튼이 이전과 동일하게 라벨/하위선택지를 보여주는지 확인한다. 콘솔에 `CATEGORY_LABELS is not defined` 같은 에러가 없어야 한다.
 
 - [ ] **Step 1: 실패하는 테스트 작성**
 
@@ -108,29 +182,14 @@ Expected: `Error: Cannot find module '../scripts/lib/tarot-page-data.js'`
 `scripts/lib/tarot-page-data.js` 새로 작성:
 
 ```js
-// js/app.js의 CATEGORY_LABELS / CATEGORY_SUBCHOICES(js/app.js:18-33)와 동일해야 함.
-// app.js를 고칠 때 이 사본도 함께 갱신할 것.
-const CATEGORY_LABELS = {
-  love: '연애운', money: '재물운', career: '취업운', workplace: '직장운', business: '사업운',
-  study: '학업운', health: '건강운', relationships: '대인관계운', honor: '명예운',
-  moving: '이사운', children: '자식운'
-};
+// CATEGORY_LABELS / CATEGORY_SUBCHOICES의 유일한 출처는 data/category-labels.js (Step 0a).
+// js/app.js도 동일한 파일을 전역으로 로드해서 쓴다 — 여기서 사본을 만들지 않는다.
+const { CATEGORY_LABELS, CATEGORY_SUBCHOICES } = require('../../data/category-labels.js');
 
 const CATEGORY_ORDER = [
   'love', 'money', 'career', 'workplace', 'business',
   'study', 'health', 'relationships', 'honor', 'moving', 'children'
 ];
-
-const CATEGORY_SUBCHOICES = {
-  love: [{ key: 'solo', label: '솔로' }, { key: 'couple', label: '커플' }],
-  money: [{ key: 'consumption', label: '소비' }, { key: 'invest', label: '투자' }],
-  career: [{ key: 'jobseek', label: '구직' }, { key: 'switch', label: '이직' }],
-  business: [{ key: 'startup', label: '창업준비' }, { key: 'running', label: '운영중' }],
-  study: [{ key: 'exam', label: '시험준비' }, { key: 'path', label: '진로고민' }],
-  health: [{ key: 'body', label: '신체' }, { key: 'mind', label: '정신' }],
-  relationships: [{ key: 'new', label: '새로운 인연' }, { key: 'existing', label: '기존 관계' }],
-  workplace: [{ key: 'team', label: '팀워크' }, { key: 'personal', label: '개인성과' }]
-};
 
 const SUIT_LABEL_KR = { major: '메이저 아르카나', wands: '완드', cups: '컵', swords: '소드', pentacles: '펜타클' };
 
@@ -224,8 +283,8 @@ Expected: `tarot-page-data.test.js: all assertions passed (78 cards)` 출력, ex
 - [ ] **Step 5: 커밋**
 
 ```bash
-git add scripts/lib/tarot-page-data.js tests/tarot-page-data.test.js
-git commit -m "feat(tarot-pages): add card data-to-viewmodel transform module
+git add data/category-labels.js js/app.js index.html scripts/lib/tarot-page-data.js tests/tarot-page-data.test.js
+git commit -m "feat(tarot-pages): extract shared category-labels module, add card viewmodel transform
 
 Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 ```
