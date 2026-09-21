@@ -431,6 +431,15 @@
     newReadingButton.classList.add('hidden');
   });
 
+  function renderReadingMeaning(meaning) {
+    const boundary = meaning.search(/[.!?](?:\s|$)/);
+    const lead = boundary < 0 ? meaning : meaning.slice(0, boundary + 1);
+    const rest = boundary < 0 ? '' : meaning.slice(boundary + 1).trim();
+    return '<p class="reading-lead-label">이번 리딩의 한마디</p>' +
+      '<p class="reading-lead">' + escapeHtml(lead) + '</p>' +
+      (rest ? '<p class="reading-body">' + escapeHtml(rest) + '</p>' : '');
+  }
+
   function showZodiacSummary() {
     const zodiac = getZodiacByKey(selectedZodiac);
     const category = selectedCategory;
@@ -441,7 +450,7 @@
     const extraHtml = renderKeywordsAdviceHtml(zodiac.keywords, zodiac.advice);
 
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
-      '<div class="reading-detail"><p>' + meaning + '</p></div>' +
+      '<div class="reading-detail">' + renderReadingMeaning(meaning) + '</div>' +
       extraHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
@@ -471,7 +480,7 @@
     const extraHtml = renderKeywordsAdviceHtml(ddi.keywords, ddi.advice);
 
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
-      '<div class="reading-detail"><p>' + meaning + '</p></div>' +
+      '<div class="reading-detail">' + renderReadingMeaning(meaning) + '</div>' +
       extraHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
@@ -682,8 +691,8 @@
     const extraHtml = renderKeywordsAdviceHtml(ilgan.keywords, ilgan.advice);
 
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
+      '<div class="reading-detail">' + renderReadingMeaning(meaning) + '</div>' +
       myeongsikHtml + elementHtml + daeunHtml +
-      '<div class="reading-detail"><p>' + meaning + '</p></div>' +
       extraHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
@@ -714,7 +723,7 @@
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
       '<p class="compat-score">' + tierInfo.score + '%</p>' +
       '<p class="compat-tier-label">' + tierInfo.tierLabel + '</p>' +
-      '<div class="reading-detail"><p>' + tierInfo.text + '</p></div>' +
+      '<div class="reading-detail">' + renderReadingMeaning(tierInfo.text) + '</div>' +
       extraHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
@@ -802,7 +811,7 @@
 
       return '<div class="reading-detail">' +
         '<h4>' + item.card.name + ' (' + orientationLabel + ')</h4>' +
-        '<p>' + meaning + '</p>' +
+        renderReadingMeaning(meaning) +
         extraHtml +
         '</div>';
     });

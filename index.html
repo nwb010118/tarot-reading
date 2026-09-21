@@ -3,26 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>점집</title>
+<title>점집 — 오늘의 흐름을 읽는 시간</title>
+<meta name="theme-color" content="#0b1422">
+<link rel="icon" type="image/svg+xml" href="images/moon-mark.svg">
+<meta name="description" content="타로, 별자리, 띠운세, 사주와 궁합. 잠시 마음을 고르고 나만의 운세를 만나보세요.">
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/salon.css">
 </head>
 <body>
 <div id="app">
-  <header>
-    <h1>점집</h1>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="점집 처음으로"><span class="brand-seal" aria-hidden="true">점</span> 점집 <small>마음을 비추는 곳</small></a>
+    <span class="header-note">당신을 위한 작은 쉼표</span>
   </header>
 
-  <p id="site-disclaimer">⚠ 재미로만 봐주세요 — 오락 목적이며 전문적인 법률·의료·재정·심리 상담을 대체하지 않습니다.</p>
+  <div class="hero">
+    <div class="celestial" aria-hidden="true"><img src="images/celestial-dial.svg" alt="" width="440" height="440"></div>
+    <p class="eyebrow">마음을 비추는 작은 상담실</p>
+    <h1>마음에 걸린 일,<br>여기 두고 가세요<span>.</span></h1>
+    <p class="hero-copy">답을 서두르지 않아도 괜찮아요.<br>오늘의 운세를 빌려, 나의 마음을 들여다보는 시간.</p>
+    <p class="hero-caption"><span></span> 점집에서 잠깐, 나를 위한 시간 <span></span></p>
+  </div>
 
   <section id="screen-start">
+    <div id="flow-choice">
+    <div class="section-heading"><span class="step-number">01</span><div><h2>어떤 이야기가 궁금한가요?</h2><p>마음이 향하는 운세를 선택해주세요.</p></div><span class="section-star" aria-hidden="true">✧</span></div>
     <div id="mode-select">
-      <button type="button" class="category-btn mode-btn selected" data-mode="tarot">타로</button>
-      <button type="button" class="category-btn mode-btn" data-mode="zodiac">별자리</button>
-      <button type="button" class="category-btn mode-btn" data-mode="ddi">띠운세</button>
-      <button type="button" class="category-btn mode-btn" data-mode="saju">사주</button>
-      <button type="button" class="category-btn mode-btn" data-mode="compatibility">궁합</button>
+      <button type="button" class="category-btn mode-btn selected" data-mode="tarot"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="5" width="19" height="28" rx="2"/><path d="m9 10-4 1 4 27 18-3"/><path d="m21.5 12 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/></svg></span><strong>타로</strong><span class="mode-description">뽑은 카드로 살펴보는 고민</span></button>
+      <button type="button" class="category-btn mode-btn" data-mode="zodiac"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="14" stroke-dasharray="1 5"/><path d="m20 8 3.5 8.5L32 20l-8.5 3.5L20 32l-3.5-8.5L8 20l8.5-3.5Z"/></svg></span><strong>별자리</strong><span class="mode-description">내 별자리로 알아보는 운세</span></button>
+      <button type="button" class="category-btn mode-btn" data-mode="ddi"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="14"/><circle cx="20" cy="20" r="9"/><path d="M20 3v5m0 24v5M3 20h5m24 0h5M8 8l4 4m16 16 4 4M8 32l4-4m16-16 4-4"/></svg></span><strong>띠운세</strong><span class="mode-description">태어난 해로 알아보는 운세</span></button>
+      <button type="button" class="category-btn mode-btn" data-mode="saju"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="14"/><path d="M20 6a7 7 0 0 1 0 14 7 7 0 0 0 0 14"/><circle cx="20" cy="13" r="1.5"/><circle cx="20" cy="27" r="1.5"/></svg></span><strong>사주</strong><span class="mode-description">생년월일로 살펴보는 기질</span></button>
+      <button type="button" class="category-btn mode-btn" data-mode="compatibility"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="20" r="10"/><circle cx="26" cy="20" r="10"/><path d="m20 4 1 3 3 1-3 1-1 3-1-3-3-1 3-1Z"/></svg></span><strong>궁합</strong><span class="mode-description">두 사람의 관계 알아보기</span></button>
     </div>
 
+    </div>
+    <div id="flow-details">
     <div id="zodiac-select" class="hidden">
       <label>별자리를 선택하세요</label>
       <div class="button-grid">
@@ -207,6 +222,7 @@
     </div>
 
     <button type="button" id="draw-button">카드 뽑기</button>
+    </div>
     <button type="button" id="history-open-button">지난 기록</button>
   </section>
 
@@ -232,6 +248,7 @@
     <a href="legal.html#terms">이용약관</a>
     <a href="legal.html#disclaimer">면책조항</a>
   </footer>
+  <p id="site-disclaimer">운세는 가볍게, 선택은 당신답게.<br>오락 목적의 콘텐츠이며 전문적인 법률·의료·재정·심리 상담을 대체하지 않습니다.</p>
 </div>
 
 <script src="data/tarot-data-major.js"></script>
@@ -251,5 +268,6 @@
 <script src="js/saju-calc.js"></script>
 <script src="js/compatibility-calc.js"></script>
 <script src="js/app.js"></script>
+<script src="js/salon-flow.js"></script>
 </body>
 </html>
