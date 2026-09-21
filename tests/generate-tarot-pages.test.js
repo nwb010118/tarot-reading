@@ -43,7 +43,7 @@ assert.ok(sitemap.includes('tarot-reading/tarot/major-19-sun.html'));
 assert.ok(sitemap.includes('tarot-reading/tarot/index.html'));
 assert.ok(sitemap.includes('tarot-reading/contact.html'), 'sitemap must include contact.html');
 assert.ok(sitemap.includes('tarot-reading/faq.html'), 'sitemap must include faq.html');
-assert.ok((sitemap.match(/<url>/g) || []).length >= 80, 'sitemap must contain at least 80 <url> entries (2 existing + 78 cards + hub, about.html added in a later task)');
+assert.strictEqual((sitemap.match(/<url>/g) || []).length, 84, 'sitemap must contain exactly 84 <url> entries (home, about, contact, faq, legal, tarot hub, 78 cards)');
 
 // TAROT_SLUGS 검증 (임시 디렉터리 정리 전에)
 const { TAROT_SLUGS } = require(slugMapPath);

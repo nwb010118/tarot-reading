@@ -8,7 +8,7 @@ global.TAROT_PENTACLES = require('../data/tarot-data-pentacles.js').TAROT_PENTAC
 
 const { getFullDeck } = require('../data/tarot-data.js');
 const { buildCardViewModel } = require('../scripts/lib/tarot-page-data.js');
-const { renderCardPage, renderHubPage } = require('../scripts/lib/render-tarot-pages.js');
+const { renderCardPage, renderHubPage, escapeHtml } = require('../scripts/lib/render-tarot-pages.js');
 
 const deck = getFullDeck();
 const sunCard = deck.find(function (c) { return c.cardId === 'major_19'; });
@@ -26,8 +26,8 @@ assert.ok(html.startsWith('<!DOCTYPE html>'));
 assert.ok(html.includes('<html lang="ko">'));
 assert.ok(html.includes(vm.title), 'title must appear in <title>');
 assert.ok(html.includes('<link rel="canonical" href="' + vm.canonicalUrl + '">'), 'canonical link must use vm.canonicalUrl');
-assert.ok(html.includes('<meta property="og:title" content="' + vm.title + '">'), 'og:title must match vm.title');
-assert.ok(html.includes('<meta property="og:description" content="' + vm.description + '">'), 'og:description must match vm.description');
+assert.ok(html.includes('<meta property="og:title" content="' + escapeHtml(vm.title) + '">'), 'og:title must match escaped vm.title');
+assert.ok(html.includes('<meta property="og:description" content="' + escapeHtml(vm.description) + '">'), 'og:description must match escaped vm.description');
 assert.ok(html.includes('<meta property="og:url" content="' + vm.canonicalUrl + '">'), 'og:url must match vm.canonicalUrl');
 assert.ok(html.includes('<meta property="og:type" content="website">'));
 assert.ok(html.includes('<h1>태양 (The Sun)</h1>'), 'h1 must show card name');
