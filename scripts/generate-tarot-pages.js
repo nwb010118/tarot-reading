@@ -60,6 +60,7 @@ function writeSitemap(viewModels, sitemapPath, today) {
     { loc: SITE_BASE, changefreq: 'weekly', priority: '1.0' },
     { loc: SITE_BASE + 'about.html', changefreq: 'monthly', priority: '0.5' },
     { loc: SITE_BASE + 'contact.html', changefreq: 'yearly', priority: '0.3' },
+    { loc: SITE_BASE + 'faq.html', changefreq: 'monthly', priority: '0.5' },
     { loc: SITE_BASE + 'legal.html', changefreq: 'yearly', priority: '0.3' },
     { loc: SITE_BASE + 'tarot/index.html', changefreq: 'monthly', priority: '0.7' }
   ];

@@ -41,6 +41,7 @@ const sitemap = fs.readFileSync(sitemapPath, 'utf8');
 assert.ok(sitemap.includes('tarot-reading/tarot/major-19-sun.html'));
 assert.ok(sitemap.includes('tarot-reading/tarot/index.html'));
 assert.ok(sitemap.includes('tarot-reading/contact.html'), 'sitemap must include contact.html');
+assert.ok(sitemap.includes('tarot-reading/faq.html'), 'sitemap must include faq.html');
 assert.ok((sitemap.match(/<url>/g) || []).length >= 80, 'sitemap must contain at least 80 <url> entries (2 existing + 78 cards + hub, about.html added in a later task)');
 
 // 임시 디렉터리 정리
