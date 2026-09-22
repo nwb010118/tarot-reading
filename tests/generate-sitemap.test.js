@@ -20,10 +20,12 @@ assert.ok(sitemap.includes('tarot-reading/faq.html'));
 assert.ok(sitemap.includes('tarot-reading/legal.html'));
 assert.ok(sitemap.includes('tarot-reading/tarot/index.html'), 'tarot hub url must exist');
 assert.ok(sitemap.includes('tarot-reading/tarot/major-19-sun.html'), 'sample tarot card url must exist');
+assert.ok(sitemap.includes('tarot-reading/guides/index.html'), 'guides index url must exist');
+assert.ok(sitemap.includes('tarot-reading/guides/what-is-tarot.html'), 'sample guide url must exist');
 assert.ok(sitemap.includes('<lastmod>2026-09-22</lastmod>'));
 
-// 이 시점(가이드 파이프라인 구축 전)에는 84개(홈/about/contact/faq/legal/tarot허브/78카드)여야 한다.
-assert.strictEqual((sitemap.match(/<url>/g) || []).length, 84, 'sitemap must contain exactly 84 <url> entries before guides exist');
+// 84(홈/about/contact/faq/legal/tarot허브/78카드) + 가이드 인덱스 1 + 타로 가이드 6편 = 91.
+assert.strictEqual((sitemap.match(/<url>/g) || []).length, 91, 'sitemap must contain exactly 91 <url> entries after the tarot guides batch');
 
 fs.rmSync(tmpDir, { recursive: true, force: true });
 

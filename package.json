@@ -6,6 +6,7 @@
   "scripts": {
     "test": "node scripts/run-tests.js",
     "build:tarot-pages": "node scripts/generate-tarot-pages.js",
+    "build:guides-pages": "node scripts/generate-guides-pages.js",
     "build:sitemap": "node scripts/generate-sitemap.js"
   }
 }

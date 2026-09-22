@@ -8,6 +8,7 @@ global.TAROT_PENTACLES = require('../data/tarot-data-pentacles.js').TAROT_PENTAC
 
 const { getFullDeck } = require('../data/tarot-data.js');
 const { buildCardViewModel, SITE_BASE } = require('./lib/tarot-page-data.js');
+const { GUIDES } = require('../data/guides-data.js');
 const { writeSitemapXml } = require('./lib/sitemap.js');
 
 const ROOT = path.join(__dirname, '..');
@@ -23,7 +24,8 @@ function generateSitemap(options) {
     { loc: SITE_BASE + 'contact.html', changefreq: 'yearly', priority: '0.3' },
     { loc: SITE_BASE + 'faq.html', changefreq: 'monthly', priority: '0.5' },
     { loc: SITE_BASE + 'legal.html', changefreq: 'yearly', priority: '0.3' },
-    { loc: SITE_BASE + 'tarot/index.html', changefreq: 'monthly', priority: '0.7' }
+    { loc: SITE_BASE + 'tarot/index.html', changefreq: 'monthly', priority: '0.7' },
+    { loc: SITE_BASE + 'guides/index.html', changefreq: 'monthly', priority: '0.6' }
   ];
 
   const deck = getFullDeck();
@@ -32,7 +34,11 @@ function generateSitemap(options) {
     return { loc: SITE_BASE + 'tarot/' + vm.slug + '.html', changefreq: 'monthly', priority: '0.6' };
   });
 
-  writeSitemapXml(staticUrls.concat(cardUrls), sitemapPath, today);
+  const guideUrls = GUIDES.map(function (guide) {
+    return { loc: SITE_BASE + 'guides/' + guide.slug + '.html', changefreq: 'monthly', priority: '0.5' };
+  });
+
+  writeSitemapXml(staticUrls.concat(cardUrls).concat(guideUrls), sitemapPath, today);
 }
 
 if (require.main === module) {
