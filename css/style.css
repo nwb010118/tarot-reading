@@ -294,6 +294,11 @@ label { display: block; margin-bottom: 8px; color: #c9bde0; }
 .legal-section h3 { color: #c9bde0; font-size: 15px; margin: 16px 0 6px; }
 .legal-section p { font-size: 14px; line-height: 1.6; margin: 0 0 10px; }
 .legal-date { color: #c9bde0; font-size: 12px; margin-top: 16px; }
+.legal-section table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; }
+.legal-section th, .legal-section td { border: 1px solid #4a3a68; padding: 8px 10px; font-size: 13px; text-align: left; }
+.legal-section th { color: #d4af37; font-weight: 600; }
+.legal-section ul { padding-left: 20px; margin: 0 0 10px; }
+.legal-section li { margin-bottom: 6px; font-size: 14px; line-height: 1.6; }
 
 #site-disclaimer {
   text-align: center;
