@@ -35,8 +35,6 @@ function buildNavFor(index, viewModels) {
 function generate(options) {
   const opts = options || {};
   const tarotDir = opts.tarotDir || TAROT_DIR;
-  const sitemapPath = opts.sitemapPath || path.join(ROOT, 'sitemap.xml');
-  const today = opts.today || new Date().toISOString().slice(0, 10);
 
   const deck = getFullDeck();
   const viewModels = deck.map(buildCardViewModel);
@@ -52,7 +50,6 @@ function generate(options) {
   const hubHtml = renderHubPage(viewModels, SITE_BASE + 'tarot/index.html');
   fs.writeFileSync(path.join(tarotDir, 'index.html'), hubHtml, 'utf8');
 
-  writeSitemap(viewModels, sitemapPath, today);
   writeSlugMap(deck, opts.slugMapPath || path.join(ROOT, 'data', 'tarot-slugs.js'));
 }
 
@@ -68,39 +65,9 @@ function writeSlugMap(deck, slugMapPath) {
   fs.writeFileSync(slugMapPath, js, 'utf8');
 }
 
-function writeSitemap(viewModels, sitemapPath, today) {
-  const staticUrls = [
-    { loc: SITE_BASE, changefreq: 'weekly', priority: '1.0' },
-    { loc: SITE_BASE + 'about.html', changefreq: 'monthly', priority: '0.5' },
-    { loc: SITE_BASE + 'contact.html', changefreq: 'yearly', priority: '0.3' },
-    { loc: SITE_BASE + 'faq.html', changefreq: 'monthly', priority: '0.5' },
-    { loc: SITE_BASE + 'legal.html', changefreq: 'yearly', priority: '0.3' },
-    { loc: SITE_BASE + 'tarot/index.html', changefreq: 'monthly', priority: '0.7' }
-  ];
-  const cardUrls = viewModels.map(function (vm) {
-    return { loc: SITE_BASE + 'tarot/' + vm.slug + '.html', changefreq: 'monthly', priority: '0.6' };
-  });
-
-  const urlsXml = staticUrls.concat(cardUrls).map(function (u) {
-    return '  <url>\n' +
-      '    <loc>' + u.loc + '</loc>\n' +
-      '    <lastmod>' + today + '</lastmod>\n' +
-      '    <changefreq>' + u.changefreq + '</changefreq>\n' +
-      '    <priority>' + u.priority + '</priority>\n' +
-      '  </url>';
-  }).join('\n');
-
-  const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-    urlsXml + '\n' +
-    '</urlset>\n';
-
-  fs.writeFileSync(sitemapPath, xml, 'utf8');
-}
-
 if (require.main === module) {
   generate();
-  console.log('Generated 78 tarot card pages + 1 hub page + sitemap.xml');
+  console.log('Generated 78 tarot card pages + 1 hub page');
 }
 
 module.exports = { generate };

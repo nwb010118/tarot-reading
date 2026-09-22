@@ -8,10 +8,9 @@ const { generate } = require('../scripts/generate-tarot-pages.js');
 // 실제 저장소 경로를 건드리지 않도록 임시 디렉터리/파일에 생성한다.
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tarot-pages-test-'));
 const tarotDir = path.join(tmpDir, 'tarot');
-const sitemapPath = path.join(tmpDir, 'sitemap.xml');
 const slugMapPath = path.join(tmpDir, 'tarot-slugs.js');
 
-generate({ tarotDir: tarotDir, sitemapPath: sitemapPath, slugMapPath: slugMapPath, today: '2026-09-21' });
+generate({ tarotDir: tarotDir, slugMapPath: slugMapPath });
 
 const files = fs.readdirSync(tarotDir).filter(function (f) { return f.endsWith('.html'); });
 
@@ -36,14 +35,6 @@ assert.ok(foolHtml.includes('pentacles-king.html'), 'first card (major-0) must l
 
 const hubHtml = fs.readFileSync(path.join(tarotDir, 'index.html'), 'utf8');
 assert.ok(hubHtml.includes('<link rel="canonical" href="https://nwb010118.github.io/tarot-reading/tarot/index.html">'));
-
-// sitemap.xml 갱신 확인
-const sitemap = fs.readFileSync(sitemapPath, 'utf8');
-assert.ok(sitemap.includes('tarot-reading/tarot/major-19-sun.html'));
-assert.ok(sitemap.includes('tarot-reading/tarot/index.html'));
-assert.ok(sitemap.includes('tarot-reading/contact.html'), 'sitemap must include contact.html');
-assert.ok(sitemap.includes('tarot-reading/faq.html'), 'sitemap must include faq.html');
-assert.strictEqual((sitemap.match(/<url>/g) || []).length, 84, 'sitemap must contain exactly 84 <url> entries (home, about, contact, faq, legal, tarot hub, 78 cards)');
 
 // TAROT_SLUGS 검증 (임시 디렉터리 정리 전에)
 const { TAROT_SLUGS } = require(slugMapPath);
