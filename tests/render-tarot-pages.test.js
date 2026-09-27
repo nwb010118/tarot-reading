@@ -35,6 +35,7 @@ assert.ok(html.includes('../images/RWS_Tarot_19_Sun.jpg'), 'image src must be re
 assert.ok(html.includes('href="../index.html">홈'), 'nav must link home via ../index.html');
 assert.ok(html.includes('href="index.html">타로 카드 백과사전'), 'nav must link the hub via the same-directory index.html, not a roundabout ../tarot/index.html');
 assert.ok(html.includes('href="../about.html">About'), 'nav must link about via ../about.html');
+assert.ok(html.includes('href="../guides/index.html">운세 가이드'), 'nav must link to guides index');
 assert.ok(html.includes('major-18-moon.html'), 'prev link present');
 assert.ok(html.includes('major-20-judgement.html'), 'next link present');
 assert.ok(html.includes('href="../contact.html">문의하기'), 'footer must link contact.html');
@@ -54,6 +55,7 @@ assert.ok(hubHtml.includes('메이저 아르카나'));
 assert.ok(hubHtml.includes('완드'));
 assert.ok(hubHtml.includes('major-19-sun.html'));
 assert.ok(hubHtml.includes('wands-ace.html'));
+assert.ok(hubHtml.includes('href="../guides/index.html">운세 가이드'), 'hub nav must link to guides index');
 assert.ok(!/href="\/[^/]/.test(hubHtml), 'hub must not contain a root-absolute href="/..."');
 assert.ok(hubHtml.includes('<link rel="canonical" href="' + hubCanonicalUrl + '">'));
 assert.ok(hubHtml.includes('<meta property="og:url" content="' + hubCanonicalUrl + '">'));
