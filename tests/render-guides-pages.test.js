@@ -2,6 +2,13 @@ const assert = require('assert');
 const { GUIDES } = require('../data/guides-data.js');
 const { renderGuidePage, renderGuidesIndexPage, escapeHtml } = require('../scripts/lib/render-guides-pages.js');
 
+// Every guide page needs one primary heading identifying the page.
+GUIDES.forEach(function (g) {
+  const rendered = renderGuidePage(g, GUIDES.filter(function (other) { return other.category === g.category; }));
+  const headings = [...rendered.matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1>/g)].map(function (match) { return match[1]; });
+  assert.deepStrictEqual(headings, [escapeHtml(g.title)], g.slug + ' must have exactly one H1 with its title');
+});
+
 // what-is-tarot 카드 페이지 검증
 const guide = GUIDES.find(function (g) { return g.slug === 'what-is-tarot'; });
 const categoryGuides = GUIDES.filter(function (g) { return g.category === guide.category; });
@@ -36,6 +43,8 @@ assert.ok(html.includes('href="../faq.html">자주 묻는 질문'));
 
 // 목록 페이지 검증
 const indexHtml = renderGuidesIndexPage(GUIDES);
+assert.deepStrictEqual([...indexHtml.matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1>/g)].map(function (match) { return match[1]; }), ['운세 가이드'], 'index must have exactly one H1 with its title');
+assert.ok(indexHtml.includes('<h2>타로</h2>'), 'category heading must remain H2');
 assert.ok(indexHtml.startsWith('<!DOCTYPE html>'));
 const indexCanonical = 'https://nwb010118.github.io/tarot-reading/guides/index.html';
 assert.ok(indexHtml.includes('<link rel="canonical" href="' + indexCanonical + '">'));

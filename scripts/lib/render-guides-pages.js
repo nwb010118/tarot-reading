@@ -81,7 +81,7 @@ function renderGuidePage(guide, categoryGuides) {
     renderHeader(GUIDES_DIR_LINKS) +
     '<p class="hero-copy"><a href="' + GUIDES_DIR_LINKS.homeHref + '">홈</a> &gt; <a href="' + GUIDES_DIR_LINKS.guidesHref + '">운세 가이드</a> &gt; ' + escapeHtml(guide.title) + '</p>\n' +
     '<section class="legal-section">\n' +
-    '<h2>' + escapeHtml(guide.title) + '</h2>\n' +
+    '<h1>' + escapeHtml(guide.title) + '</h1>\n' +
     '<p class="eyebrow">' + escapeHtml(categoryLabel) + '</p>\n' +
     guide.bodyHtml.join('\n') + '\n' +
     '</section>\n' +
@@ -136,7 +136,7 @@ function renderGuidesIndexPage(allGuides) {
     '<div id="app" class="legal-page">\n' +
     renderHeader(GUIDES_DIR_LINKS) +
     '<p><a href="' + GUIDES_DIR_LINKS.homeHref + '">← 점집으로 돌아가기</a></p>\n' +
-    '<section class="legal-section"><h2>운세 가이드</h2><p>' + escapeHtml(pageDescription) + '</p></section>\n' +
+    '<section class="legal-section"><h1>운세 가이드</h1><p>' + escapeHtml(pageDescription) + '</p></section>\n' +
     sectionsHtml + '\n' +
     renderFooter(GUIDES_DIR_LINKS) +
     '</div>\n' +
