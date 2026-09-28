@@ -232,6 +232,12 @@ assert.strictEqual(getTwelveLifeStage(8, 4), '묘');   // 진 (스크린샷 일�
 assert.strictEqual(getTwelveLifeStage(8, 10), '관대'); // 술 (스크린샷 월주 예시)
 assert.strictEqual(getTwelveLifeStage(8, 0), '제왕');  // 자 (스크린샷 년주 예시)
 
+// 음간(역행) 방향도 확인 — 위 테스트는 전부 양간(임)만 다뤘음
+assert.strictEqual(getTwelveLifeStage(1, 6), '장생'); // 을(1,음목)의 장생지는 오(6), 역행
+assert.strictEqual(getTwelveLifeStage(1, 5), '목욕'); // 을 기준 사(5)는 장생 한 칸 전(역행이므로 -1 방향)
+assert.strictEqual(getTwelveLifeStage(9, 3), '장생'); // 계(9,음수)의 장생지는 묘(3), 역행
+assert.strictEqual(getTwelveLifeStage(5, 9), '장생'); // 기(5,음토, 화토동법으로 정과 동일)의 장생지는 유(9), 역행
+
 console.log('All getTwelveLifeStage tests passed');
 
 // getGanjiIndex / getNapjeong
