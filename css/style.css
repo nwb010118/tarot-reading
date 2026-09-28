@@ -295,8 +295,12 @@ label { display: block; margin-bottom: 8px; color: #c9bde0; }
 .el-wood { background: #3a7a4a; color: #fff; }
 .el-fire { background: #a33333; color: #fff; }
 .el-earth { background: #8b744e; color: #fff; }
-.el-metal { background: #d6bd8b; color: #111; }
+.el-metal { background: #fff; color: #111; }
 .el-water { background: #1a2a3a; color: #d6bd8b; }
+
+.element-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 12px; padding: 0; margin: 8px 0 12px; list-style: none; color: #c9bde0; font-size: 12px; }
+.element-legend li { display: inline-flex; align-items: center; gap: 5px; }
+.element-swatch { display: inline-block; width: 12px; height: 12px; border: 1px solid #7b8290; border-radius: 2px; }
 
 .chung-note { text-align: center; color: #c9bde0; font-size: 13px; margin: 4px 0 8px; }
 
