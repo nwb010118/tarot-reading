@@ -1,4 +1,5 @@
 var OG_IMAGE_URL = 'https://nwb010118.github.io/tarot-reading/images/og-image.jpg';
+var ADSENSE_SCRIPT_TAG = '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3608292673018037" crossorigin="anonymous"></script>\n';
 
 function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, function (ch) {
@@ -66,6 +67,7 @@ function renderCardPage(vm, nav) {
     '<!-- 이 파일은 scripts/generate-tarot-pages.js가 자동 생성합니다. 직접 수정하지 마세요 — 데이터를 고친 뒤 `npm run build:tarot-pages`로 재생성하세요. -->\n' +
     '<html lang="ko">\n' +
     '<head>\n' +
+    ADSENSE_SCRIPT_TAG +
     '<meta charset="UTF-8">\n' +
     '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
     '<title>' + escapeHtml(vm.title) + '</title>\n' +
@@ -128,6 +130,7 @@ function renderHubPage(allViewModels, canonicalUrl) {
     '<!-- 이 파일은 scripts/generate-tarot-pages.js가 자동 생성합니다. 직접 수정하지 마세요 — 데이터를 고친 뒤 `npm run build:tarot-pages`로 재생성하세요. -->\n' +
     '<html lang="ko">\n' +
     '<head>\n' +
+    ADSENSE_SCRIPT_TAG +
     '<meta charset="UTF-8">\n' +
     '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
     '<title>' + hubTitle + '</title>\n' +
