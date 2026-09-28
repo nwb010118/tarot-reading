@@ -717,6 +717,7 @@
       '</p>';
 
     let daeunHtml = '';
+    let seunHtml = '';
     if (saju.hour) {
       const direction = getDaeunDirection(saju.year.stemIdx, selectedGender);
       const startAge = getDaeunStartAge(saju.instant, saju.monthOffset, direction);
@@ -724,12 +725,25 @@
       const today = new Date();
       // 대운 구간은 한국식 세는나이 기준으로 판단
       const currentAge = today.getFullYear() - input.year + 1;
-      daeunHtml = '<div class="daeun-table">' +
+      daeunHtml = '<p class="table-label">대운</p><div class="daeun-table">' +
         daeunList.map(function (d) {
           const isCurrent = currentAge >= d.startAge && currentAge <= d.endAge;
           return '<div class="daeun-col' + (isCurrent ? ' current' : '') + '"><span class="daeun-ganji">' + pillarText(d) + '</span><span class="daeun-age">' + d.startAge + '~' + d.endAge + '세</span></div>';
         }).join('') +
         '</div>';
+
+      const activeDaeun = daeunList.find(function (d) { return currentAge >= d.startAge && currentAge <= d.endAge; });
+      if (activeDaeun) {
+        const seunStartYear = input.year + activeDaeun.startAge - 1;
+        const seunList = getSeunList(seunStartYear, 10);
+        const thisYear = today.getFullYear();
+        seunHtml = '<p class="table-label">세운</p><div class="seun-table">' +
+          seunList.map(function (s) {
+            const isCurrent = s.year === thisYear;
+            return '<div class="seun-col' + (isCurrent ? ' current' : '') + '"><span class="seun-ganji">' + pillarText(s) + '</span><span class="seun-age">' + s.year + '년 · ' + (s.year - input.year + 1) + '세</span></div>';
+          }).join('') +
+          '</div>';
+      }
     }
 
     const balance = classifyElementBalance(counts);
@@ -740,7 +754,7 @@
 
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
       '<div class="reading-detail">' + renderReadingMeaning(meaning) + '</div>' +
-      myeongsikHtml + elementHtml + daeunHtml +
+      myeongsikHtml + elementHtml + daeunHtml + seunHtml +
       extraHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');

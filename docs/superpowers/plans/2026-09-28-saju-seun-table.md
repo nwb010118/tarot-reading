@@ -1,6 +1,6 @@
 # 사주 세운(10년 연운표) Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 사주 리딩 결과 화면의 대운표 아래에, 현재 나이가 속한 대운 10년 구간을 연도 단위로 쪼갠 "세운표"를 추가한다.
 
@@ -29,7 +29,7 @@
 **Interfaces:**
 - Produces: `getSeunList(startYear, count)` → `Array<{ year: number, stemIdx: number, branchIdx: number }>`. `js/saju-calc.js`의 `module.exports`에 포함되어 Node 테스트에서 쓸 수 있고, `index.html`이 `js/saju-calc.js`를 `<script>` 태그로 `js/app.js`보다 먼저 로드하므로 브라우저 전역으로도 자동으로 쓸 수 있다(다른 함수들과 동일한 패턴).
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `tests/saju-calc.test.js` 1~31번째 줄의 require 목록에서 `isChungBranchPair` 다음에 `getSeunList`를 추가:
 
@@ -87,12 +87,12 @@ console.log('All getSeunList tests passed');
 
 (`pillarLabel`은 58번째 줄에 이미 정의된 `function pillarLabel(p) { return CHEONGAN[p.stemIdx] + JIJI[p.branchIdx]; }` 헬퍼를 재사용한다.)
 
-- [ ] **Step 2: 테스트 실패 확인**
+- [x] **Step 2: 테스트 실패 확인**
 
 Run: `node tests/saju-calc.test.js`
 Expected: FAIL — `getSeunList is not a function` (아직 `js/saju-calc.js`에 구현 없음, require 구조분해로 `undefined`가 들어와 호출 시 TypeError 발생)
 
-- [ ] **Step 3: `getSeunList` 최소 구현**
+- [x] **Step 3: `getSeunList` 최소 구현**
 
 `js/saju-calc.js`의 259~274번째 줄(`getDaeunList` 함수와 `module.exports` 블록)을 아래로 교체:
 
@@ -126,17 +126,17 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 ```
 
-- [ ] **Step 4: 테스트 통과 확인**
+- [x] **Step 4: 테스트 통과 확인**
 
 Run: `node tests/saju-calc.test.js`
 Expected: PASS, 마지막 줄에 `All saju myeongsik detail golden-case tests passed`까지 전부 출력(스크립트가 끝까지 에러 없이 실행됨)
 
-- [ ] **Step 5: 전체 테스트 스위트 실행**
+- [x] **Step 5: 전체 테스트 스위트 실행**
 
 Run: `node scripts/run-tests.js`
 Expected: 모든 파일 PASS, 마지막 줄에 `N test files, N passed, 0 failed`
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 git add js/saju-calc.js tests/saju-calc.test.js
@@ -157,7 +157,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 - Consumes: Task 1의 `getSeunList(startYear, count)`(브라우저 전역, 별도 script 태그 추가 불필요 — `index.html`이 `js/saju-calc.js`를 이미 `js/app.js`보다 먼저 로드함), 기존 `pillarText(pillar)`, `getDaeunDirection`, `getDaeunStartAge`, `getDaeunList`.
 - Produces: 없음(최종 렌더링 결과물).
 
-- [ ] **Step 1: `daeunHtml` 계산부를 확장해 `seunHtml`도 함께 계산**
+- [x] **Step 1: `daeunHtml` 계산부를 확장해 `seunHtml`도 함께 계산**
 
 `js/app.js`의 719~733번째 줄:
 
@@ -213,7 +213,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
     }
 ```
 
-- [ ] **Step 2: `summaryEl.innerHTML` 조립부에 `seunHtml` 추가**
+- [x] **Step 2: `summaryEl.innerHTML` 조립부에 `seunHtml` 추가**
 
 `js/app.js`의 741~744번째 줄(Step 1 수정 후에는 줄 번호가 뒤로 밀려 있을 수 있음 — `summaryEl.innerHTML = '<h3>' + heading` 로 시작하는 블록을 찾을 것):
 
@@ -233,7 +233,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
       extraHtml;
 ```
 
-- [ ] **Step 3: CSS 클래스 추가**
+- [x] **Step 3: CSS 클래스 추가**
 
 `css/style.css`의 245~250번째 줄:
 
@@ -282,7 +282,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 .myeongsik-detail-wrap { margin: 16px 0; overflow-x: auto; }
 ```
 
-- [ ] **Step 4: 시간을 아는 케이스로 브라우저 확인**
+- [x] **Step 4: 시간을 아는 케이스로 브라우저 확인**
 
 Run: preview_start `{name: "static-preview"}`로 dev 서버 열기(이미 떠 있으면 생략) → `http://localhost:8080/` 접속 → 사주 모드 선택 → 양력, 생년월일 2020-10-16, 시간 16:00, 성별 남자(기본 선택값) 입력 → 결과 보기.
 
@@ -292,18 +292,18 @@ Expected(사전에 `node -e`로 직접 계산해 확정한 값, 오늘 날짜 20
 - 세운표 첫 칸의 연도(2026)가 활성 대운 구간의 시작 나이(7세)와 일치(출생연도 2020 + 7 - 1 = 2026).
 - 브라우저 콘솔에 JS 에러 없음(`read_console_messages`로 확인).
 
-- [ ] **Step 5: 시간 모름 케이스로 회귀 확인**
+- [x] **Step 5: 시간 모름 케이스로 회귀 확인**
 
 Run: 같은 화면에서 "태어난 시간을 몰라요" 체크 후 같은 생년월일(2020-10-16)로 다시 조회.
 
 Expected: 대운표와 세운표 둘 다 렌더링되지 않음("대운"/"세운" 라벨도 없음). 에러 없음. (기존 대운표 게이트 `if (saju.hour)`를 세운표도 그대로 공유하므로 회귀 없어야 함.)
 
-- [ ] **Step 6: 전체 테스트 스위트 재실행**
+- [x] **Step 6: 전체 테스트 스위트 재실행**
 
 Run: `node scripts/run-tests.js`
 Expected: 모든 파일 PASS(이 태스크는 `js/app.js`, `css/style.css`만 건드렸고 둘 다 브라우저 전용이라 새 Node 테스트는 추가되지 않음 — 기존 테스트가 전부 그대로 통과하는지만 확인)
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 ```bash
 git add js/app.js css/style.css
@@ -311,3 +311,11 @@ git commit -m "feat(saju): render seun (yearly fortune) table below daeun table
 
 Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 ```
+
+## 실행 결과 (2026-09-28)
+
+- 계산 함수, 세운표 및 테마 적용 완료. 실제 구현 커밋에는 기존 Claude 공동저자 표기를 사용하지 않음.
+- node scripts/run-tests.js: 18 passed, 0 failed.
+- 브라우저: 골든케이스 2026~2035년·7~16세, 올해 1칸 강조, 시간 모름 시 표/라벨 생략, 첫 대운 이전 세운 생략 확인.
+- 375px 모바일: 세운 10칸, 가로 넘침 없음. 브라우저 오류 없음.
+- css/salon.css의 대운 배경색 규칙을 세운에도 적용해 실제 테마를 일치시킴.
