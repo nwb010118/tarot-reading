@@ -23,7 +23,8 @@ const {
   getDaeunList,
   getStemElement,
   getSipsin,
-  getJijanggan
+  getJijanggan,
+  getTwelveLifeStage
 } = require('../js/saju-calc.js');
 
 // normalizeMod
@@ -220,3 +221,12 @@ assert.strictEqual(CHEONGAN[getJijanggan(10)], '무'); // 술
 assert.strictEqual(CHEONGAN[getJijanggan(11)], '임'); // 해
 
 console.log('All getJijanggan tests passed');
+
+// getTwelveLifeStage: 일간 기준 대상 지지의 12운성
+// 일간 임(8,수,양)의 장생지는 신(8). 순행(양간)이므로 신에서 시작해 지지 순서대로 진행.
+assert.strictEqual(getTwelveLifeStage(8, 8), '장생'); // 신
+assert.strictEqual(getTwelveLifeStage(8, 4), '묘');   // 진 (스크린샷 일주 예시)
+assert.strictEqual(getTwelveLifeStage(8, 10), '관대'); // 술 (스크린샷 월주 예시)
+assert.strictEqual(getTwelveLifeStage(8, 0), '제왕');  // 자 (스크린샷 년주 예시)
+
+console.log('All getTwelveLifeStage tests passed');

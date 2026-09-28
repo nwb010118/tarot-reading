@@ -179,6 +179,17 @@ function getJijanggan(branchIdx) {
   return JIJANGGAN_JEONGGI[branchIdx];
 }
 
+const TWELVE_LIFESTAGES = ['장생', '목욕', '관대', '건록', '제왕', '쇠', '병', '사', '묘', '절', '태', '양'];
+// 천간별 장생 지지(화토동법: 무=병과 동일, 기=정과 동일). 순서: 갑을병정무기경신임계
+const LIFESTAGE_START_BRANCH = [11, 6, 2, 9, 2, 9, 5, 0, 8, 3];
+
+function getTwelveLifeStage(dayStemIdx, targetBranchIdx) {
+  const direction = isYangStem(dayStemIdx) ? 1 : -1;
+  const start = LIFESTAGE_START_BRANCH[dayStemIdx];
+  const position = normalizeMod(direction * (targetBranchIdx - start), 12);
+  return TWELVE_LIFESTAGES[position];
+}
+
 function getElementCounts(pillars) {
   const counts = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
   const list = [pillars.year, pillars.month, pillars.day];
@@ -236,5 +247,5 @@ function getDaeunList(monthStemIdx, monthBranchIdx, direction, startAge) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju, getElementCounts, classifyElementBalance, getDaeunDirection, getDaeunStartAge, getDaeunList, getStemElement, getElementOrderIndex, getSipsin, getJijanggan };
+  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju, getElementCounts, classifyElementBalance, getDaeunDirection, getDaeunStartAge, getDaeunList, getStemElement, getElementOrderIndex, getSipsin, getJijanggan, getTwelveLifeStage };
 }
