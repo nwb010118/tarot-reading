@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { GUIDES } = require('../data/guides-data.js');
+const { GUIDES, GUIDE_CATEGORY_INTROS } = require('../data/guides-data.js');
 const { renderGuidePage, renderGuidesIndexPage, escapeHtml } = require('../scripts/lib/render-guides-pages.js');
 
 // Every guide page needs one primary heading identifying the page.
@@ -51,7 +51,25 @@ assert.ok(indexHtml.includes('<link rel="canonical" href="' + indexCanonical + '
 assert.ok(indexHtml.includes('타로'), 'index page must show the tarot category label');
 assert.ok(indexHtml.includes('what-is-tarot.html'));
 assert.ok(indexHtml.includes('how-to-ask-tarot.html'));
-// 아직 원고가 없는 카테고리(별자리 등)는 표시되지 않아야 한다.
-assert.ok(!indexHtml.includes('별자리'), 'category with zero guides must not render');
+assert.ok(indexHtml.includes('<h2>별자리</h2>'), 'index must show the zodiac category');
+assert.ok(indexHtml.includes('href="what-is-zodiac.html">12별자리 기본 가이드</a>'));
+assert.ok(GUIDE_CATEGORY_INTROS.zodiac && GUIDE_CATEGORY_INTROS.zodiac.trim(), 'zodiac category must have an intro');
+assert.ok(indexHtml.includes('<p>' + escapeHtml(GUIDE_CATEGORY_INTROS.zodiac) + '</p>'));
+
+// 원고가 없는 카테고리는 필터링한 fixture로 검증한다.
+const withoutZodiac = GUIDES.filter(function (g) { return g.category !== 'zodiac'; });
+const filteredIndexHtml = renderGuidesIndexPage(withoutZodiac);
+assert.ok(filteredIndexHtml.includes('<h2>타로</h2>'));
+assert.ok(!filteredIndexHtml.includes('<h2>별자리</h2>'), 'category with zero guides must not render');
+assert.ok(!filteredIndexHtml.includes('href="what-is-zodiac.html"'));
+
+const zodiacGuide = GUIDES.find(function (g) { return g.slug === 'what-is-zodiac'; });
+assert.ok(zodiacGuide, 'zodiac guide must exist');
+const zodiacGuides = GUIDES.filter(function (g) { return g.category === 'zodiac'; });
+assert.strictEqual(zodiacGuides.length, 1, 'approved zodiac category contains one guide');
+const zodiacHtml = renderGuidePage(zodiacGuide, zodiacGuides);
+assert.ok(!zodiacHtml.includes('같은 카테고리의 다른 가이드:'), 'single-guide category must omit sibling list');
+assert.ok(!zodiacHtml.includes('href="what-is-zodiac.html"'), 'single guide must not link to itself');
+assert.ok(zodiacHtml.includes('<a href="../index.html">점집 홈에서 직접 해보기 ↗</a>'), 'zodiac tool link must lead home');
 
 console.log('render-guides-pages.test.js: all assertions passed');

@@ -1,5 +1,6 @@
 const assert = require('assert');
 const { GUIDES } = require('../data/guides-data.js');
+const { ZODIAC_DATA } = require('../data/zodiac-data.js');
 const { splitSentences, wordJaccard, trigramJaccard } = require('./helpers/dedup.js');
 
 const WORD_TH = 0.3;
@@ -9,6 +10,30 @@ const OPEN_TRI_TH = 0.15;
 function bodyToText(guide) {
   return guide.bodyHtml.join(' ').replace(/<[^>]+>/g, ' ');
 }
+
+const zodiacGuide = GUIDES.find(function (g) { return g.slug === 'what-is-zodiac'; });
+assert.ok(zodiacGuide, 'what-is-zodiac guide must exist');
+assert.strictEqual(zodiacGuide.category, 'zodiac');
+assert.strictEqual(zodiacGuide.title, '12별자리 기본 가이드');
+const zodiacTextLength = bodyToText(zodiacGuide).replace(/\s/g, '').length;
+assert.ok(zodiacTextLength >= 1500 && zodiacTextLength <= 2500,
+  'zodiac body must contain 1500–2500 characters excluding tags and whitespace, got ' + zodiacTextLength);
+
+const zodiacBody = zodiacGuide.bodyHtml.join('\n');
+const tables = zodiacBody.match(/<table\b[^>]*>[\s\S]*?<\/table>/g) || [];
+assert.strictEqual(ZODIAC_DATA.length, 12);
+assert.ok(tables.some(function (table) {
+  const rows = [...table.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/g)].map(function (row) {
+    return [...row[1].matchAll(/<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]>/g)].map(function (cell) {
+      return cell[1].replace(/<[^>]+>/g, '').replace(/\s/g, '');
+    });
+  });
+  return ZODIAC_DATA.every(function (sign) {
+    return rows.filter(function (cells) {
+      return cells.includes(sign.name_kr) && cells.includes(sign.dateRange.replace(/\s/g, ''));
+    }).length === 1;
+  });
+}), 'date table must pair all 12 zodiac names with their data dateRange labels exactly once');
 
 const docs = GUIDES.map(function (g) {
   return { slug: g.slug, sentences: splitSentences(bodyToText(g)).filter(function (s) { return s.trim().length > 8; }) };
