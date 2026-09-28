@@ -34,7 +34,7 @@ assert.ok(html.includes('<h1>태양 (The Sun)</h1>'), 'h1 must show card name');
 assert.ok(html.includes('../images/RWS_Tarot_19_Sun.jpg'), 'image src must be relative (../images/...)');
 assert.ok(html.includes('href="../index.html">홈'), 'nav must link home via ../index.html');
 assert.ok(html.includes('href="index.html">타로 카드 백과사전'), 'nav must link the hub via the same-directory index.html, not a roundabout ../tarot/index.html');
-assert.ok(html.includes('href="../about.html">About'), 'nav must link about via ../about.html');
+assert.ok(html.includes('href="../about.html">소개'), 'nav must link about via ../about.html');
 assert.ok(html.includes('href="../guides/index.html">운세 가이드'), 'nav must link to guides index');
 assert.ok(html.includes('major-18-moon.html'), 'prev link present');
 assert.ok(html.includes('major-20-judgement.html'), 'next link present');

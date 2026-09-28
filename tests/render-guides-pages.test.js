@@ -36,7 +36,7 @@ assert.ok(html.includes('../tarot/index.html'), 'tarot-category guide must link 
 assert.ok(html.includes('>홈<'));
 assert.ok(html.includes('>타로 카드 백과사전<'));
 assert.ok(html.includes('>운세 가이드<'));
-assert.ok(html.includes('>About<'));
+assert.ok(html.includes('>소개<'));
 // 푸터 6링크
 assert.ok(html.includes('href="../contact.html">문의하기'));
 assert.ok(html.includes('href="../faq.html">자주 묻는 질문'));

@@ -25,7 +25,7 @@ function renderNav(links) {
     '<a href="' + links.homeHref + '">홈</a>' +
     '<a href="' + links.tarotHubHref + '">타로 카드 백과사전</a>' +
     '<a href="' + links.guidesHref + '">운세 가이드</a>' +
-    '<a href="' + links.aboutHref + '">About</a>' +
+    '<a href="' + links.aboutHref + '">소개</a>' +
     '</nav>';
 }
 
