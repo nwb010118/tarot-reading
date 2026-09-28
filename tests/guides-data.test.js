@@ -58,6 +58,17 @@ for (const guide of sajuGuides) {
   assert.ok(length >= 1500 && length <= 2500, guide.slug + ' body length: ' + length);
 }
 
+const compatGuide = GUIDES.find(function (g) { return g.slug === 'compatibility-guide'; });
+assert.ok(compatGuide, 'compatibility-guide must exist');
+assert.strictEqual(compatGuide.category, 'compatibility');
+assert.strictEqual(compatGuide.order, 1);
+const compatLength = bodyToText(compatGuide).replace(/\s/g, '').length;
+assert.ok(compatLength >= 1500 && compatLength <= 2500, 'compatibility guide body length: ' + compatLength);
+const compatBody = compatGuide.bodyHtml.join(' ');
+assert.ok(compatBody.includes('별자리 궁합'), 'must mention 별자리 궁합 (matches index.html compat-subtype-select)');
+assert.ok(compatBody.includes('띠 궁합'), 'must mention 띠 궁합 (matches index.html compat-subtype-select)');
+assert.ok(compatBody.includes('사주 궁합'), 'must mention 사주 궁합 (matches index.html compat-subtype-select)');
+
 const docs = GUIDES.map(function (g) {
   return { slug: g.slug, sentences: splitSentences(bodyToText(g)).filter(function (s) { return s.trim().length > 8; }) };
 });

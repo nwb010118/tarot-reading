@@ -50,6 +50,14 @@ for (const guide of sajuGuides) {
   }
 }
 
+const compatGuide = GUIDES.find(g => g.slug === 'compatibility-guide');
+assert.ok(indexHtml.includes('<h2>궁합</h2>'));
+assert.ok(indexHtml.includes('href="compatibility-guide.html">' + compatGuide.title + '</a>'));
+const compatHtml = fs.readFileSync(path.join(guidesDir, 'compatibility-guide.html'), 'utf8');
+assert.ok(compatHtml.includes('<h1>' + compatGuide.title + '</h1>'));
+assert.ok(compatHtml.includes('<link rel="canonical" href="https://nwb010118.github.io/tarot-reading/guides/compatibility-guide.html">'));
+assert.ok(compatHtml.includes('<a href="../index.html">점집 홈에서 직접 해보기 ↗</a>'));
+
 fs.rmSync(tmpDir, { recursive: true, force: true });
 
 console.log('generate-guides-pages.test.js: all assertions passed');
