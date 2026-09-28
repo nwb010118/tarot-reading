@@ -21,7 +21,8 @@ const {
   getDaeunDirection,
   getDaeunStartAge,
   getDaeunList,
-  getStemElement
+  getStemElement,
+  getSipsin
 } = require('../js/saju-calc.js');
 
 // normalizeMod
@@ -184,3 +185,21 @@ assert.strictEqual(getStemElement(6), '금'); // 경
 assert.strictEqual(getStemElement(8), '수'); // 임
 
 console.log('All getStemElement tests passed');
+
+// getSipsin: 일간 대비 대상 천간의 십성
+// 일간 갑(0,목,양) 기준
+assert.strictEqual(getSipsin(0, 0), '비견'); // 갑 vs 갑: 같은오행, 같은음양
+assert.strictEqual(getSipsin(0, 2), '식신'); // 갑 vs 병(화): 목생화, 둘다양
+assert.strictEqual(getSipsin(0, 3), '상관'); // 갑 vs 정(화,음): 목생화, 음양다름
+assert.strictEqual(getSipsin(0, 6), '편관'); // 갑 vs 경(금,양): 금극목이므로 관성
+assert.strictEqual(getSipsin(0, 7), '정관'); // 갑 vs 신(금,음): 금극목이므로 관성
+assert.strictEqual(getSipsin(0, 4), '편재'); // 갑 vs 무(토,양): 목극토이므로 재성
+assert.strictEqual(getSipsin(0, 9), '정인'); // 갑 vs 계(수,음): 수생목
+
+// 사용자가 준 스크린샷 예시로 교차검증 (일간 임=8, 수, 양)
+assert.strictEqual(getSipsin(8, 8), '비견');
+assert.strictEqual(getSipsin(8, 6), '편인'); // 임 vs 경(금,양): 금생수, 같은음양
+assert.strictEqual(getSipsin(8, 2), '편재'); // 임 vs 병(화,양): 수극화, 같은음양
+assert.strictEqual(getSipsin(8, 4), '편관'); // 임 vs 무(토,양): 토극수, 같은음양
+
+console.log('All getSipsin tests passed');

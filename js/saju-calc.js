@@ -150,6 +150,28 @@ function getStemElement(stemIdx) {
   return CHEONGAN_ELEMENT[stemIdx];
 }
 
+const ELEMENT_ORDER = ['목', '화', '토', '금', '수'];
+
+function getElementOrderIndex(element) {
+  return ELEMENT_ORDER.indexOf(element);
+}
+
+const SIPSIN_NAMES = {
+  0: ['비견', '겁재'],
+  1: ['식신', '상관'],
+  2: ['편재', '정재'],
+  3: ['편관', '정관'],
+  4: ['편인', '정인']
+};
+
+function getSipsin(dayStemIdx, targetStemIdx) {
+  const dayEl = getStemElement(dayStemIdx);
+  const targetEl = getStemElement(targetStemIdx);
+  const diff = normalizeMod(getElementOrderIndex(targetEl) - getElementOrderIndex(dayEl), 5);
+  const sameYinYang = isYangStem(dayStemIdx) === isYangStem(targetStemIdx);
+  return SIPSIN_NAMES[diff][sameYinYang ? 0 : 1];
+}
+
 function getElementCounts(pillars) {
   const counts = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
   const list = [pillars.year, pillars.month, pillars.day];
@@ -207,5 +229,5 @@ function getDaeunList(monthStemIdx, monthBranchIdx, direction, startAge) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju, getElementCounts, classifyElementBalance, getDaeunDirection, getDaeunStartAge, getDaeunList, getStemElement };
+  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju, getElementCounts, classifyElementBalance, getDaeunDirection, getDaeunStartAge, getDaeunList, getStemElement, getElementOrderIndex, getSipsin };
 }
