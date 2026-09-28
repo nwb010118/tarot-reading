@@ -190,6 +190,24 @@ function getTwelveLifeStage(dayStemIdx, targetBranchIdx) {
   return TWELVE_LIFESTAGES[position];
 }
 
+// 60갑자를 2개씩 묶어 공유하는 납음 이름 30개(갑자을축=해중금부터 임술계해=대해수까지)
+const NAPJEONG_NAMES = [
+  '해중금', '노중화', '대림목', '노방토', '검봉금', '산두화', '간하수', '성두토', '백랍금', '양류목',
+  '정천수', '옥상토', '벽력화', '송백목', '장류수', '사중금', '산하화', '평지목', '벽상토', '금박금',
+  '복등화', '천하수', '대역토', '채천금', '상자목', '대계수', '사중토', '천상화', '석류목', '대해수'
+];
+
+function getGanjiIndex(stemIdx, branchIdx) {
+  for (let i = 0; i < 60; i += 1) {
+    if (i % 10 === stemIdx && i % 12 === branchIdx) return i;
+  }
+  return -1;
+}
+
+function getNapjeong(stemIdx, branchIdx) {
+  return NAPJEONG_NAMES[Math.floor(getGanjiIndex(stemIdx, branchIdx) / 2)];
+}
+
 function getElementCounts(pillars) {
   const counts = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
   const list = [pillars.year, pillars.month, pillars.day];
@@ -247,5 +265,5 @@ function getDaeunList(monthStemIdx, monthBranchIdx, direction, startAge) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju, getElementCounts, classifyElementBalance, getDaeunDirection, getDaeunStartAge, getDaeunList, getStemElement, getElementOrderIndex, getSipsin, getJijanggan, getTwelveLifeStage };
+  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju, getElementCounts, classifyElementBalance, getDaeunDirection, getDaeunStartAge, getDaeunList, getStemElement, getElementOrderIndex, getSipsin, getJijanggan, getTwelveLifeStage, getGanjiIndex, getNapjeong };
 }

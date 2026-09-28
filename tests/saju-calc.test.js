@@ -24,7 +24,9 @@ const {
   getStemElement,
   getSipsin,
   getJijanggan,
-  getTwelveLifeStage
+  getTwelveLifeStage,
+  getGanjiIndex,
+  getNapjeong
 } = require('../js/saju-calc.js');
 
 // normalizeMod
@@ -230,3 +232,16 @@ assert.strictEqual(getTwelveLifeStage(8, 10), '관대'); // 술 (스크린샷 �
 assert.strictEqual(getTwelveLifeStage(8, 0), '제왕');  // 자 (스크린샷 년주 예시)
 
 console.log('All getTwelveLifeStage tests passed');
+
+// getGanjiIndex / getNapjeong
+assert.strictEqual(getGanjiIndex(0, 0), 0); // 갑자
+assert.strictEqual(getGanjiIndex(1, 1), 1); // 을축
+assert.strictEqual(getGanjiIndex(8, 4), 28); // 임진
+
+// 스크린샷 예시 4개 전부 대조
+assert.strictEqual(getNapjeong(4, 8), '대역토'); // 무신(시주)
+assert.strictEqual(getNapjeong(8, 4), '장류수'); // 임진(일주)
+assert.strictEqual(getNapjeong(2, 10), '옥상토'); // 병술(월주)
+assert.strictEqual(getNapjeong(6, 0), '벽상토'); // 경자(년주)
+
+console.log('All getNapjeong tests passed');
