@@ -256,3 +256,55 @@ assert.strictEqual(isChungBranchPair(0, 1), false); // 자-축은 충 아님
 assert.strictEqual(isChungBranchPair(4, 8), false); // 진-신은 충 아님
 
 console.log('All isChungBranchPair tests passed');
+
+// 골든케이스: 2020-10-16 16:00 KST 출생 (사용자 제공 스크린샷 예시)
+// 기대 명식: 년주 경자, 월주 병술, 일주 임진, 시주 무신
+const screenshotCase = calculateSaju({ year: 2020, month: 10, day: 16, hour: 16, minute: 0, timeUnknown: false });
+
+assert.strictEqual(CHEONGAN[screenshotCase.year.stemIdx] + JIJI[screenshotCase.year.branchIdx], '경자');
+assert.strictEqual(CHEONGAN[screenshotCase.month.stemIdx] + JIJI[screenshotCase.month.branchIdx], '병술');
+assert.strictEqual(CHEONGAN[screenshotCase.day.stemIdx] + JIJI[screenshotCase.day.branchIdx], '임진');
+assert.strictEqual(CHEONGAN[screenshotCase.hour.stemIdx] + JIJI[screenshotCase.hour.branchIdx], '무신');
+
+const dayStemIdx = screenshotCase.day.stemIdx;
+
+// 십성(천간): 일주는 자기 자신이라 getSipsin 대상 아님
+assert.strictEqual(getSipsin(dayStemIdx, screenshotCase.year.stemIdx), '편인');
+assert.strictEqual(getSipsin(dayStemIdx, screenshotCase.month.stemIdx), '편재');
+assert.strictEqual(getSipsin(dayStemIdx, screenshotCase.hour.stemIdx), '편관');
+
+// 십성(지지, 정기 기준) — 일지(辰)는 스크린샷(상관)과 다르게 정기 기준 정답인 편관으로 검증한다.
+// (설계 문서 참고: 스크린샷은 일지에 한해 초기 지장간을 쓴 것으로 보이는 고급 유파 규칙이라, 이번 스코프의
+// "정기만" 방침과는 다른 값이 나온다. 우리는 정기 기준으로 일관되게 간다.)
+assert.strictEqual(getSipsin(dayStemIdx, getJijanggan(screenshotCase.year.branchIdx)), '겁재');
+assert.strictEqual(getSipsin(dayStemIdx, getJijanggan(screenshotCase.month.branchIdx)), '편관');
+assert.strictEqual(getSipsin(dayStemIdx, getJijanggan(screenshotCase.day.branchIdx)), '편관');
+assert.strictEqual(getSipsin(dayStemIdx, getJijanggan(screenshotCase.hour.branchIdx)), '편인');
+
+// 지장간(정기)
+assert.strictEqual(CHEONGAN[getJijanggan(screenshotCase.year.branchIdx)], '계');
+assert.strictEqual(CHEONGAN[getJijanggan(screenshotCase.month.branchIdx)], '무');
+assert.strictEqual(CHEONGAN[getJijanggan(screenshotCase.day.branchIdx)], '무');
+assert.strictEqual(CHEONGAN[getJijanggan(screenshotCase.hour.branchIdx)], '경');
+
+// 12운성
+assert.strictEqual(getTwelveLifeStage(dayStemIdx, screenshotCase.year.branchIdx), '제왕');
+assert.strictEqual(getTwelveLifeStage(dayStemIdx, screenshotCase.month.branchIdx), '관대');
+assert.strictEqual(getTwelveLifeStage(dayStemIdx, screenshotCase.day.branchIdx), '묘');
+assert.strictEqual(getTwelveLifeStage(dayStemIdx, screenshotCase.hour.branchIdx), '장생');
+
+// 납음오행
+assert.strictEqual(getNapjeong(screenshotCase.year.stemIdx, screenshotCase.year.branchIdx), '벽상토');
+assert.strictEqual(getNapjeong(screenshotCase.month.stemIdx, screenshotCase.month.branchIdx), '옥상토');
+assert.strictEqual(getNapjeong(screenshotCase.day.stemIdx, screenshotCase.day.branchIdx), '장류수');
+assert.strictEqual(getNapjeong(screenshotCase.hour.stemIdx, screenshotCase.hour.branchIdx), '대역토');
+
+// 충: 이 명식에서는 일지(辰)-월지(戌) 한 쌍만 충
+assert.strictEqual(isChungBranchPair(screenshotCase.day.branchIdx, screenshotCase.month.branchIdx), true);
+assert.strictEqual(isChungBranchPair(screenshotCase.day.branchIdx, screenshotCase.year.branchIdx), false);
+assert.strictEqual(isChungBranchPair(screenshotCase.day.branchIdx, screenshotCase.hour.branchIdx), false);
+assert.strictEqual(isChungBranchPair(screenshotCase.month.branchIdx, screenshotCase.year.branchIdx), false);
+assert.strictEqual(isChungBranchPair(screenshotCase.month.branchIdx, screenshotCase.hour.branchIdx), false);
+assert.strictEqual(isChungBranchPair(screenshotCase.year.branchIdx, screenshotCase.hour.branchIdx), false);
+
+console.log('All saju myeongsik detail golden-case tests passed');
