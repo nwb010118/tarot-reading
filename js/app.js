@@ -441,6 +441,7 @@
       extraHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
+    shareButton.classList.remove('hidden');
   }
 
   function saveZodiacReading() {
@@ -471,6 +472,7 @@
       extraHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
+    shareButton.classList.remove('hidden');
   }
 
   function saveDdiReading() {
@@ -798,6 +800,7 @@
       extraHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
+    shareButton.classList.remove('hidden');
   }
 
   function saveCompatibilityReading(subtype, label1, label2, tierInfo) {
@@ -894,6 +897,7 @@
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' + details.join('');
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
+    shareButton.classList.remove('hidden');
   }
 
   function saveCurrentReading(draw) {
