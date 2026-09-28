@@ -1,6 +1,8 @@
 const { SITE_BASE } = require('./tarot-page-data.js');
 const { GUIDE_CATEGORY_LABELS, GUIDE_CATEGORY_ORDER, GUIDE_CATEGORY_INTROS } = require('../../data/guides-data.js');
 
+var OG_IMAGE_URL = SITE_BASE + 'images/og-image.jpg';
+
 function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, function (ch) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
@@ -73,6 +75,9 @@ function renderGuidePage(guide, categoryGuides) {
     '<meta property="og:title" content="' + escapeHtml(pageTitle) + '">\n' +
     '<meta property="og:description" content="' + escapeHtml(guide.description) + '">\n' +
     '<meta property="og:url" content="' + canonicalUrl + '">\n' +
+    '<meta property="og:image" content="' + OG_IMAGE_URL + '">\n' +
+    '<meta name="twitter:card" content="summary_large_image">\n' +
+    '<meta name="twitter:image" content="' + OG_IMAGE_URL + '">\n' +
     '<link rel="stylesheet" href="../css/style.css">\n' +
     '<link rel="stylesheet" href="../css/salon.css">\n' +
     '</head>\n' +
@@ -129,6 +134,9 @@ function renderGuidesIndexPage(allGuides) {
     '<meta property="og:title" content="' + escapeHtml(pageTitle) + '">\n' +
     '<meta property="og:description" content="' + escapeHtml(pageDescription) + '">\n' +
     '<meta property="og:url" content="' + canonicalUrl + '">\n' +
+    '<meta property="og:image" content="' + OG_IMAGE_URL + '">\n' +
+    '<meta name="twitter:card" content="summary_large_image">\n' +
+    '<meta name="twitter:image" content="' + OG_IMAGE_URL + '">\n' +
     '<link rel="stylesheet" href="../css/style.css">\n' +
     '<link rel="stylesheet" href="../css/salon.css">\n' +
     '</head>\n' +
