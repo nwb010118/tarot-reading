@@ -27,7 +27,8 @@ const {
   getTwelveLifeStage,
   getGanjiIndex,
   getNapjeong,
-  isChungBranchPair
+  isChungBranchPair,
+  getSeunList
 } = require('../js/saju-calc.js');
 
 // normalizeMod
@@ -181,6 +182,24 @@ assert.strictEqual(daeunList[0].stemIdx, 3);
 assert.strictEqual(daeunList[0].branchIdx, 9);
 
 console.log('All saju-calc daeun tests passed');
+
+// getSeunList: 알려진 연도의 간지와 반환 필드
+assert.deepStrictEqual(getSeunList(1984, 1), [{ year: 1984, stemIdx: 0, branchIdx: 0 }]);
+assert.strictEqual(pillarLabel(getSeunList(1984, 1)[0]), '갑자');
+const seunGoldenList = getSeunList(2024, 3);
+assert.deepStrictEqual(seunGoldenList.map(function (p) { return p.year; }), [2024, 2025, 2026]);
+assert.deepStrictEqual(seunGoldenList.map(pillarLabel), ['갑진', '을사', '병오']);
+
+// 10개 연도가 연속하며 계해에서 갑자로 천간과 지지가 함께 순환
+const seunTenYears = getSeunList(1983, 10);
+assert.strictEqual(seunTenYears.length, 10);
+assert.deepStrictEqual(seunTenYears.map(function (p) { return p.year; }),
+  [1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992]);
+assert.deepStrictEqual(seunTenYears.map(pillarLabel),
+  ['계해', '갑자', '을축', '병인', '정묘', '무진', '기사', '경오', '신미', '임신']);
+assert.deepStrictEqual(getSeunList(2024, 0), []);
+
+console.log('All getSeunList tests passed');
 
 // getStemElement: 천간 인덱스 -> 오행
 assert.strictEqual(getStemElement(0), '목'); // 갑
