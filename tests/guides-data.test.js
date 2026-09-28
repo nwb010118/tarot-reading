@@ -50,6 +50,14 @@ for (const row of ddiRows) {
   for (const year of years) assert.strictEqual(getDdiByYear(year).name_kr, row[1]);
 }
 
+const sajuGuides = GUIDES.filter(g => g.category === 'saju');
+assert.deepStrictEqual(sajuGuides.map(g => g.slug), ['what-is-saju', 'heavenly-stems-earthly-branches', 'lunar-solar-birth-time']);
+assert.deepStrictEqual(sajuGuides.map(g => g.order), [1, 2, 3]);
+for (const guide of sajuGuides) {
+  const length = bodyToText(guide).replace(/\s/g, '').length;
+  assert.ok(length >= 1500 && length <= 2500, guide.slug + ' body length: ' + length);
+}
+
 const docs = GUIDES.map(function (g) {
   return { slug: g.slug, sentences: splitSentences(bodyToText(g)).filter(function (s) { return s.trim().length > 8; }) };
 });
