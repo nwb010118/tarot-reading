@@ -26,7 +26,8 @@ const {
   getJijanggan,
   getTwelveLifeStage,
   getGanjiIndex,
-  getNapjeong
+  getNapjeong,
+  isChungBranchPair
 } = require('../js/saju-calc.js');
 
 // normalizeMod
@@ -245,3 +246,13 @@ assert.strictEqual(getNapjeong(2, 10), '옥상토'); // 병술(월주)
 assert.strictEqual(getNapjeong(6, 0), '벽상토'); // 경자(년주)
 
 console.log('All getNapjeong tests passed');
+
+// isChungBranchPair: 지지 충 판정 (자오/축미/인신/묘유/진술/사해)
+assert.strictEqual(isChungBranchPair(0, 6), true);  // 자-오
+assert.strictEqual(isChungBranchPair(1, 7), true);  // 축-미
+assert.strictEqual(isChungBranchPair(4, 10), true); // 진-술
+assert.strictEqual(isChungBranchPair(6, 0), true);  // 순서 바뀌어도 true
+assert.strictEqual(isChungBranchPair(0, 1), false); // 자-축은 충 아님
+assert.strictEqual(isChungBranchPair(4, 8), false); // 진-신은 충 아님
+
+console.log('All isChungBranchPair tests passed');

@@ -208,6 +208,10 @@ function getNapjeong(stemIdx, branchIdx) {
   return NAPJEONG_NAMES[Math.floor(getGanjiIndex(stemIdx, branchIdx) / 2)];
 }
 
+function isChungBranchPair(branchIdxA, branchIdxB) {
+  return normalizeMod(branchIdxA - branchIdxB, 12) === 6;
+}
+
 function getElementCounts(pillars) {
   const counts = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
   const list = [pillars.year, pillars.month, pillars.day];
@@ -265,5 +269,5 @@ function getDaeunList(monthStemIdx, monthBranchIdx, direction, startAge) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju, getElementCounts, classifyElementBalance, getDaeunDirection, getDaeunStartAge, getDaeunList, getStemElement, getElementOrderIndex, getSipsin, getJijanggan, getTwelveLifeStage, getGanjiIndex, getNapjeong };
+  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju, getElementCounts, classifyElementBalance, getDaeunDirection, getDaeunStartAge, getDaeunList, getStemElement, getElementOrderIndex, getSipsin, getJijanggan, getTwelveLifeStage, getGanjiIndex, getNapjeong, isChungBranchPair };
 }
