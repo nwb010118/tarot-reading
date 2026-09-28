@@ -112,6 +112,7 @@
   const cardsContainer = document.getElementById('cards-container');
   const summaryEl = document.getElementById('summary');
   const newReadingButton = document.getElementById('new-reading-button');
+  const shareButton = document.getElementById('share-button');
   const historyOpenButton = document.getElementById('history-open-button');
   const historyModal = document.getElementById('history-modal');
   const historyList = document.getElementById('history-list');
@@ -764,6 +765,7 @@
       extraHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
+    shareButton.classList.remove('hidden');
   }
 
   function saveSajuReading(input, saju) {
@@ -908,6 +910,40 @@
     };
     saveReading(storage, entry);
   }
+
+  const SHARE_SELECTOR = 'h3, h4, .compat-score, .compat-tier-label, .reading-lead, .reading-body, .card-keywords, .card-advice';
+  const SITE_URL = 'https://nwb010118.github.io/tarot-reading/';
+
+  function buildShareText() {
+    const parts = Array.prototype.map.call(
+      summaryEl.querySelectorAll(SHARE_SELECTOR),
+      function (el) { return el.textContent.trim(); }
+    );
+    return parts.join('\n\n') + '\n\n점집에서 나도 운세 보러 가기\n' + SITE_URL;
+  }
+
+  function copyShareText(text) {
+    if (!navigator.clipboard) return;
+    navigator.clipboard.writeText(text).then(function () {
+      const original = shareButton.textContent;
+      shareButton.textContent = '복사했어요!';
+      setTimeout(function () { shareButton.textContent = original; }, 1500);
+    });
+  }
+
+  function shareCurrentReading() {
+    const text = buildShareText();
+    if (navigator.share) {
+      navigator.share({ text: text }).catch(function (err) {
+        if (err && err.name === 'AbortError') return;
+        copyShareText(text);
+      });
+    } else {
+      copyShareText(text);
+    }
+  }
+
+  shareButton.addEventListener('click', shareCurrentReading);
 
   newReadingButton.addEventListener('click', function () {
     screenReading.classList.add('hidden');

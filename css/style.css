@@ -66,7 +66,7 @@ label { display: block; margin-bottom: 8px; color: #c9bde0; }
 .spread-btn.selected { border-color: #d4af37; background: #2a1f42; }
 
 #draw-button, #history-open-button, #new-reading-button,
-#clear-history-button, #history-close-button {
+#clear-history-button, #history-close-button, #share-button {
   display: block;
   width: 100%;
   padding: 14px;
