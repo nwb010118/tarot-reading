@@ -35,6 +35,21 @@ assert.ok(tables.some(function (table) {
   });
 }), 'date table must pair all 12 zodiac names with their data dateRange labels exactly once');
 
+const ddiGuide = GUIDES.find(g => g.slug === 'zodiac-animals');
+assert.ok(ddiGuide);
+assert.strictEqual(ddiGuide.category, 'ddi');
+const ddiLength = bodyToText(ddiGuide).replace(/\s/g, '').length;
+assert.ok(ddiLength >= 1500 && ddiLength <= 2500, 'ddi guide body length: ' + ddiLength);
+const { getDdiByYear } = require('../data/ddi-data.js');
+const ddiRows = [...ddiGuide.bodyHtml.join('').matchAll(/<tr><th scope="row">([^<]+)<\/th><td>[^<]+<\/td><td>([^<]+)<\/td><\/tr>/g)];
+assert.strictEqual(ddiRows.length, 12);
+assert.strictEqual(new Set(ddiRows.map(r => r[1])).size, 12);
+for (const row of ddiRows) {
+  const years = row[2].split(' · ').map(Number);
+  assert.strictEqual(years.length, 3);
+  for (const year of years) assert.strictEqual(getDdiByYear(year).name_kr, row[1]);
+}
+
 const docs = GUIDES.map(function (g) {
   return { slug: g.slug, sentences: splitSentences(bodyToText(g)).filter(function (s) { return s.trim().length > 8; }) };
 });

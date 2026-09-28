@@ -31,6 +31,12 @@ assert.ok(indexHtml.includes('<h2>별자리</h2>'));
 assert.ok(indexHtml.includes('href="what-is-zodiac.html">12별자리 기본 가이드</a>'));
 assert.ok(indexHtml.includes('<link rel="canonical" href="https://nwb010118.github.io/tarot-reading/guides/index.html">'));
 
+const ddiHtml = fs.readFileSync(path.join(guidesDir, 'zodiac-animals.html'), 'utf8');
+assert.ok(ddiHtml.includes('<h1>12띠 기본 가이드</h1>'));
+assert.ok(ddiHtml.includes('<link rel="canonical" href="https://nwb010118.github.io/tarot-reading/guides/zodiac-animals.html">'));
+assert.ok(indexHtml.includes('href="zodiac-animals.html">12띠 기본 가이드</a>'));
+assert.ok(indexHtml.includes('<h2>띠운세</h2>'));
+
 fs.rmSync(tmpDir, { recursive: true, force: true });
 
 console.log('generate-guides-pages.test.js: all assertions passed');

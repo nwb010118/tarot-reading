@@ -24,12 +24,14 @@ assert.ok(sitemap.includes('tarot-reading/guides/index.html'), 'guides index url
 assert.ok(sitemap.includes('tarot-reading/guides/what-is-tarot.html'), 'sample guide url must exist');
 assert.ok(sitemap.includes('<lastmod>2026-09-22</lastmod>'));
 
-// 84(홈/about/contact/faq/legal/tarot허브/78카드) + 인덱스 1 + 타로 6 + 별자리 1 = 92.
-assert.strictEqual((sitemap.match(/<url>/g) || []).length, 92, 'sitemap must contain exactly 92 <url> entries');
+// 84(홈/about/contact/faq/legal/tarot허브/78카드) + 인덱스 1 + 타로 6 + 별자리 1 + 띠 1 = 93.
+assert.strictEqual((sitemap.match(/<url>/g) || []).length, 93, 'sitemap must contain exactly 93 <url> entries');
 const urls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(function (match) { return match[1]; });
-assert.strictEqual(urls.length, 92, 'every sitemap entry must have a URL');
+assert.strictEqual(urls.length, 93, 'every sitemap entry must have a URL');
 assert.strictEqual(new Set(urls).size, urls.length, 'all sitemap URLs must be unique');
 assert.ok(urls.includes('https://nwb010118.github.io/tarot-reading/guides/what-is-zodiac.html'), 'zodiac guide URL must exist');
+
+assert.ok(urls.includes('https://nwb010118.github.io/tarot-reading/guides/zodiac-animals.html'));
 
 fs.rmSync(tmpDir, { recursive: true, force: true });
 
