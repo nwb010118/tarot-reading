@@ -630,23 +630,86 @@
     return CHEONGAN[pillar.stemIdx] + JIJI[pillar.branchIdx];
   }
 
+  const ELEMENT_CLASS = { 목: 'el-wood', 화: 'el-fire', 토: 'el-earth', 금: 'el-metal', 수: 'el-water' };
+
+  function ganjiCellHtml(stemIdx, branchIdx) {
+    const stemEl = getStemElement(stemIdx);
+    const branchEl = JIJI_ELEMENT[branchIdx];
+    return '<td class="ganji-cell">' +
+      '<span class="' + ELEMENT_CLASS[stemEl] + '">' + CHEONGAN[stemIdx] + '</span>' +
+      '<span class="' + ELEMENT_CLASS[branchEl] + '">' + JIJI[branchIdx] + '</span>' +
+      '</td>';
+  }
+
+  // saju(연/월/일/시주)를 받아 십성/간지/지장간/12운성/납음 상세표 HTML을 만든다.
+  // 시주가 없으면(시간 모름) 시주 컬럼 자체를 생략한다.
+  function renderMyeongsikDetailTable(saju) {
+    const pillars = [
+      { key: 'hour', label: '시주', pillar: saju.hour },
+      { key: 'day', label: '일주', pillar: saju.day },
+      { key: 'month', label: '월주', pillar: saju.month },
+      { key: 'year', label: '년주', pillar: saju.year }
+    ].filter(function (p) { return p.pillar; });
+
+    const dayStemIdx = saju.day.stemIdx;
+
+    const headerHtml = pillars.map(function (p) { return '<th>' + p.label + '</th>'; }).join('');
+
+    const sipsinStemRowHtml = pillars.map(function (p) {
+      const text = p.key === 'day' ? '일간(나)' : getSipsin(dayStemIdx, p.pillar.stemIdx);
+      return '<td>' + text + '</td>';
+    }).join('');
+
+    const ganjiRowHtml = pillars.map(function (p) {
+      return ganjiCellHtml(p.pillar.stemIdx, p.pillar.branchIdx);
+    }).join('');
+
+    const sipsinBranchRowHtml = pillars.map(function (p) {
+      return '<td>' + getSipsin(dayStemIdx, getJijanggan(p.pillar.branchIdx)) + '</td>';
+    }).join('');
+
+    const jijangganRowHtml = pillars.map(function (p) {
+      return '<td>' + CHEONGAN[getJijanggan(p.pillar.branchIdx)] + '</td>';
+    }).join('');
+
+    const lifeStageRowHtml = pillars.map(function (p) {
+      return '<td>' + getTwelveLifeStage(dayStemIdx, p.pillar.branchIdx) + '</td>';
+    }).join('');
+
+    const napjeongRowHtml = pillars.map(function (p) {
+      return '<td>' + getNapjeong(p.pillar.stemIdx, p.pillar.branchIdx) + '</td>';
+    }).join('');
+
+    const chungPairs = [];
+    for (let i = 0; i < pillars.length; i += 1) {
+      for (let j = i + 1; j < pillars.length; j += 1) {
+        if (isChungBranchPair(pillars[i].pillar.branchIdx, pillars[j].pillar.branchIdx)) {
+          chungPairs.push(pillars[i].label.replace('주', '지') + '·' + pillars[j].label.replace('주', '지') +
+            ' 충 (' + JIJI[pillars[i].pillar.branchIdx] + '·' + JIJI[pillars[j].pillar.branchIdx] + ')');
+        }
+      }
+    }
+    const chungHtml = chungPairs.length ? '<p class="chung-note">' + chungPairs.join(', ') + '</p>' : '';
+
+    return '<div class="myeongsik-detail-wrap"><table class="myeongsik-detail-table">' +
+      '<thead><tr><th></th>' + headerHtml + '</tr></thead>' +
+      '<tbody>' +
+      '<tr><th>십성</th>' + sipsinStemRowHtml + '</tr>' +
+      '<tr><th>간지</th>' + ganjiRowHtml + '</tr>' +
+      '<tr><th>십성</th>' + sipsinBranchRowHtml + '</tr>' +
+      '<tr><th>지장간</th>' + jijangganRowHtml + '</tr>' +
+      '<tr><th>12운성</th>' + lifeStageRowHtml + '</tr>' +
+      '<tr><th>납음</th>' + napjeongRowHtml + '</tr>' +
+      '</tbody></table></div>' + chungHtml;
+  }
+
   function showSajuSummary(input, saju) {
     const category = selectedCategory;
     const period = selectedPeriod;
     const ilgan = getIlganByIndex(saju.day.stemIdx);
     const heading = ilgan.name_kr + ' 일간 · ' + PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '오늘의운') + ' 리딩';
 
-    const myeongsikRows = [
-      { label: '년주', text: pillarText(saju.year) },
-      { label: '월주', text: pillarText(saju.month) },
-      { label: '일주', text: pillarText(saju.day) },
-      { label: '시주', text: saju.hour ? pillarText(saju.hour) : '모름' }
-    ];
-    const myeongsikHtml = '<div class="myeongsik-table">' +
-      myeongsikRows.map(function (row) {
-        return '<div class="myeongsik-col"><span class="myeongsik-label">' + row.label + '</span><span class="myeongsik-value">' + row.text + '</span></div>';
-      }).join('') +
-      '</div>';
+    const myeongsikHtml = renderMyeongsikDetailTable(saju);
 
     const counts = getElementCounts(saju);
     const elementHtml = '<p class="element-summary">' +
