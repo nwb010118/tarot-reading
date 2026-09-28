@@ -691,9 +691,10 @@
     }
     const chungHtml = chungPairs.length ? '<p class="chung-note">' + chungPairs.join(', ') + '</p>' : '';
     const elementNames = { 목: '나무', 화: '불', 토: '흙', 금: '쇠', 수: '물' };
+    const elementColorNames = { 목: '초록색', 화: '빨간색', 토: '갈색', 금: '흰색', 수: '남색' };
     const legendHtml = '<ul class="element-legend" aria-label="오행 색상 안내">' +
       ['목', '화', '토', '금', '수'].map(function (el) {
-        return '<li><span class="element-swatch ' + ELEMENT_CLASS[el] + '" aria-hidden="true"></span>' + el + '(' + elementNames[el] + ')</li>';
+        return '<li><span class="element-swatch ' + ELEMENT_CLASS[el] + '" aria-hidden="true"></span>' + elementColorNames[el] + ' = ' + el + '(' + elementNames[el] + ')</li>';
       }).join('') + '</ul>';
 
     return '<div class="myeongsik-detail-wrap"><table class="myeongsik-detail-table">' +
