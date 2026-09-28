@@ -22,7 +22,8 @@ const {
   getDaeunStartAge,
   getDaeunList,
   getStemElement,
-  getSipsin
+  getSipsin,
+  getJijanggan
 } = require('../js/saju-calc.js');
 
 // normalizeMod
@@ -203,3 +204,19 @@ assert.strictEqual(getSipsin(8, 2), '편재'); // 임 vs 병(화,양): 수극화
 assert.strictEqual(getSipsin(8, 4), '편관'); // 임 vs 무(토,양): 토극수, 같은음양
 
 console.log('All getSipsin tests passed');
+
+// getJijanggan: 지지의 정기 지장간(천간 인덱스)
+assert.strictEqual(CHEONGAN[getJijanggan(0)], '계'); // 자
+assert.strictEqual(CHEONGAN[getJijanggan(1)], '기'); // 축
+assert.strictEqual(CHEONGAN[getJijanggan(2)], '갑'); // 인
+assert.strictEqual(CHEONGAN[getJijanggan(3)], '을'); // 묘
+assert.strictEqual(CHEONGAN[getJijanggan(4)], '무'); // 진
+assert.strictEqual(CHEONGAN[getJijanggan(5)], '병'); // 사
+assert.strictEqual(CHEONGAN[getJijanggan(6)], '정'); // 오
+assert.strictEqual(CHEONGAN[getJijanggan(7)], '기'); // 미
+assert.strictEqual(CHEONGAN[getJijanggan(8)], '경'); // 신
+assert.strictEqual(CHEONGAN[getJijanggan(9)], '신'); // 유
+assert.strictEqual(CHEONGAN[getJijanggan(10)], '무'); // 술
+assert.strictEqual(CHEONGAN[getJijanggan(11)], '임'); // 해
+
+console.log('All getJijanggan tests passed');

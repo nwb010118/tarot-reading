@@ -172,6 +172,13 @@ function getSipsin(dayStemIdx, targetStemIdx) {
   return SIPSIN_NAMES[diff][sameYinYang ? 0 : 1];
 }
 
+// 지지별 정기(본기) 지장간 — CHEONGAN 인덱스. 순서: 자축인묘진사오미신유술해
+const JIJANGGAN_JEONGGI = [9, 5, 0, 1, 4, 2, 3, 5, 6, 7, 4, 8];
+
+function getJijanggan(branchIdx) {
+  return JIJANGGAN_JEONGGI[branchIdx];
+}
+
 function getElementCounts(pillars) {
   const counts = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
   const list = [pillars.year, pillars.month, pillars.day];
@@ -229,5 +236,5 @@ function getDaeunList(monthStemIdx, monthBranchIdx, direction, startAge) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju, getElementCounts, classifyElementBalance, getDaeunDirection, getDaeunStartAge, getDaeunList, getStemElement, getElementOrderIndex, getSipsin };
+  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju, getElementCounts, classifyElementBalance, getDaeunDirection, getDaeunStartAge, getDaeunList, getStemElement, getElementOrderIndex, getSipsin, getJijanggan };
 }
