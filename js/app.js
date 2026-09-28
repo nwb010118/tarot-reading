@@ -415,6 +415,7 @@
     summaryEl.classList.add('hidden');
     summaryEl.innerHTML = '';
     newReadingButton.classList.add('hidden');
+    shareButton.classList.add('hidden');
   });
 
   function renderReadingMeaning(meaning) {
@@ -928,7 +929,7 @@
       const original = shareButton.textContent;
       shareButton.textContent = '복사했어요!';
       setTimeout(function () { shareButton.textContent = original; }, 1500);
-    });
+    }).catch(function () {});
   }
 
   function shareCurrentReading() {
