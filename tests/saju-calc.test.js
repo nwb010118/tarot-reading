@@ -28,7 +28,8 @@ const {
   getGanjiIndex,
   getNapjeong,
   isChungBranchPair,
-  getSeunList
+  getSeunList,
+  getWolunList
 } = require('../js/saju-calc.js');
 
 // normalizeMod
@@ -200,6 +201,22 @@ assert.deepStrictEqual(seunTenYears.map(pillarLabel),
 assert.deepStrictEqual(getSeunList(2024, 0), []);
 
 console.log('All getSeunList tests passed');
+
+// getWolunList: 연간 인덱스 -> 12개월 월운 간지 목록 (인월~축월 순서)
+// 갑(yearStemIdx=0) 기준: getMonthPillar(0, 0)=병인은 위 오호둔 표에서 이미 검증된 공식과 동일.
+const wolunGab = getWolunList(0);
+assert.strictEqual(wolunGab.length, 12);
+assert.deepStrictEqual(wolunGab.map(function (p) { return p.monthOffset; }),
+  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+assert.deepStrictEqual(wolunGab.map(pillarLabel),
+  ['병인', '정묘', '무진', '기사', '경오', '신미', '임신', '계유', '갑술', '을해', '병자', '정축']);
+
+// 병(yearStemIdx=2) 기준 골든 값도 교차검증
+const wolunByeong = getWolunList(2);
+assert.deepStrictEqual(wolunByeong.map(pillarLabel),
+  ['경인', '신묘', '임진', '계사', '갑오', '을미', '병신', '정유', '무술', '기해', '경자', '신축']);
+
+console.log('All getWolunList tests passed');
 
 // getStemElement: 천간 인덱스 -> 오행
 assert.strictEqual(getStemElement(0), '목'); // 갑

@@ -280,6 +280,17 @@ function getSeunList(startYear, count) {
   return list;
 }
 
+// yearStemIdx(연간 인덱스) -> 인월(monthOffset 0)부터 축월(monthOffset 11)까지 12개월 월운 간지 목록.
+// 기존 getMonthPillar(오호둔 공식)를 그대로 재사용한다.
+function getWolunList(yearStemIdx) {
+  const list = [];
+  for (let monthOffset = 0; monthOffset < 12; monthOffset += 1) {
+    const pillar = getMonthPillar(yearStemIdx, monthOffset);
+    list.push({ monthOffset: monthOffset, stemIdx: pillar.stemIdx, branchIdx: pillar.branchIdx });
+  }
+  return list;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju, getElementCounts, classifyElementBalance, getDaeunDirection, getDaeunStartAge, getDaeunList, getSeunList, getStemElement, getElementOrderIndex, getSipsin, getJijanggan, getTwelveLifeStage, getGanjiIndex, getNapjeong, isChungBranchPair };
+  module.exports = { normalizeMod, normalizeDegrees, solarLongitude, findSolarTermMoment, toJulianDay, CHEONGAN, JIJI, getYearPillar, getMonthOffset, getMonthPillar, findIpchun, toJDN, getDayPillarIndex, getHourBranchIndex, getHourStemIndex, kstDateToInstant, getSajuYear, calculateSaju, getElementCounts, classifyElementBalance, getDaeunDirection, getDaeunStartAge, getDaeunList, getSeunList, getWolunList, getStemElement, getElementOrderIndex, getSipsin, getJijanggan, getTwelveLifeStage, getGanjiIndex, getNapjeong, isChungBranchPair };
 }
