@@ -64,16 +64,16 @@ deck.forEach(function (card) {
 // Test that major arcana "The" prefix is stripped from filenames (기존 검사 유지)
 const majorCards = deck.filter(function (c) { return c.type === 'major'; });
 const foolCard = majorCards.find(function (c) { return c.cardId === 'major_0'; });
-assert.strictEqual(foolCard.image, 'images/RWS_Tarot_00_Fool.jpg', 'The Fool should have "The" stripped');
+assert.strictEqual(foolCard.image, 'images/RWS_Tarot_00_Fool.webp', 'The Fool should have "The" stripped');
 
 const worldCard = majorCards.find(function (c) { return c.cardId === 'major_21'; });
-assert.strictEqual(worldCard.image, 'images/RWS_Tarot_21_World.jpg', 'The World should have "The" stripped');
+assert.strictEqual(worldCard.image, 'images/RWS_Tarot_21_World.webp', 'The World should have "The" stripped');
 
 const hanggedManCard = majorCards.find(function (c) { return c.cardId === 'major_12'; });
-assert.strictEqual(hanggedManCard.image, 'images/RWS_Tarot_12_Hanged_Man.jpg', 'The Hanged Man should have "The" stripped');
+assert.strictEqual(hanggedManCard.image, 'images/RWS_Tarot_12_Hanged_Man.webp', 'The Hanged Man should have "The" stripped');
 
 const strengthCard = majorCards.find(function (c) { return c.cardId === 'major_8'; });
-assert.strictEqual(strengthCard.image, 'images/RWS_Tarot_08_Strength.jpg', 'Strength (no "The") should be unchanged');
+assert.strictEqual(strengthCard.image, 'images/RWS_Tarot_08_Strength.webp', 'Strength (no "The") should be unchanged');
 
 // 카드당 부가정보(keywords/advice)와 세분화 카테고리 구조 검증
 // (categories의 각 서브키/단일 필드는 문자열 또는 {a,b}풀 둘 다 허용 — 점진적 변환 지원)

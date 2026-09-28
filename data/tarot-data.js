@@ -17,12 +17,12 @@ const SUIT_LABEL = { wands: 'Wands', cups: 'Cups', swords: 'Swords', pentacles: 
 
 function getMajorImageFilename(card) {
   const slug = card.name_en.replace(/^The\s+/, '').replace(/\s+/g, '_');
-  return 'RWS_Tarot_' + String(card.id).padStart(2, '0') + '_' + slug + '.jpg';
+  return 'RWS_Tarot_' + String(card.id).padStart(2, '0') + '_' + slug + '.webp';
 }
 
 function getMinorImageFilename(suitKey, card) {
   const num = MINOR_RANK_NUMBER[card.rank];
-  return SUIT_LABEL[suitKey] + String(num).padStart(2, '0') + '.jpg';
+  return SUIT_LABEL[suitKey] + String(num).padStart(2, '0') + '.webp';
 }
 
 function getFullDeck() {

@@ -31,7 +31,7 @@ assert.ok(html.includes('<meta property="og:description" content="' + escapeHtml
 assert.ok(html.includes('<meta property="og:url" content="' + vm.canonicalUrl + '">'), 'og:url must match vm.canonicalUrl');
 assert.ok(html.includes('<meta property="og:type" content="website">'));
 assert.ok(html.includes('<h1>태양 (The Sun)</h1>'), 'h1 must show card name');
-assert.ok(html.includes('../images/RWS_Tarot_19_Sun.jpg'), 'image src must be relative (../images/...)');
+assert.ok(html.includes('../images/RWS_Tarot_19_Sun.webp'), 'image src must be relative (../images/...)');
 assert.ok(html.includes('href="../index.html">홈'), 'nav must link home via ../index.html');
 assert.ok(html.includes('href="index.html">타로 카드 백과사전'), 'nav must link the hub via the same-directory index.html, not a roundabout ../tarot/index.html');
 assert.ok(html.includes('href="../about.html">소개'), 'nav must link about via ../about.html');

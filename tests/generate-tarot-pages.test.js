@@ -23,7 +23,7 @@ assert.ok(files.includes('wands-ace.html'), 'sample minor card page must exist')
 // 표본 파일 내용 확인
 const sunHtml = fs.readFileSync(path.join(tarotDir, 'major-19-sun.html'), 'utf8');
 assert.ok(sunHtml.includes('태양'));
-assert.ok(sunHtml.includes('../images/RWS_Tarot_19_Sun.jpg'));
+assert.ok(sunHtml.includes('../images/RWS_Tarot_19_Sun.webp'));
 assert.ok(sunHtml.includes('<link rel="canonical" href="https://nwb010118.github.io/tarot-reading/tarot/major-19-sun.html">'));
 
 const wandsAceHtml = fs.readFileSync(path.join(tarotDir, 'wands-ace.html'), 'utf8');
