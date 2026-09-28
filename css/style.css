@@ -79,7 +79,7 @@ label { display: block; margin-bottom: 8px; color: #c9bde0; }
   cursor: pointer;
 }
 
-#draw-button:hover, #history-open-button:hover, #new-reading-button:hover {
+#draw-button:hover, #history-open-button:hover, #new-reading-button:hover, #share-button:hover {
   background: rgba(212, 175, 55, 0.12);
 }
 

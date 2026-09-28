@@ -918,6 +918,7 @@
 
   const SHARE_SELECTOR = 'h3, h4, .compat-score, .compat-tier-label, .reading-lead, .reading-body, .card-keywords, .card-advice';
   const SITE_URL = 'https://nwb010118.github.io/tarot-reading/';
+  const SHARE_BUTTON_LABEL = '공유하기';
 
   function buildShareText() {
     const parts = Array.prototype.map.call(
@@ -930,10 +931,12 @@
   function copyShareText(text) {
     if (!navigator.clipboard) return;
     navigator.clipboard.writeText(text).then(function () {
-      const original = shareButton.textContent;
       shareButton.textContent = '복사했어요!';
-      setTimeout(function () { shareButton.textContent = original; }, 1500);
-    }).catch(function () {});
+      setTimeout(function () { shareButton.textContent = SHARE_BUTTON_LABEL; }, 1500);
+    }).catch(function () {
+      shareButton.textContent = '복사에 실패했어요';
+      setTimeout(function () { shareButton.textContent = SHARE_BUTTON_LABEL; }, 1500);
+    });
   }
 
   function shareCurrentReading() {
