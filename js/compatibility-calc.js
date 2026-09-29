@@ -71,6 +71,8 @@ function getSajuCompatibility(date1, date2) {
   const element2 = getStemElement(saju2.day.stemIdx);
   return {
     tier: getSajuElementTier(element1, element2),
+    saju1: saju1,
+    saju2: saju2,
     ilganName1: getIlganByIndex(saju1.day.stemIdx).name_kr,
     ilganName2: getIlganByIndex(saju2.day.stemIdx).name_kr
   };
