@@ -377,6 +377,7 @@
 
     if (selectedMode === 'compatibility') {
       let label1, label2, tier;
+      let saju1, saju2;
       if (selectedCompatSubtype === 'zodiac') {
         label1 = getZodiacByKey(selectedCompatZodiac1).name_kr;
         label2 = getZodiacByKey(selectedCompatZodiac2).name_kr;
@@ -394,12 +395,14 @@
         label1 = sajuResult.ilganName1 + ' 일간';
         label2 = sajuResult.ilganName2 + ' 일간';
         tier = sajuResult.tier;
+        saju1 = sajuResult.saju1;
+        saju2 = sajuResult.saju2;
       }
       const tierInfo = getCompatTierInfo(tier, label1, label2);
       cardsContainer.innerHTML = '';
       screenStart.classList.add('hidden');
       screenReading.classList.remove('hidden');
-      showCompatibilitySummary(label1, label2, tierInfo);
+      showCompatibilitySummary(label1, label2, tierInfo, saju1, saju2);
       saveCompatibilityReading(selectedCompatSubtype, label1, label2, tierInfo);
       return;
     }
@@ -728,6 +731,7 @@
 
     let daeunHtml = '';
     let seunHtml = '';
+    let wolunHtml = '';
     if (saju.hour) {
       const direction = getDaeunDirection(saju.year.stemIdx, selectedGender);
       const startAge = getDaeunStartAge(saju.instant, saju.monthOffset, direction);
@@ -738,7 +742,7 @@
       daeunHtml = '<p class="table-label">대운</p><div class="daeun-table">' +
         daeunList.map(function (d) {
           const isCurrent = currentAge >= d.startAge && currentAge <= d.endAge;
-          return '<div class="daeun-col' + (isCurrent ? ' current' : '') + '"><span class="daeun-ganji">' + pillarText(d) + '</span><span class="daeun-age">' + d.startAge + '~' + d.endAge + '세</span></div>';
+          return '<div class="daeun-col' + (isCurrent ? ' current' : '') + '"><span class="daeun-ganji">' + pillarText(d) + '</span><span class="daeun-age">천간 십성: ' + getSipsin(saju.day.stemIdx, d.stemIdx) + '</span><span class="daeun-age">' + d.startAge + '~' + d.endAge + '세</span></div>';
         }).join('') +
         '</div>';
 
@@ -753,6 +757,19 @@
             return '<div class="seun-col' + (isCurrent ? ' current' : '') + '"><span class="seun-ganji">' + pillarText(s) + '</span><span class="seun-age">' + s.year + '년 · ' + (s.year - input.year + 1) + '세</span></div>';
           }).join('') +
           '</div>';
+
+        // 월운은 호스트 시간대와 무관하게 KST의 입춘 기준 연도를 사용한다.
+        const kstCalendarYear = new Date(today.getTime() + 9 * 60 * 60 * 1000).getUTCFullYear();
+        const wolunYear = getSajuYear(today, kstCalendarYear);
+        const thisYearStemIdx = getYearPillar(wolunYear).stemIdx;
+        const wolunList = getWolunList(thisYearStemIdx);
+        const currentMonthOffset = getMonthOffset(solarLongitude(today));
+        wolunHtml = '<p class="table-label">월운 · ' + wolunYear + '년 (입춘 기준)</p><div class="wolun-table">' +
+          wolunList.map(function (w) {
+            const isCurrent = w.monthOffset === currentMonthOffset;
+            return '<div class="wolun-col' + (isCurrent ? ' current' : '') + '"><span class="wolun-ganji">' + pillarText(w) + '</span><span class="wolun-month">' + JIJI[w.branchIdx] + '월</span></div>';
+          }).join('') +
+          '</div>';
       }
     }
 
@@ -764,7 +781,7 @@
 
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
       '<div class="reading-detail">' + renderReadingMeaning(meaning) + '</div>' +
-      myeongsikHtml + elementHtml + daeunHtml + seunHtml +
+      myeongsikHtml + elementHtml + daeunHtml + seunHtml + wolunHtml +
       extraHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
@@ -790,14 +807,17 @@
     saveReading(storage, entry);
   }
 
-  function showCompatibilitySummary(label1, label2, tierInfo) {
+  function showCompatibilitySummary(label1, label2, tierInfo, saju1, saju2) {
     const heading = label1 + ' × ' + label2 + ' 궁합';
     const extraHtml = renderKeywordsAdviceHtml(tierInfo.keywords, tierInfo.advice);
+    const chartsHtml = saju1 && saju2 ?
+      '<h5 class="table-label">사람 1</h5>' + renderMyeongsikDetailTable(saju1) +
+      '<h5 class="table-label">사람 2</h5>' + renderMyeongsikDetailTable(saju2) : '';
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
       '<p class="compat-score">' + tierInfo.score + '%</p>' +
       '<p class="compat-tier-label">' + tierInfo.tierLabel + '</p>' +
       '<div class="reading-detail">' + renderReadingMeaning(tierInfo.text) + '</div>' +
-      extraHtml;
+      extraHtml + chartsHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     shareButton.classList.remove('hidden');
