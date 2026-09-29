@@ -272,6 +272,29 @@ label { display: block; margin-bottom: 8px; color: #c9bde0; }
 .seun-ganji { font-size: 16px; font-weight: bold; color: #d4af37; }
 .seun-age { font-size: 11px; color: #c9bde0; }
 
+.wolun-table {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.wolun-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px;
+  border: 1px solid #4a3a68;
+  border-radius: 8px;
+  background: #1a1330;
+}
+
+.wolun-col.current { border-color: #d4af37; background: #2a1f42; }
+
+.wolun-ganji { font-size: 16px; font-weight: bold; color: #d4af37; }
+.wolun-month { font-size: 11px; color: #c9bde0; }
+
 .myeongsik-detail-wrap { margin: 16px 0; overflow-x: auto; }
 
 .myeongsik-detail-table {

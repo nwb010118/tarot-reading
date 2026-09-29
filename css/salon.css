@@ -67,7 +67,7 @@ input[type='checkbox'] { accent-color: var(--gold); width: 16px; height: 16px; }
 .modal-content { background: var(--panel); border-color: #7a6c52; padding: 28px; border-radius: 16px; }
 .modal-content h2 { font-family: Batang, serif; font-weight: 400; color: var(--gold); }
 .history-item { padding: 18px 0; border-color: var(--line); }
-.daeun-col, .seun-col { background: #0c1726; border-color: var(--line); }
+.daeun-col, .seun-col, .wolun-col { background: #0c1726; border-color: var(--line); }
 #site-footer { margin-top: 36px; border-color: var(--line); padding-top: 25px; }
 #site-footer a { color: var(--muted); }
 #site-disclaimer { margin: 20px auto 0; max-width: 640px; color: #8896a8; font-size: 11px; line-height: 1.9; }
