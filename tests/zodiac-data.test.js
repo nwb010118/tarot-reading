@@ -12,7 +12,7 @@ const {
 
 const EXPECTED_KEYS = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'];
 const SUBDIVIDED_CATEGORIES = {
-  love: ['solo', 'couple'], money: ['consumption', 'invest'], career: ['jobseek', 'switch'],
+  love: ['solo', 'couple'], money: ['consumption', 'invest', 'income'], career: ['jobseek', 'switch'],
   business: ['startup', 'running'], study: ['exam', 'path'], health: ['body', 'mind'],
   relationships: ['new', 'existing'], workplace: ['team', 'personal']
 };
@@ -20,7 +20,7 @@ const SINGLE_CATEGORIES = ['honor', 'moving', 'children'];
 const FORBIDDEN_PAIRS = [
   ['love', ['solo', 'couple'], 'relationships', ['new', 'existing']],
   ['career', ['jobseek', 'switch'], 'workplace', ['team', 'personal']],
-  ['money', ['consumption', 'invest'], 'business', ['startup', 'running']]
+  ['money', ['consumption', 'invest', 'income'], 'business', ['startup', 'running']]
 ];
 
 function getField(z, cat, sub) {
@@ -73,11 +73,15 @@ ZODIAC_DATA.forEach(function (z) {
 
   Object.keys(SUBDIVIDED_CATEGORIES).forEach(function (cat) {
     const keys = SUBDIVIDED_CATEGORIES[cat];
-    assert.notStrictEqual(
-      JSON.stringify(z.categories[cat][keys[0]]),
-      JSON.stringify(z.categories[cat][keys[1]]),
-      z.key + ' categories.' + cat + ' sub-choices must not be identical'
-    );
+    for (let i = 0; i < keys.length; i += 1) {
+      for (let j = i + 1; j < keys.length; j += 1) {
+        assert.notStrictEqual(
+          JSON.stringify(z.categories[cat][keys[i]]),
+          JSON.stringify(z.categories[cat][keys[j]]),
+          z.key + ' categories.' + cat + ' sub-choices (' + keys[i] + ', ' + keys[j] + ') must not be identical'
+        );
+      }
+    }
   });
 });
 
