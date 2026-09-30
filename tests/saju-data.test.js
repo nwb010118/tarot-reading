@@ -12,7 +12,7 @@ const {
 
 const EXPECTED_KEYS = ['gap', 'eul', 'byeong', 'jeong', 'mu', 'gi', 'gyeong', 'sin', 'im', 'gye'];
 const SUBDIVIDED_CATEGORIES = {
-  love: ['solo', 'couple'], money: ['consumption', 'invest'], career: ['jobseek', 'switch'],
+  love: ['solo', 'couple'], money: ['consumption', 'invest', 'income'], career: ['jobseek', 'switch'],
   business: ['startup', 'running'], study: ['exam', 'path'], health: ['body', 'mind'],
   relationships: ['new', 'existing'], workplace: ['team', 'personal']
 };
@@ -20,7 +20,7 @@ const SINGLE_CATEGORIES = ['honor', 'moving', 'children'];
 const FORBIDDEN_PAIRS = [
   ['love', ['solo', 'couple'], 'relationships', ['new', 'existing']],
   ['career', ['jobseek', 'switch'], 'workplace', ['team', 'personal']],
-  ['money', ['consumption', 'invest'], 'business', ['startup', 'running']]
+  ['money', ['consumption', 'invest', 'income'], 'business', ['startup', 'running']]
 ];
 
 function getField(ilgan, cat, sub) {
@@ -64,13 +64,18 @@ ILGAN_DATA.forEach(function (ilgan) {
 
   Object.keys(SUBDIVIDED_CATEGORIES).forEach(function (cat) {
     var keys = SUBDIVIDED_CATEGORIES[cat];
-    assertPool(getField(ilgan, cat, keys[0]), ilgan.key + '.categories.' + cat + '.' + keys[0]);
-    assertPool(getField(ilgan, cat, keys[1]), ilgan.key + '.categories.' + cat + '.' + keys[1]);
-    assert.notStrictEqual(
-      JSON.stringify(getField(ilgan, cat, keys[0])),
-      JSON.stringify(getField(ilgan, cat, keys[1])),
-      ilgan.key + ' categories.' + cat + ' sub-choices must not be identical'
-    );
+    keys.forEach(function (key) {
+      assertPool(getField(ilgan, cat, key), ilgan.key + '.categories.' + cat + '.' + key);
+    });
+    for (let i = 0; i < keys.length; i += 1) {
+      for (let j = i + 1; j < keys.length; j += 1) {
+        assert.notStrictEqual(
+          JSON.stringify(getField(ilgan, cat, keys[i])),
+          JSON.stringify(getField(ilgan, cat, keys[j])),
+          ilgan.key + ' categories.' + cat + ' sub-choices (' + keys[i] + ', ' + keys[j] + ') must not be identical'
+        );
+      }
+    }
   });
   SINGLE_CATEGORIES.forEach(function (cat) {
     assertPool(getField(ilgan, cat, null), ilgan.key + '.categories.' + cat);
