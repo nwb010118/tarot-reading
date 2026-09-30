@@ -259,3 +259,59 @@ label, .category-btn, .spread-btn { font-size: 15px; }
   .site-nav a { white-space: nowrap; }
 }
 @media (max-width: 380px) { .site-nav { width: 100%; justify-content: space-between; } }
+/* Free readings: value-first hero and result previews. */
+.free-hero { display: grid; grid-template-columns: 1.15fr 1fr; align-items: center; gap: 16px; padding: 52px 0 62px; min-height: 560px; overflow: visible; }
+.free-hero h1 { font-size: clamp(34px, 4.4vw, 49px); letter-spacing: -2.5px; line-height: 1.4; }
+.free-hero .eyebrow { font-size: 11px; letter-spacing: 2px; }
+.free-services { color: #e9dcc4; font-size: 14px; margin: 23px 0; word-spacing: 5px; }
+.free-services span { color: #81745f; }
+.hero-cta { display: inline-flex; align-items: center; gap: 40px; padding: 15px 24px; border-radius: 8px; background: #e3c997; color: #172131; text-decoration: none; font-size: 15px; font-weight: 700; box-shadow: 0 8px 30px #d6bd8b18; }
+.hero-cta:hover { background: #f1dcb5; }
+.free-hero .hero-caption { margin-top: 15px; color: var(--muted); letter-spacing: 0; font-size: 11px; }
+.reading-showcase { position: relative; height: 440px; isolation: isolate; }
+.showcase-orbit { position: absolute; width: 360px; height: 360px; border: 1px solid #d6bd8b25; border-radius: 50%; top: 30px; left: 10px; box-shadow: 0 0 0 24px #d6bd8b04, 0 0 0 65px #d6bd8b03; z-index: -1; }
+.reading-showcase article { position: absolute; border: 1px solid #d6bd8b45; box-shadow: 0 18px 40px #0006; border-radius: 12px; overflow: hidden; }
+.sample-tarot { left: 4px; top: 20px; width: 180px; transform: rotate(-9deg); background: #e8dcc3; color: #282b31; }
+.sample-tarot img { display: block; width: 100%; height: 240px; object-fit: cover; object-position: top; }
+.sample-tarot > div { padding: 12px; }
+.reading-showcase h2 { font: 600 13px/1.6 'Malgun Gothic', sans-serif; letter-spacing: -.5px; margin: 7px 0; }
+.reading-showcase p { font-size: 10px; margin: 7px 0 0; }
+.sample-label { font-size: 9px; letter-spacing: 1px; opacity: .8; }
+.sample-saju { right: 0; top: 0; width: 225px; padding: 20px; background: linear-gradient(130deg,#203b3a,#14242c); transform: rotate(6deg); }
+.sample-saju .sample-label { color: #b4e3cc; }
+.sample-pillars { display: grid; grid-template-columns: repeat(4,1fr); text-align: center; gap: 5px; margin: 12px 0; }
+.sample-pillars > span { font-size: 9px; color: #b7c4c7; }
+.sample-pillars b { display: block; padding: 7px 0; margin-top: 5px; font: 24px/1.6 Batang,serif; border: 1px solid #ffffff15; background: #09192170; color: #e5d4b0; border-radius: 4px; }
+.sample-compat { right: 8px; bottom: 35px; width: 260px; padding: 18px 22px; background: linear-gradient(120deg,#3b293e,#201e32); transform: rotate(-3deg); }
+.sample-compat .sample-label { color: #edc4db; }
+.pair-symbol { color: #e4b9d0; font: 45px/1 Georgia,serif; margin-top: 8px; letter-spacing: -10px; }
+.pair-symbol span { font-size: 26px; margin: 0 8px; }
+.reading-showcase .showcase-note { position: absolute; bottom: 0; right: 32px; color: var(--muted); font-size: 10px; }
+#flow-choice { scroll-margin-top: 24px; }
+#mode-select { grid-template-columns: repeat(6,minmax(0,1fr)); gap: 14px; }
+#mode-select .mode-btn { grid-column: span 2; min-height: 230px; padding: 28px 16px 18px; }
+#mode-select .mode-btn:nth-last-child(-n+2) { grid-column: span 3; }
+#mode-select .mode-btn strong { font-size: 23px; font-family: Batang,serif; }
+#mode-select .mode-description { max-width: none; font-size: 13px; }
+.mode-free { position: absolute; right: 14px; top: 12px; border: 1px solid #ffffff20; border-radius: 20px; padding: 2px 9px; color: var(--mode-accent); font-size: 10px; }
+.mode-invite { color: var(--mode-accent); font-size: 11px; margin-top: 12px; }
+@media (max-width: 850px) {
+  .free-hero { grid-template-columns: 1fr 1fr; }.free-hero h1 { font-size: 36px; }.free-hero .hero-copy { font-size: 12px; }
+  .sample-saju { width: 195px; }.sample-tarot { width: 155px; }.sample-compat { width: 235px; }
+  .showcase-orbit { width: 260px; height: 260px; }
+}
+@media (max-width: 700px) {
+  .free-hero { display: flex; flex-direction: column; padding: 36px 0 24px; gap: 25px; }
+  .hero-message { width: 100%; }.free-hero h1 { font-size: clamp(31px,8.2vw,44px); letter-spacing: -1.8px; }
+  .free-hero .hero-copy { font-size: 13px; }.free-services { font-size: 12px; word-spacing: 2px; margin: 18px 0; }
+  .hero-cta { display: flex; justify-content: space-between; }.free-hero .hero-caption { text-align: center; display: block; }
+  .reading-showcase { width: 100%; max-width: 380px; height: 480px; }
+  .sample-tarot { left: 12px; top: 8px; width: 150px; }.sample-tarot img { height: 200px; }
+  .sample-saju { right: 8px; width: 180px; padding: 14px; }.sample-pillars b { font-size: 21px; }
+  .sample-compat { width: 230px; right: 9px; bottom: 28px; padding: 13px 16px; }
+  #mode-select { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+  #mode-select .mode-btn, #mode-select .mode-btn:nth-last-child(-n+2) { grid-column: auto; display: flex; min-height: 214px; padding: 30px 8px 14px; text-align: center; }
+  #mode-select .mode-btn:last-child { grid-column: 1 / -1; min-height: 185px; }
+  #mode-select .mode-btn strong { font-size: 21px; }#mode-select .mode-description { font-size: 11px; }
+  .section-heading h2 { font-size: 17px; }.section-heading p { font-size: 11px; }.section-star { display: none; }
+}

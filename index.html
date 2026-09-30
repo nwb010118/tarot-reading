@@ -19,7 +19,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://nwb010118.github.io/tarot-reading/images/og-image.jpg">
 <link rel="stylesheet" href="css/style.css?v=1708fba8">
-<link rel="stylesheet" href="css/salon.css?v=82084c5f">
+<link rel="stylesheet" href="css/salon.css?v=e5b6fd3b">
 </head>
 <body>
 <div id="app">
@@ -32,23 +32,36 @@
     </nav>
   </header>
 
-  <div class="hero">
-    <div class="celestial" aria-hidden="true"><img src="images/celestial-dial.svg?v=20260930" alt="" width="440" height="440"></div>
-    <p class="eyebrow">마음을 비추는 작은 상담실</p>
-    <h1>마음에 걸린 일,<br>여기 두고 가세요<span>.</span></h1>
-    <p class="hero-copy">답을 서두르지 않아도 괜찮아요.<br>오늘의 운세를 빌려, 나의 마음을 들여다보는 시간.</p>
-    <p class="hero-caption"><span></span> 점집에서 잠깐, 나를 위한 시간 <span></span></p>
+  <div class="hero free-hero">
+    <div class="hero-message">
+      <p class="eyebrow">나를 알아가는 다섯 가지 방법</p>
+      <h1>오늘의 운세,<br>다섯 가지 <span>모두 무료.</span></h1>
+      <p class="hero-copy">카드 한 장의 조언부터 나의 사주, 두 사람의 궁합까지.<br>마음이 향하는 운세를 부담 없이 만나보세요.</p>
+      <p class="free-services">타로 <span>·</span> 사주 <span>·</span> 띠운세 <span>·</span> 별자리 <span>·</span> 궁합</p>
+      <a class="hero-cta" href="#flow-choice">내 운세 무료로 보기 <span aria-hidden="true">↗</span></a>
+      <p class="hero-caption">오늘의 작은 힌트, 여기서 찾아보세요.</p>
+    </div>
+    <div class="reading-showcase" aria-label="리딩 결과 예시. 실제 결과는 입력과 선택에 따라 달라집니다.">
+      <span class="showcase-orbit" aria-hidden="true"></span>
+      <article class="sample-tarot">
+        <img src="images/RWS_Tarot_17_Star.webp" alt="별 타로 카드" width="180" height="310">
+        <div><span class="sample-label">타로 리딩 예시</span><h2>다시, 희망을 찾는 시간</h2><p>작은 가능성에 마음을 열어보세요.</p></div>
+      </article>
+      <article class="sample-saju"><span class="sample-label">사주 명식 예시</span><h2>나를 이루는 네 기둥</h2><div class="sample-pillars"><span>시주<b>戊<br>申</b></span><span>일주<b>壬<br>辰</b></span><span>월주<b>丙<br>戌</b></span><span>년주<b>庚<br>子</b></span></div><p>명식부터 대운 · 세운 · 월운까지</p></article>
+      <article class="sample-compat"><span class="sample-label">궁합 리딩 예시</span><div class="pair-symbol" aria-hidden="true">○<span>♡</span>○</div><h2>서로의 다름을 이해하는 시간</h2><p>두 사람의 기질과 관계의 흐름을 살펴보세요.</p></article>
+      <p class="showcase-note">미리 보는 리딩 · 예시 화면</p>
+    </div>
   </div>
 
   <section id="screen-start">
     <div id="flow-choice">
-    <div class="section-heading"><span class="step-number">01</span><div><h2>어떤 이야기가 궁금한가요?</h2><p>마음이 향하는 운세를 선택해주세요.</p></div><span class="section-star" aria-hidden="true">✧</span></div>
+    <div class="section-heading"><span class="step-number">01</span><div><h2>어떤 운세부터 만나볼까요?</h2><p>다섯 가지 모두 무료. 원하는 운세를 고르고 시작하세요.</p></div><span class="section-star" aria-hidden="true">✧</span></div>
     <div id="mode-select">
-      <button type="button" class="category-btn mode-btn selected" data-mode="tarot"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="5" width="19" height="28" rx="2"/><path d="m9 10-4 1 4 27 18-3"/><path d="m21.5 12 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/></svg></span><strong>타로</strong><span class="mode-description">뽑은 카드로 살펴보는 고민</span></button>
-      <button type="button" class="category-btn mode-btn" data-mode="zodiac"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="14" stroke-dasharray="1 5"/><path d="m20 8 3.5 8.5L32 20l-8.5 3.5L20 32l-3.5-8.5L8 20l8.5-3.5Z"/></svg></span><strong>별자리</strong><span class="mode-description">내 별자리로 알아보는 운세</span></button>
-      <button type="button" class="category-btn mode-btn" data-mode="ddi"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="14"/><circle cx="20" cy="20" r="9"/><path d="M20 3v5m0 24v5M3 20h5m24 0h5M8 8l4 4m16 16 4 4M8 32l4-4m16-16 4-4"/></svg></span><strong>띠운세</strong><span class="mode-description">태어난 해로 알아보는 운세</span></button>
-      <button type="button" class="category-btn mode-btn" data-mode="saju"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="14"/><path d="M20 6a7 7 0 0 1 0 14 7 7 0 0 0 0 14"/><circle cx="20" cy="13" r="1.5"/><circle cx="20" cy="27" r="1.5"/></svg></span><strong>사주</strong><span class="mode-description">생년월일로 살펴보는 기질</span></button>
-      <button type="button" class="category-btn mode-btn" data-mode="compatibility"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="20" r="10"/><circle cx="26" cy="20" r="10"/><path d="m20 4 1 3 3 1-3 1-1 3-1-3-3-1 3-1Z"/></svg></span><strong>궁합</strong><span class="mode-description">두 사람의 관계 알아보기</span></button>
+      <button type="button" class="category-btn mode-btn selected" data-mode="tarot"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="5" width="19" height="28" rx="2"/><path d="m9 10-4 1 4 27 18-3"/><path d="m21.5 12 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/></svg></span><strong>타로</strong><span class="mode-description">뽑은 카드로 살펴보는 고민</span><span class="mode-free">무료</span><span class="mode-invite" aria-hidden="true">선택하기 ↗</span></button>
+      <button type="button" class="category-btn mode-btn" data-mode="zodiac"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="14" stroke-dasharray="1 5"/><path d="m20 8 3.5 8.5L32 20l-8.5 3.5L20 32l-3.5-8.5L8 20l8.5-3.5Z"/></svg></span><strong>별자리</strong><span class="mode-description">내 별자리로 알아보는 운세</span><span class="mode-free">무료</span><span class="mode-invite" aria-hidden="true">선택하기 ↗</span></button>
+      <button type="button" class="category-btn mode-btn" data-mode="ddi"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="14"/><circle cx="20" cy="20" r="9"/><path d="M20 3v5m0 24v5M3 20h5m24 0h5M8 8l4 4m16 16 4 4M8 32l4-4m16-16 4-4"/></svg></span><strong>띠운세</strong><span class="mode-description">태어난 해로 알아보는 운세</span><span class="mode-free">무료</span><span class="mode-invite" aria-hidden="true">선택하기 ↗</span></button>
+      <button type="button" class="category-btn mode-btn" data-mode="saju"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="14"/><path d="M20 6a7 7 0 0 1 0 14 7 7 0 0 0 0 14"/><circle cx="20" cy="13" r="1.5"/><circle cx="20" cy="27" r="1.5"/></svg></span><strong>사주</strong><span class="mode-description">생년월일로 살펴보는 기질</span><span class="mode-free">무료</span><span class="mode-invite" aria-hidden="true">선택하기 ↗</span></button>
+      <button type="button" class="category-btn mode-btn" data-mode="compatibility"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="20" r="10"/><circle cx="26" cy="20" r="10"/><path d="m20 4 1 3 3 1-3 1-1 3-1-3-3-1 3-1Z"/></svg></span><strong>궁합</strong><span class="mode-description">두 사람의 관계 알아보기</span><span class="mode-free">무료</span><span class="mode-invite" aria-hidden="true">선택하기 ↗</span></button>
     </div>
 
     </div>
@@ -354,7 +367,7 @@
 <script src="data/tarot-data-major.js?v=95a108f3"></script>
 <script src="data/tarot-data-wands.js?v=fe47435c"></script>
 <script src="data/tarot-data-cups.js?v=96a90dfb"></script>
-<script src="data/tarot-data-swords.js?v=55bd5df7"></script>
+<script src="data/tarot-data-swords.js?v=64b9ec0d"></script>
 <script src="data/tarot-data-pentacles.js?v=b46d3775"></script>
 <script src="data/tarot-data.js?v=9c8cf99d"></script>
 <script src="data/zodiac-data.js?v=8d9680c9"></script>
