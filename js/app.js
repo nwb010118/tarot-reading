@@ -23,15 +23,6 @@
     today: '오늘', week: '이번주', month: '이번달', month3: '3개월', month6: '6개월', year: '1년'
   };
 
-  const PERIOD_PREFIXES = {
-    today: '오늘은',
-    week: '이번 주 안에는',
-    month: '이번 달 동안은',
-    month3: '앞으로 3개월간은',
-    month6: '앞으로 6개월간은',
-    year: '올 한 해 동안은'
-  };
-
   const ZODIAC_LABELS = {};
   getZodiacList().forEach(function (z) { ZODIAC_LABELS[z.key] = z.name_kr; });
 
@@ -293,9 +284,11 @@
   }
 
   function resolveCategoryMeaning(entity, category, period, selectedSubChoice) {
+    const sensitive = getSensitiveReading(category, selectedSubChoice, entity.keywords);
+    if (sensitive) return sensitive;
     if (category && entity.categories[category]) {
       const readingText = resolveSubchoiceValue(category, entity.categories[category], selectedSubChoice);
-      return PERIOD_PREFIXES[period] + ' ' + resolveMeaningText(readingText);
+      return resolveMeaningText(readingText);
     }
     return resolveMeaningText(entity.trait);
   }
@@ -430,18 +423,25 @@
       (rest ? '<p class="reading-body">' + escapeHtml(rest) + '</p>' : '');
   }
 
+  function renderPracticePlan() {
+    const plan = getPracticePlan(selectedPeriod, selectedCategory);
+    return '<aside class="practice-plan"><h4>' + escapeHtml(plan.label) + ' 실천 안내</h4><p>' +
+      escapeHtml(plan.focus) + '</p><p>' + escapeHtml(plan.schedule) +
+      '</p><p class="editorial-meta">선택한 기간은 실천과 회고를 위한 기간입니다. 사건이 일어날 시점을 예측하지 않습니다. 리딩 문장은 준비된 해석 중 무작위로 선택됩니다.</p></aside>';
+  }
+
   function showZodiacSummary() {
     const zodiac = getZodiacByKey(selectedZodiac);
     const category = selectedCategory;
     const period = selectedPeriod;
-    const heading = zodiac.name_kr + ' · ' + PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩';
+    const heading = zodiac.name_kr + ' · ' + (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩';
 
     const meaning = resolveCategoryMeaning(zodiac, category, period, selectedSubChoice);
     const extraHtml = renderKeywordsAdviceHtml(zodiac.keywords, zodiac.advice);
 
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
       '<div class="reading-detail">' + renderReadingMeaning(meaning) + '</div>' +
-      extraHtml;
+      extraHtml + renderPracticePlan();
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     shareButton.classList.remove('hidden');
@@ -465,14 +465,14 @@
     const ddi = getDdiByYear(selectedBirthYear);
     const category = selectedCategory;
     const period = selectedPeriod;
-    const heading = ddi.name_kr + ' · ' + PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩';
+    const heading = ddi.name_kr + ' · ' + (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩';
 
     const meaning = resolveCategoryMeaning(ddi, category, period, selectedSubChoice);
     const extraHtml = renderKeywordsAdviceHtml(ddi.keywords, ddi.advice);
 
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
       '<div class="reading-detail">' + renderReadingMeaning(meaning) + '</div>' +
-      extraHtml;
+      extraHtml + renderPracticePlan();
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     shareButton.classList.remove('hidden');
@@ -720,7 +720,7 @@
     const category = selectedCategory;
     const period = selectedPeriod;
     const ilgan = getIlganByIndex(saju.day.stemIdx);
-    const heading = ilgan.name_kr + ' 일간 · ' + PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩';
+    const heading = ilgan.name_kr + ' 일간 · ' + (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩';
 
     const myeongsikHtml = renderMyeongsikDetailTable(saju);
 
@@ -783,7 +783,7 @@
       '<div class="reading-detail">' + renderReadingMeaning(meaning) + '</div>' +
       myeongsikHtml + elementHtml +
       (daeunHtml ? '<details class="fortune-tables"><summary>대운 · 세운 · 월운 자세히 보기</summary>' + daeunHtml + seunHtml + wolunHtml + '</details>' : '') +
-      extraHtml;
+      extraHtml + renderPracticePlan();
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     shareButton.classList.remove('hidden');
@@ -890,7 +890,7 @@
   function showSummary(draw) {
     const category = selectedCategory;
     const period = selectedPeriod;
-    const heading = PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩 요약';
+    const heading = (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩 요약';
 
     const details = draw.map(function (item) {
       const orientationLabel = item.orientation === 'upright' ? '정방향' : '역방향';
@@ -898,7 +898,7 @@
       const baseMeaning = categoryReading
         ? resolveMeaningText(resolveSubchoiceValue(category, categoryReading[item.orientation], selectedSubChoice))
         : resolveMeaningText(item.orientation === 'upright' ? item.card.upright : item.card.reversed);
-      const meaning = PERIOD_PREFIXES[period] + ' ' + baseMeaning;
+      const meaning = getSensitiveReading(category, selectedSubChoice, item.card.keywords && item.card.keywords[item.orientation]) || baseMeaning;
 
       const keywordsList = item.card.keywords && item.card.keywords[item.orientation];
       const adviceText = item.card.advice && item.card.advice[item.orientation];
@@ -915,7 +915,7 @@
         detailLinkHtml +
         '</div>';
     });
-    summaryEl.innerHTML = '<h3>' + heading + '</h3>' + details.join('');
+    summaryEl.innerHTML = '<h3>' + heading + '</h3>' + details.join('') + renderPracticePlan();
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     shareButton.classList.remove('hidden');
@@ -937,7 +937,7 @@
     saveReading(storage, entry);
   }
 
-  const SHARE_SELECTOR = 'h3, h4, .compat-score, .compat-tier-label, .reading-lead, .reading-body, .card-keywords, .card-advice';
+  const SHARE_SELECTOR = 'h3, h4, .compat-score, .compat-tier-label, .reading-lead, .reading-body, .card-keywords, .card-advice, .practice-plan p';
   const SITE_URL = 'https://nwb010118.github.io/tarot-reading/';
   const SHARE_BUTTON_LABEL = '공유하기';
 
@@ -1097,7 +1097,7 @@
       const categoryLabel = entry.category && CATEGORY_LABELS[entry.category] ? CATEGORY_LABELS[entry.category] : '운세';
       const topicText = entry.mode === 'compatibility'
         ? escapeHtml(COMPAT_SUBTYPE_LABELS[entry.subtype] + ' · ' + entry.tierLabel)
-        : escapeHtml(periodLabel + ' ' + categoryLabel);
+        : escapeHtml(categoryLabel + ' · 실천 기간: ' + periodLabel);
 
       return '<div class="history-item">' +
         '<p class="history-date">' + dateText + '</p>' +

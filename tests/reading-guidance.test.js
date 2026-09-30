@@ -1,0 +1,17 @@
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+const modulePath = path.join(__dirname, '../data/reading-guidance.js');
+assert.ok(fs.existsSync(modulePath), 'shared reading guidance must exist');
+const { getPracticePlan, getSensitiveReading } = require(modulePath);
+const periods = ['today', 'week', 'month', 'month3', 'month6', 'year'];
+const actions = periods.map(period => getPracticePlan(period, 'love').schedule);
+assert.strictEqual(new Set(actions).size, periods.length, 'periods must change the action, not just a prefix');
+assert.notStrictEqual(getPracticePlan('week', 'love').focus, getPracticePlan('week', 'career').focus);
+assert.deepStrictEqual(getPracticePlan('bad', null), getPracticePlan('today', null));
+assert.strictEqual(getSensitiveReading('love', 'solo', []), null);
+assert.strictEqual(getSensitiveReading('money', 'income', []), null, 'preserve income content');
+['body', 'mind'].forEach(choice => assert.ok(getSensitiveReading('health', choice, ['회복']).includes('예측하지')));
+assert.ok(getSensitiveReading('money', 'invest', ['협력']).includes('협력'));
+assert.ok(getSensitiveReading('money', 'invest', []).includes('수익'));
+console.log('reading guidance: periods, topic actions, and sensitive categories passed');

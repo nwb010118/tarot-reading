@@ -22,6 +22,7 @@ function render(now, birth) {
     resolveCategoryMeaning: function () { return ''; },
     renderKeywordsAdviceHtml: function () { return ''; },
     renderReadingMeaning: function () { return ''; },
+    renderPracticePlan: function () { return ''; },
     pillarText: function (p) { return calc.CHEONGAN[p.stemIdx] + calc.JIJI[p.branchIdx]; },
     summaryEl: element(), newReadingButton: element(), shareButton: element(),
     birth: birth, saju: calc.calculateSaju(birth)

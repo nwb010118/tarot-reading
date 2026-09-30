@@ -1,6 +1,8 @@
 // CATEGORY_LABELS / CATEGORY_SUBCHOICES의 유일한 출처는 data/category-labels.js (Step 0a).
 // js/app.js도 동일한 파일을 전역으로 로드해서 쓴다 — 여기서 사본을 만들지 않는다.
 const { CATEGORY_LABELS, CATEGORY_SUBCHOICES } = require('../../data/category-labels.js');
+const { TAROT_EDITORIAL } = require('../../data/tarot-editorial.js');
+const { getSensitiveReading } = require('../../data/reading-guidance.js');
 
 const SITE_BASE = 'https://nwb010118.github.io/tarot-reading/';
 
@@ -47,7 +49,7 @@ function buildOrientationView(entity, orientation) {
     const subchoices = CATEGORY_SUBCHOICES[categoryKey];
     const items = subchoices
       ? subchoices.map(function (sc) {
-          return { subLabel: sc.label, text: resolveCanonical(raw[sc.key]) };
+          return { subLabel: sc.label, text: getSensitiveReading(categoryKey, sc.key, entity.keywords[orientation]) || resolveCanonical(raw[sc.key]) };
         })
       : [{ subLabel: null, text: resolveCanonical(raw) }];
     return { label: CATEGORY_LABELS[categoryKey], items: items };
@@ -75,6 +77,8 @@ function buildCardViewModel(deckCard) {
     name: deckCard.name,
     nameEn: deckCard.type === 'major' ? deckCard.nameEn : null,
     image: deckCard.image,
+    imageSourceUrl: 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(deckCard.image.replace(/^images\//, '').replace(/\.webp$/, '.jpg').replace(/^Pentacles/, 'Pents')),
+    editorial: TAROT_EDITORIAL[deckCard.cardId],
     title: titleName + ' 카드 의미 — 정방향·역방향 키워드와 운세 | 점집',
     description: '타로 ' + deckCard.name + ' 카드의 정방향·역방향 의미와 키워드(' + upKeywordsPreview + '), 조언, 연애·재물·직장 등 상황별 운세를 확인해보세요.',
     upright: buildOrientationView(deckCard, 'upright'),

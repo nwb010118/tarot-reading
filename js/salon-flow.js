@@ -34,13 +34,13 @@
   options.append(period, spread);
   const periodHint = document.createElement('p');
   periodHint.className = 'option-hint';
-  periodHint.textContent = '오늘의 운은 오늘 기준으로 봅니다. 다른 주제를 고르면 기간도 바꿀 수 있어요.';
+  periodHint.textContent = '기본 리딩은 오늘의 실천 안내를 제공합니다. 주제를 고르면 실천 기간도 바꿀 수 있어요.';
   period.prepend(periodHint);
   function syncOptions() {
     const mode = selected().dataset.mode;
     const periodLabel = document.querySelector('#period-select .selected').textContent;
     const spreadLabel = document.querySelector('#spread-select .selected').textContent;
-    optionSummary.textContent = '추가 설정 · ' + periodLabel + (mode === 'tarot' ? ' · ' + spreadLabel : '');
+    optionSummary.textContent = '실천 기간 · ' + periodLabel + (mode === 'tarot' ? ' · ' + spreadLabel : '');
     options.hidden = mode === 'compatibility';
     periodHint.hidden = Boolean(document.querySelector('#category-select .selected').dataset.category);
   }

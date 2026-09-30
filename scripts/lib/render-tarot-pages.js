@@ -91,7 +91,9 @@ function renderCardPage(vm, nav) {
     '<main class="card-page-main">\n' +
     '<p class="eyebrow">' + escapeHtml(vm.suitLabel) + ' · 타로 카드 백과사전</p>\n' +
     '<h1>' + escapeHtml(vm.name) + (vm.nameEn ? ' (' + escapeHtml(vm.nameEn) + ')' : '') + '</h1>\n' +
-    '<div class="card-hero-page"><img src="../' + vm.image + '" alt="' + escapeHtml(vm.name) + ' 타로 카드 이미지" loading="lazy"></div>\n' +
+    '<figure class="card-hero-page"><img src="../' + vm.image + '" alt="' + escapeHtml(vm.name) + ' 타로 카드 이미지" loading="lazy"><figcaption>그림: Pamela Colman Smith · RWS 덱 · <a href="' + escapeHtml(vm.imageSourceUrl) + '">Wikimedia Commons 원본·이용 조건</a></figcaption></figure>\n' +
+    renderEditorial(vm.editorial) +
+    '<p class="reading-context">아래 상황별 문장은 상징을 일상에 연결하는 오락용 해석입니다. 실제 사건·건강 상태·투자 성과를 예측하지 않습니다.</p>\n' +
     renderOrientationSection('정방향', vm.upright) +
     renderOrientationSection('역방향', vm.reversed) +
     '<nav class="card-pager" aria-label="다른 카드 보기">' +
@@ -106,6 +108,20 @@ function renderCardPage(vm, nav) {
     '</div>\n' +
     '</body>\n' +
     '</html>\n';
+}
+
+function renderEditorial(editorial) {
+  return '<article class="card-editorial">' +
+    '<p class="editorial-meta">편집: 점집 · 해설 보완: 2026년 9월 30일</p>' +
+    '<h2>그림에서 읽는 상징</h2><p>' + escapeHtml(editorial.scene) + '</p>' +
+    '<h2>점집의 해석</h2><p>' + escapeHtml(editorial.interpretation) + '</p>' +
+    '<h3>역방향에서 돌아볼 점</h3><p>' + escapeHtml(editorial.reversed) + '</p>' +
+    '<h2>질문에 적용하는 예시</h2><p class="example-question">“' + escapeHtml(editorial.question) + '”</p><p>' + escapeHtml(editorial.practice) + '</p>' +
+    '<p class="editorial-meta">예시는 점집이 구성한 가상 상황입니다. 실제 상담 사례나 효과를 입증한 사례가 아닙니다.</p>' +
+    '<details class="editorial-sources"><summary>해설 기준과 참고 자료</summary>' +
+    '<p>그림 설명은 라이더–웨이트–스미스 덱의 도상을 관찰한 내용입니다. 이어지는 해석·역방향 질문·실천 예시는 점집의 자기성찰용 설명이며, 원전의 예언 문구를 번역한 것이 아닙니다. 덱과 해석 전통에 따라 의미는 달라질 수 있습니다.</p>' +
+    '<p>전통적 도상 설명 참고: A. E. Waite, <a href="https://sacred-texts.com/tarot/pkt/">The Pictorial Key to the Tarot</a>. <a href="../about.html#editorial">점집의 편집 원칙</a> · <a href="../guides/how-to-ask-tarot.html">질문 만드는 법</a></p>' +
+    '</details></article>\n';
 }
 
 function renderHubPage(allViewModels, canonicalUrl) {

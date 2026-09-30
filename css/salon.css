@@ -317,6 +317,17 @@ label, .category-btn, .spread-btn { font-size: 15px; }
 }
 
 /* Readable results and quick access to reading actions. */
+.card-editorial { max-width: 720px; margin: 32px auto; line-height: 1.95; text-align: left; }
+.card-editorial h2 { margin: 28px 0 12px; font-size: 21px; color: var(--gold); }
+.card-editorial h3 { margin: 22px 0 10px; font-size: 17px; }
+.card-editorial p { margin: 12px 0; overflow-wrap: anywhere; }
+.card-hero-page figcaption, .editorial-meta { font-size: 12px; line-height: 1.8; opacity: .8; }
+.card-hero-page figcaption { margin-top: 12px; }
+.example-question, .reading-context, .practice-plan { padding: 16px; border: 1px solid var(--line); border-radius: 10px; line-height: 1.8; }
+.editorial-sources { border-top: 1px solid var(--line); padding: 16px 0; }
+.editorial-sources summary { cursor: pointer; min-height: 44px; align-content: center; }
+.practice-plan h4 { margin: 0 0 8px; color: var(--gold); }
+.reading-context { font-size: 14px; margin: 18px 0; }
 .reading-top-actions { display: none; gap: 10px; margin-bottom: 24px; }
 #screen-reading:has(#summary:not(.hidden)) .reading-top-actions { display: flex; }
 .reading-top-actions button { flex: 1; min-height: 44px; padding: 10px 8px; border: 1px solid var(--gold); border-radius: 8px; color: var(--gold); background: var(--panel); font-size: 13px; }

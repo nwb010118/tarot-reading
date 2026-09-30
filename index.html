@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3608292673018037"
-     crossorigin="anonymous"></script>
+<meta name="google-adsense-account" content="ca-pub-3608292673018037">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="google-site-verification" content="e5VPp9-RIlXSBWmBFrx-g4lSrCV6J0hMLsDPn9fVUPM" />
@@ -19,7 +18,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://nwb010118.github.io/tarot-reading/images/og-image.jpg">
 <link rel="stylesheet" href="css/style.css?v=1708fba8">
-<link rel="stylesheet" href="css/salon.css?v=0f5b09c5">
+<link rel="stylesheet" href="css/salon.css?v=21bb6866">
 </head>
 <body>
 <div id="app">
@@ -59,7 +58,7 @@
     <div id="mode-select">
       <button type="button" class="category-btn mode-btn selected" data-mode="tarot"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="5" width="19" height="28" rx="2"/><path d="m9 10-4 1 4 27 18-3"/><path d="m21.5 12 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/></svg></span><strong>타로</strong><span class="mode-description">오늘의 카드 · 1장 / 3장 리딩</span><span class="mode-free">무료</span><span class="mode-invite" aria-hidden="true">무료로 보기 ↗</span></button>
       <button type="button" class="category-btn mode-btn" data-mode="zodiac"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="14" stroke-dasharray="1 5"/><path d="m20 8 3.5 8.5L32 20l-8.5 3.5L20 32l-3.5-8.5L8 20l8.5-3.5Z"/></svg></span><strong>별자리</strong><span class="mode-description">12별자리 · 주제별 운세</span><span class="mode-free">무료</span><span class="mode-invite" aria-hidden="true">무료로 보기 ↗</span></button>
-      <button type="button" class="category-btn mode-btn" data-mode="ddi"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="14"/><circle cx="20" cy="20" r="9"/><path d="M20 3v5m0 24v5M3 20h5m24 0h5M8 8l4 4m16 16 4 4M8 32l4-4m16-16 4-4"/></svg></span><strong>띠운세</strong><span class="mode-description">12띠 · 오늘부터 올해 운세</span><span class="mode-free">무료</span><span class="mode-invite" aria-hidden="true">무료로 보기 ↗</span></button>
+      <button type="button" class="category-btn mode-btn" data-mode="ddi"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="14"/><circle cx="20" cy="20" r="9"/><path d="M20 3v5m0 24v5M3 20h5m24 0h5M8 8l4 4m16 16 4 4M8 32l4-4m16-16 4-4"/></svg></span><strong>띠운세</strong><span class="mode-description">12띠 · 주제별 리딩과 실천</span><span class="mode-free">무료</span><span class="mode-invite" aria-hidden="true">무료로 보기 ↗</span></button>
       <button type="button" class="category-btn mode-btn" data-mode="saju"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="14"/><path d="M20 6a7 7 0 0 1 0 14 7 7 0 0 0 0 14"/><circle cx="20" cy="13" r="1.5"/><circle cx="20" cy="27" r="1.5"/></svg></span><strong>사주</strong><span class="mode-description">명식 · 대운 · 세운 · 월운</span><span class="mode-free">무료</span><span class="mode-invite" aria-hidden="true">무료로 보기 ↗</span></button>
       <button type="button" class="category-btn mode-btn" data-mode="compatibility"><span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="20" r="10"/><circle cx="26" cy="20" r="10"/><path d="m20 4 1 3 3 1-3 1-1 3-1-3-3-1 3-1Z"/></svg></span><strong>궁합</strong><span class="mode-description">별자리 · 띠 · 사주 궁합</span><span class="mode-free">무료</span><span class="mode-invite" aria-hidden="true">무료로 보기 ↗</span></button>
     </div>
@@ -233,7 +232,8 @@
     <div id="subchoice-select" class="hidden"></div>
 
     <div id="period-section">
-      <label>어느 기간이 궁금하신가요?</label>
+      <label>리딩을 실천하고 돌아볼 기간을 골라주세요</label>
+      <p class="option-hint">선택한 기간에 맞춰 실천 방법을 안내합니다. 미래의 사건이나 발생 시점을 예측하는 기간이 아닙니다.</p>
       <div id="period-select">
         <button type="button" class="category-btn selected" data-period="today">오늘</button>
         <button type="button" class="category-btn" data-period="week">이번주</button>
@@ -270,11 +270,11 @@
       </li>
       <li class="fortune-guide-item">
         <h3>별자리</h3>
-        <p>태어난 날짜로 정해지는 12별자리의 성향과 오늘의 흐름을 가볍게 살펴봅니다.</p>
+        <p>선택한 별자리의 전통적인 성향을 바탕으로 준비된 문장을 무작위로 보여줍니다. 실제 천체의 이동을 계산한 예측은 아닙니다.</p>
       </li>
       <li class="fortune-guide-item">
         <h3>띠운세</h3>
-        <p>태어난 해의 12간지(띠)를 기준으로 한 해, 한 달의 분위기를 읽어봅니다.</p>
+        <p>태어난 해의 12간지(띠)에 연결된 해석을 가볍게 읽어봅니다. 기간을 고르면 생활에 적용하고 돌아볼 실천 안내가 달라집니다.</p>
       </li>
       <li class="fortune-guide-item">
         <h3>사주</h3>
@@ -382,7 +382,8 @@
 <script src="js/lunar-convert.js?v=910db998"></script>
 <script src="js/saju-calc.js?v=49784fed"></script>
 <script src="js/compatibility-calc.js?v=445dd65e"></script>
-<script src="js/app.js?v=df6b2bc2"></script>
-<script src="js/salon-flow.js?v=ec2dff71"></script>
+<script src="data/reading-guidance.js?v=483d9ca3"></script>
+<script src="js/app.js?v=5106c132"></script>
+<script src="js/salon-flow.js?v=89e51729"></script>
 </body>
 </html>
