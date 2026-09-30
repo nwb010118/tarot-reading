@@ -4,6 +4,7 @@ const os = require('os');
 const path = require('path');
 
 const { generateSitemap } = require('../scripts/generate-sitemap.js');
+const { GUIDES } = require('../data/guides-data.js');
 
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sitemap-test-'));
 const sitemapPath = path.join(tmpDir, 'sitemap.xml');
@@ -24,10 +25,11 @@ assert.ok(sitemap.includes('tarot-reading/guides/index.html'), 'guides index url
 assert.ok(sitemap.includes('tarot-reading/guides/what-is-tarot.html'), 'sample guide url must exist');
 assert.ok(sitemap.includes('<lastmod>2026-09-22</lastmod>'));
 
-// 84(홈/about/contact/faq/legal/tarot허브/78카드) + 인덱스 1 + 타로 6 + 별자리 1 + 띠 1 + 사주 3 + 궁합 1 = 97.
-assert.strictEqual((sitemap.match(/<url>/g) || []).length, 97, 'sitemap must contain exactly 97 <url> entries');
+// 84(홈/about/contact/faq/legal/tarot허브/78카드) + 가이드 인덱스 1 + 가이드 전체 편수.
+const EXPECTED_URLS = 84 + 1 + GUIDES.length;
+assert.strictEqual((sitemap.match(/<url>/g) || []).length, EXPECTED_URLS, 'sitemap must contain exactly ' + EXPECTED_URLS + ' <url> entries');
 const urls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(function (match) { return match[1]; });
-assert.strictEqual(urls.length, 97, 'every sitemap entry must have a URL');
+assert.strictEqual(urls.length, EXPECTED_URLS, 'every sitemap entry must have a URL');
 assert.strictEqual(new Set(urls).size, urls.length, 'all sitemap URLs must be unique');
 assert.ok(urls.includes('https://nwb010118.github.io/tarot-reading/guides/what-is-zodiac.html'), 'zodiac guide URL must exist');
 

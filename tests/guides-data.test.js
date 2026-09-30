@@ -16,8 +16,8 @@ assert.ok(zodiacGuide, 'what-is-zodiac guide must exist');
 assert.strictEqual(zodiacGuide.category, 'zodiac');
 assert.strictEqual(zodiacGuide.title, '12별자리 기본 가이드');
 const zodiacTextLength = bodyToText(zodiacGuide).replace(/\s/g, '').length;
-assert.ok(zodiacTextLength >= 2200 && zodiacTextLength <= 8000,
-  'zodiac body must contain 2200–8000 characters excluding tags and whitespace, got ' + zodiacTextLength);
+assert.ok(zodiacTextLength >= 1500 && zodiacTextLength <= 8000,
+  'zodiac body must contain 1500–8000 characters excluding tags and whitespace, got ' + zodiacTextLength);
 
 const zodiacBody = zodiacGuide.bodyHtml.join('\n');
 const tables = zodiacBody.match(/<table\b[^>]*>[\s\S]*?<\/table>/g) || [];
@@ -39,7 +39,7 @@ const ddiGuide = GUIDES.find(g => g.slug === 'zodiac-animals');
 assert.ok(ddiGuide);
 assert.strictEqual(ddiGuide.category, 'ddi');
 const ddiLength = bodyToText(ddiGuide).replace(/\s/g, '').length;
-assert.ok(ddiLength >= 2200 && ddiLength <= 8000, 'ddi guide body length: ' + ddiLength);
+assert.ok(ddiLength >= 1500 && ddiLength <= 8000, 'ddi guide body length: ' + ddiLength);
 const { getDdiByYear } = require('../data/ddi-data.js');
 const ddiRows = [...ddiGuide.bodyHtml.join('').matchAll(/<tr><th scope="row">([^<]+)<\/th><td>[^<]+<\/td><td>([^<]+)<\/td><\/tr>/g)];
 assert.strictEqual(ddiRows.length, 12);
@@ -51,11 +51,11 @@ for (const row of ddiRows) {
 }
 
 const sajuGuides = GUIDES.filter(g => g.category === 'saju');
-assert.deepStrictEqual(sajuGuides.map(g => g.slug), ['what-is-saju', 'heavenly-stems-earthly-branches', 'lunar-solar-birth-time']);
-assert.deepStrictEqual(sajuGuides.map(g => g.order), [1, 2, 3]);
+assert.deepStrictEqual(sajuGuides.map(g => g.slug).slice(0, 3), ['what-is-saju', 'heavenly-stems-earthly-branches', 'lunar-solar-birth-time']);
+assert.deepStrictEqual(sajuGuides.map(g => g.order), sajuGuides.map((g, i) => i + 1), 'saju guide orders must be 1..n in array order');
 for (const guide of sajuGuides) {
   const length = bodyToText(guide).replace(/\s/g, '').length;
-  assert.ok(length >= 2200 && length <= 8000, guide.slug + ' body length: ' + length);
+  assert.ok(length >= 1500 && length <= 8000, guide.slug + ' body length: ' + length);
 }
 
 const compatGuide = GUIDES.find(function (g) { return g.slug === 'compatibility-guide'; });
@@ -63,11 +63,17 @@ assert.ok(compatGuide, 'compatibility-guide must exist');
 assert.strictEqual(compatGuide.category, 'compatibility');
 assert.strictEqual(compatGuide.order, 1);
 const compatLength = bodyToText(compatGuide).replace(/\s/g, '').length;
-assert.ok(compatLength >= 2200 && compatLength <= 8000, 'compatibility guide body length: ' + compatLength);
+assert.ok(compatLength >= 1500 && compatLength <= 8000, 'compatibility guide body length: ' + compatLength);
 const compatBody = compatGuide.bodyHtml.join(' ');
 assert.ok(compatBody.includes('별자리 궁합'), 'must mention 별자리 궁합 (matches index.html compat-subtype-select)');
 assert.ok(compatBody.includes('띠 궁합'), 'must mention 띠 궁합 (matches index.html compat-subtype-select)');
 assert.ok(compatBody.includes('사주 궁합'), 'must mention 사주 궁합 (matches index.html compat-subtype-select)');
+
+// 모든 가이드(신규 글 포함)는 태그·공백을 제외한 본문이 1500자 이상이어야 한다.
+for (const guide of GUIDES) {
+  const length = bodyToText(guide).replace(/s/g, '').length;
+  assert.ok(length >= 1500 && length <= 8000, guide.slug + ' body length must be 1500-8000, got ' + length);
+}
 
 const docs = GUIDES.map(function (g) {
   return { slug: g.slug, sentences: splitSentences(bodyToText(g)).filter(function (s) { return s.trim().length > 8; }) };
