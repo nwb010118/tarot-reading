@@ -78,7 +78,7 @@ assert.strictEqual(strengthCard.image, 'images/RWS_Tarot_08_Strength.webp', 'Str
 // 카드당 부가정보(keywords/advice)와 세분화 카테고리 구조 검증
 // (categories의 각 서브키/단일 필드는 문자열 또는 {a,b}풀 둘 다 허용 — 점진적 변환 지원)
 const SUBDIVIDED_CATEGORIES = {
-  love: ['solo', 'couple'], money: ['consumption', 'invest'], career: ['jobseek', 'switch'],
+  love: ['solo', 'couple'], money: ['consumption', 'invest', 'income'], career: ['jobseek', 'switch'],
   business: ['startup', 'running'], study: ['exam', 'path'], health: ['body', 'mind'],
   relationships: ['new', 'existing'], workplace: ['team', 'personal']
 };
@@ -126,10 +126,15 @@ deck.forEach(function (card) {
     ['upright', 'reversed'].forEach(function (o) {
       const entry = card.categories[cat] && card.categories[cat][o];
       assert.ok(entry && typeof entry === 'object', card.name + ' categories.' + cat + '.' + o + ' must be an object');
-      assertStringOrPool(entry[keys[0]], card.name + ' categories.' + cat + '.' + o + '.' + keys[0]);
-      assertStringOrPool(entry[keys[1]], card.name + ' categories.' + cat + '.' + o + '.' + keys[1]);
-      assert.notStrictEqual(JSON.stringify(entry[keys[0]]), JSON.stringify(entry[keys[1]]),
-        card.name + ' categories.' + cat + '.' + o + ' sub-choices must not be identical');
+      keys.forEach(function (key) {
+        assertStringOrPool(entry[key], card.name + ' categories.' + cat + '.' + o + '.' + key);
+      });
+      for (let i = 0; i < keys.length; i += 1) {
+        for (let j = i + 1; j < keys.length; j += 1) {
+          assert.notStrictEqual(JSON.stringify(entry[keys[i]]), JSON.stringify(entry[keys[j]]),
+            card.name + ' categories.' + cat + '.' + o + ' sub-choices (' + keys[i] + ', ' + keys[j] + ') must not be identical');
+        }
+      }
     });
   });
 
@@ -336,7 +341,7 @@ assert.strictEqual(staleDanglingClauseExceptions.length, 0,
 const FORBIDDEN_PAIRS = [
   ['love', ['solo', 'couple'], 'relationships', ['new', 'existing']],
   ['career', ['jobseek', 'switch'], 'workplace', ['team', 'personal']],
-  ['money', ['consumption', 'invest'], 'business', ['startup', 'running']]
+  ['money', ['consumption', 'invest', 'income'], 'business', ['startup', 'running']]
 ];
 const forbiddenACollisions = [];
 const forbiddenBCollisions = [];

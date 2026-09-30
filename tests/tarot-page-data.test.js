@@ -52,8 +52,8 @@ deck.forEach(function (card) {
         assert.ok(typeof item.text === 'string' && item.text.length > 0, card.cardId + '.' + orientation + '.' + cat.label + ' text');
       });
     });
-    // 8개 카테고리 x 2개 subchoice + 3개 단일 카테고리 = 19
-    assert.strictEqual(totalItems, 19, card.cardId + '.' + orientation + ' total category items (expected 19)');
+    // 7개 카테고리 x 2개 subchoice + money(3개 subchoice: 소비/투자/수입) + 3개 단일 카테고리 = 20
+    assert.strictEqual(totalItems, 20, card.cardId + '.' + orientation + ' total category items (expected 20)');
   });
 });
 

@@ -6,7 +6,7 @@ const CATEGORY_LABELS = {
 
 const CATEGORY_SUBCHOICES = {
   love: [{ key: 'solo', label: '솔로' }, { key: 'couple', label: '커플' }],
-  money: [{ key: 'consumption', label: '소비' }, { key: 'invest', label: '투자' }],
+  money: [{ key: 'consumption', label: '소비' }, { key: 'invest', label: '투자' }, { key: 'income', label: '수입' }],
   career: [{ key: 'jobseek', label: '구직' }, { key: 'switch', label: '이직' }],
   business: [{ key: 'startup', label: '창업준비' }, { key: 'running', label: '운영중' }],
   study: [{ key: 'exam', label: '시험준비' }, { key: 'path', label: '진로고민' }],
