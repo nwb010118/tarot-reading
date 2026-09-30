@@ -266,6 +266,15 @@ const GUIDES = [
 }
 ];
 
+// 본문 보강 원고(data/guides-extra.js)를 각 가이드의 마지막 문단(다음 글 안내) 앞에 끼워 넣는다.
+if (typeof module !== 'undefined' && module.exports) {
+  const { GUIDE_EXTRA_SECTIONS } = require('./guides-extra.js');
+  GUIDES.forEach(function (guide) {
+    const extra = GUIDE_EXTRA_SECTIONS[guide.slug];
+    if (extra) guide.bodyHtml.splice(guide.bodyHtml.length - 1, 0, ...extra);
+  });
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { GUIDES, GUIDE_CATEGORY_LABELS, GUIDE_CATEGORY_ORDER, GUIDE_CATEGORY_INTROS };
 }
