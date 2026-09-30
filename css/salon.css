@@ -315,3 +315,18 @@ label, .category-btn, .spread-btn { font-size: 15px; }
   #mode-select .mode-btn strong { font-size: 21px; }#mode-select .mode-description { font-size: 11px; }
   .section-heading h2 { font-size: 17px; }.section-heading p { font-size: 11px; }.section-star { display: none; }
 }
+
+/* Readable results and quick access to reading actions. */
+.reading-top-actions { display: none; gap: 10px; margin-bottom: 24px; }
+#screen-reading:has(#summary:not(.hidden)) .reading-top-actions { display: flex; }
+.reading-top-actions button { flex: 1; min-height: 44px; padding: 10px 8px; border: 1px solid var(--gold); border-radius: 8px; color: var(--gold); background: var(--panel); font-size: 13px; }
+.fortune-tables { margin: 20px 0; padding: 14px; border: 1px solid var(--line); border-radius: 10px; }
+.fortune-tables > summary { color: var(--gold); cursor: pointer; min-height: 44px; display: list-item; align-content: center; font-size: 14px; }
+.fortune-tables > summary:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; }
+.myeongsik-detail-table tbody th { white-space: normal; }
+@media (max-width: 700px) {
+  .myeongsik-detail-table { min-width: 0; table-layout: fixed; font-size: 12px; }
+  .myeongsik-detail-table th, .myeongsik-detail-table td { padding: 7px 2px; overflow-wrap: anywhere; }
+  .myeongsik-detail-table .ganji-cell { font-size: 17px; letter-spacing: 0; }
+  .fortune-tables { padding: 10px; }
+}

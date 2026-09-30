@@ -245,3 +245,8 @@ assert.ok(Array.isArray(info.advice) && info.advice.length === 3, 'getCompatTier
 console.log('getCompatTierInfo() correctly substitutes names, returns unchanged score/tierLabel, and passes keywords/advice pools through unresolved');
 
 console.log('All compatibility-data tests passed');
+
+// Render particles for both vowel and consonant endings without placeholder text.
+assert.ok(getCompatTierInfo('same_element', '양자리', '물병자리').text.startsWith('양자리와 물병자리는 '));
+assert.ok(getCompatTierInfo('bihwa', '갑목', '임수').text.startsWith('갑목과 임수는 '));
+assert.ok(getCompatTierInfo('bihwa', '임수', '갑목').text.startsWith('임수와 갑목은 '));

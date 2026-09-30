@@ -251,12 +251,17 @@ function resolveTierText(data) {
   return typeof data.text === 'string' ? data.text : (pickRandom(data.text.a) + ' ' + pickRandom(data.text.b));
 }
 
+function hasFinalConsonant(text) {
+  const code = text.charCodeAt(text.length - 1) - 0xAC00;
+  return code >= 0 && code <= 11171 && code % 28 !== 0;
+}
+
 function getCompatTierInfo(tier, labelA, labelB) {
   const data = COMPAT_TIER_DATA[tier];
   return {
     score: data.score,
     tierLabel: data.label,
-    text: resolveTierText(data).replace('{a}', labelA).replace('{b}', labelB),
+    text: resolveTierText(data).replace('{a}와(과)', labelA + (hasFinalConsonant(labelA) ? '과' : '와')).replace('{b}은(는)', labelB + (hasFinalConsonant(labelB) ? '은' : '는')).replace('{a}', labelA).replace('{b}', labelB),
     keywords: data.keywords,
     advice: data.advice
   };

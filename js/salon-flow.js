@@ -72,6 +72,23 @@
   document.querySelectorAll('#category-select button, #period-select button, #spread-select button').forEach(button => button.addEventListener('click', syncOptions));
   back.addEventListener('click', () => setStep(false, true));
   document.getElementById('new-reading-button').addEventListener('click', () => setStep(false, true));
+  const reading = document.getElementById('screen-reading');
+  const actions = document.createElement('div');
+  actions.className = 'reading-top-actions';
+  [['공유하기', 'share-button'], ['새 리딩 시작', 'new-reading-button']].forEach(([label, id]) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = label;
+    button.addEventListener('click', () => document.getElementById(id).click());
+    actions.appendChild(button);
+    if (id === 'share-button') {
+      button.setAttribute('aria-live', 'polite');
+      const source = document.getElementById(id);
+      new MutationObserver(() => { button.textContent = source.textContent; })
+        .observe(source, { childList: true, characterData: true, subtree: true });
+    }
+  });
+  reading.prepend(actions);
   syncMode();
   setStep(false, false);
 })();

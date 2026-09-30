@@ -434,7 +434,7 @@
     const zodiac = getZodiacByKey(selectedZodiac);
     const category = selectedCategory;
     const period = selectedPeriod;
-    const heading = zodiac.name_kr + ' · ' + PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '오늘의운') + ' 리딩';
+    const heading = zodiac.name_kr + ' · ' + PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩';
 
     const meaning = resolveCategoryMeaning(zodiac, category, period, selectedSubChoice);
     const extraHtml = renderKeywordsAdviceHtml(zodiac.keywords, zodiac.advice);
@@ -465,7 +465,7 @@
     const ddi = getDdiByYear(selectedBirthYear);
     const category = selectedCategory;
     const period = selectedPeriod;
-    const heading = ddi.name_kr + ' · ' + PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '오늘의운') + ' 리딩';
+    const heading = ddi.name_kr + ' · ' + PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩';
 
     const meaning = resolveCategoryMeaning(ddi, category, period, selectedSubChoice);
     const extraHtml = renderKeywordsAdviceHtml(ddi.keywords, ddi.advice);
@@ -707,9 +707,9 @@
     return '<div class="myeongsik-detail-wrap"><table class="myeongsik-detail-table">' +
       '<thead><tr><th></th>' + headerHtml + '</tr></thead>' +
       '<tbody>' +
-      '<tr><th>십성</th>' + sipsinStemRowHtml + '</tr>' +
+      '<tr><th>천간 십성</th>' + sipsinStemRowHtml + '</tr>' +
       '<tr><th>간지</th>' + ganjiRowHtml + '</tr>' +
-      '<tr><th>십성</th>' + sipsinBranchRowHtml + '</tr>' +
+      '<tr><th>지지 십성</th>' + sipsinBranchRowHtml + '</tr>' +
       '<tr><th>지장간</th>' + jijangganRowHtml + '</tr>' +
       '<tr><th>12운성</th>' + lifeStageRowHtml + '</tr>' +
       '<tr><th>납음</th>' + napjeongRowHtml + '</tr>' +
@@ -720,7 +720,7 @@
     const category = selectedCategory;
     const period = selectedPeriod;
     const ilgan = getIlganByIndex(saju.day.stemIdx);
-    const heading = ilgan.name_kr + ' 일간 · ' + PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '오늘의운') + ' 리딩';
+    const heading = ilgan.name_kr + ' 일간 · ' + PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩';
 
     const myeongsikHtml = renderMyeongsikDetailTable(saju);
 
@@ -781,7 +781,8 @@
 
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
       '<div class="reading-detail">' + renderReadingMeaning(meaning) + '</div>' +
-      myeongsikHtml + elementHtml + daeunHtml + seunHtml + wolunHtml +
+      myeongsikHtml + elementHtml +
+      (daeunHtml ? '<details class="fortune-tables"><summary>대운 · 세운 · 월운 자세히 보기</summary>' + daeunHtml + seunHtml + wolunHtml + '</details>' : '') +
       extraHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
@@ -889,7 +890,7 @@
   function showSummary(draw) {
     const category = selectedCategory;
     const period = selectedPeriod;
-    const heading = PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '오늘의운') + ' 리딩 요약';
+    const heading = PERIOD_LABELS[period] + ' ' + (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩 요약';
 
     const details = draw.map(function (item) {
       const orientationLabel = item.orientation === 'upright' ? '정방향' : '역방향';
@@ -1093,7 +1094,7 @@
       }
       const dateText = new Date(entry.date).toLocaleString('ko-KR');
       const periodLabel = entry.period && PERIOD_LABELS[entry.period] ? PERIOD_LABELS[entry.period] : '오늘';
-      const categoryLabel = entry.category && CATEGORY_LABELS[entry.category] ? CATEGORY_LABELS[entry.category] : '오늘의운';
+      const categoryLabel = entry.category && CATEGORY_LABELS[entry.category] ? CATEGORY_LABELS[entry.category] : '운세';
       const topicText = entry.mode === 'compatibility'
         ? escapeHtml(COMPAT_SUBTYPE_LABELS[entry.subtype] + ' · ' + entry.tierLabel)
         : escapeHtml(periodLabel + ' ' + categoryLabel);
