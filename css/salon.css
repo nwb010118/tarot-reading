@@ -143,7 +143,7 @@ label, .category-btn, .spread-btn { font-size: 15px; }
 .flow-heading p { color: #b4bfcd; font-size: 15px; line-height: 1.8; margin: 0; }
 .flow-back { background: none; border: 0; padding: 8px 0; color: var(--gold); font-size: 14px; cursor: pointer; min-height: 44px; }
 [hidden] { display: none !important; }
-.in-consultation .hero { display: none; }
+.in-consultation .hero, .in-consultation .reading-showcase { display: none; }
 .in-consultation #screen-start, .in-consultation #screen-reading { margin-top: 32px; }
 #screen-start { scroll-margin-top: 20px; }
 .reading-detail p { font-size: 16px; }.reading-detail h4 { font-weight: 600; }
@@ -301,11 +301,11 @@ label, .category-btn, .spread-btn { font-size: 15px; }
   .showcase-orbit { width: 260px; height: 260px; }
 }
 @media (max-width: 700px) {
-  .free-hero { display: flex; flex-direction: column; padding: 36px 0 24px; gap: 25px; }
+  .free-hero { display: flex; flex-direction: column; min-height: 0; padding: 28px 0 24px; gap: 0; }
   .hero-message { width: 100%; }.free-hero h1 { font-size: clamp(31px,8.2vw,44px); letter-spacing: -1.8px; }
   .free-hero .hero-copy { font-size: 13px; }.free-services { font-size: 12px; word-spacing: 2px; margin: 18px 0; }
   .hero-cta { display: flex; justify-content: space-between; }.free-hero .hero-caption { text-align: center; display: block; }
-  .reading-showcase { width: 100%; max-width: 380px; height: 480px; }
+  .reading-showcase { width: 100%; max-width: 380px; height: 480px; margin: 36px auto 0; }
   .sample-tarot { left: 12px; top: 8px; width: 150px; }.sample-tarot img { height: 200px; }
   .sample-saju { right: 8px; width: 180px; padding: 14px; }.sample-pillars b { font-size: 21px; }
   .sample-compat { width: 230px; right: 9px; bottom: 28px; padding: 13px 16px; }

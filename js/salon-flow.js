@@ -4,10 +4,15 @@
   const choice = document.getElementById('flow-choice');
   const details = document.getElementById('flow-details');
   const modes = Array.from(document.querySelectorAll('.mode-btn'));
-  const next = document.createElement('button');
-  next.type = 'button';
-  next.className = 'flow-next';
-  choice.appendChild(next);
+  const showcase = document.querySelector('.reading-showcase');
+  const hero = document.querySelector('.free-hero');
+  const mobile = window.matchMedia('(max-width: 700px)');
+  function placeShowcase() {
+    if (mobile.matches) document.getElementById('screen-start').after(showcase);
+    else hero.appendChild(showcase);
+  }
+  mobile.addEventListener('change', placeShowcase);
+  placeShowcase();
   const heading = document.createElement('div');
   heading.className = 'flow-heading';
   const back = document.createElement('button');
@@ -43,7 +48,6 @@
   function syncMode() {
     const button = selected();
     const name = button.querySelector('strong').textContent;
-    next.textContent = name + ' 보러 가기';
     title.textContent = name + ' · 나의 이야기';
     hint.textContent = button.dataset.mode === 'compatibility'
       ? '두 사람의 정보를 선택하고, 서로의 흐름을 만나보세요.'
@@ -61,9 +65,11 @@
       document.getElementById('screen-start').scrollIntoView({block: 'start', behavior: 'instant'});
     }
   }
-  modes.forEach(button => button.addEventListener('click', syncMode));
+  modes.forEach(button => button.addEventListener('click', () => {
+    syncMode();
+    setStep(true, true);
+  }));
   document.querySelectorAll('#category-select button, #period-select button, #spread-select button').forEach(button => button.addEventListener('click', syncOptions));
-  next.addEventListener('click', () => setStep(true, true));
   back.addEventListener('click', () => setStep(false, true));
   document.getElementById('new-reading-button').addEventListener('click', () => setStep(false, true));
   syncMode();
