@@ -242,7 +242,11 @@
   });
 
   function renderSubChoices() {
-    const options = CATEGORY_SUBCHOICES[selectedCategory];
+    const choices = CATEGORY_SUBCHOICES[selectedCategory];
+    // 수입 해석은 타로에만 준비되어 있다. 다른 모드에서 없는 데이터를 선택하지 않는다.
+    const options = choices && choices.filter(function (option) {
+      return option.key !== 'income' || selectedMode === 'tarot';
+    });
     if (!options) {
       subchoiceSelect.classList.add('hidden');
       subchoiceSelect.innerHTML = '';
