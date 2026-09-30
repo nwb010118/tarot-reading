@@ -12,7 +12,7 @@ const {
 
 const EXPECTED_KEYS = ['monkey', 'rooster', 'dog', 'pig', 'rat', 'ox', 'tiger', 'rabbit', 'dragon', 'snake', 'horse', 'goat'];
 const SUBDIVIDED_CATEGORIES = {
-  love: ['solo', 'couple'], money: ['consumption', 'invest'], career: ['jobseek', 'switch'],
+  love: ['solo', 'couple'], money: ['consumption', 'invest', 'income'], career: ['jobseek', 'switch'],
   business: ['startup', 'running'], study: ['exam', 'path'], health: ['body', 'mind'],
   relationships: ['new', 'existing'], workplace: ['team', 'personal']
 };
@@ -20,7 +20,7 @@ const SINGLE_CATEGORIES = ['honor', 'moving', 'children'];
 const FORBIDDEN_PAIRS = [
   ['love', ['solo', 'couple'], 'relationships', ['new', 'existing']],
   ['career', ['jobseek', 'switch'], 'workplace', ['team', 'personal']],
-  ['money', ['consumption', 'invest'], 'business', ['startup', 'running']]
+  ['money', ['consumption', 'invest', 'income'], 'business', ['startup', 'running']]
 ];
 
 function getField(ddi, cat, sub) {

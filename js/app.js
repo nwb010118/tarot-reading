@@ -243,9 +243,9 @@
 
   function renderSubChoices() {
     const choices = CATEGORY_SUBCHOICES[selectedCategory];
-    // 수입 해석은 준비된 모드(타로/별자리)에만 노출한다. 데이터가 없는 모드에서 선택하지 않는다.
+    // 수입 해석은 준비된 모드(타로/별자리/띠)에만 노출한다. 데이터가 없는 모드에서 선택하지 않는다.
     const options = choices && choices.filter(function (option) {
-      return option.key !== 'income' || selectedMode === 'tarot' || selectedMode === 'zodiac';
+      return option.key !== 'income' || selectedMode === 'tarot' || selectedMode === 'zodiac' || selectedMode === 'ddi';
     });
     if (!options) {
       subchoiceSelect.classList.add('hidden');
