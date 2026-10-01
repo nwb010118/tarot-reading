@@ -341,17 +341,23 @@ label, .category-btn, .spread-btn { font-size: 15px; }
   .myeongsik-detail-table .ganji-cell { font-size: 17px; letter-spacing: 0; }
   .fortune-tables { padding: 10px; }
 }
-.daily-card { max-width: 920px; margin: 0 auto 28px; padding: 20px; border: 1px solid var(--line); border-radius: 12px; }
-.daily-card h2 { margin: 4px 0 14px; font-size: 20px; }
-#daily-card-body { display: flex; gap: 18px; align-items: flex-start; }
-.daily-card-img { width: 120px; height: auto; border-radius: 6px; flex: none; }
+.daily-card { max-width: 920px; margin: 0 auto 20px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; }
+.daily-card .eyebrow { margin: 0; }
+.daily-card h2 { margin: 2px 0 10px; font-size: 15px; font-weight: 600; }
+#daily-card-body { display: flex; gap: 14px; align-items: flex-start; }
+.daily-card-img { width: 64px; height: auto; border-radius: 5px; flex: none; }
+.daily-card-text h3 small { font-size: 12px; color: var(--muted); font-weight: 400; }
+.daily-card-text .owner-intro { margin: 0 0 4px; font-size: 13px; }
+.daily-advice { margin: 0 0 6px; font-size: 14px; line-height: 1.7; }
+.daily-more { margin: 4px 0 6px; font-size: 13px; }
+.daily-more summary { cursor: pointer; color: var(--gold); }
+.daily-more p { margin: 6px 0; }
 .daily-card-img.reversed { transform: rotate(180deg); }
-.daily-card-text { line-height: 1.8; min-width: 0; }
-.daily-card-text h3 { margin: 0 0 6px; color: var(--gold); }
+.daily-card-text { line-height: 1.6; min-width: 0; }
+.daily-card-text h3 { margin: 0 0 2px; font-size: 16px; color: var(--gold); }
 .evidence { margin-top: 16px; padding: 12px 16px; border: 1px dashed var(--line); border-radius: 10px; font-size: 13px; line-height: 1.8; }
 .evidence summary { cursor: pointer; color: var(--gold); }
 .evidence ul { margin: 8px 0 0; padding-left: 18px; }
-@media (max-width: 700px) { #daily-card-body { flex-direction: column; } }
 .promise-box { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .promise-box label { flex-basis: 100%; font-size: 13px; color: var(--gold); }
 .promise-box input { flex: 1 1 220px; min-width: 0; }
@@ -365,7 +371,7 @@ label, .category-btn, .spread-btn { font-size: 15px; }
 .streak { color: var(--gold); margin: 6px 0 0; font-size: 13px; }
 .shared-banner { margin: 0 0 14px; padding: 12px 16px; border: 1px dashed var(--gold); border-radius: 10px; color: var(--gold); line-height: 1.7; }
 #share-image-button, #share-link-button, .daily-share { padding: 10px 18px; border: 1px solid var(--line); border-radius: 10px; background: transparent; color: inherit; cursor: pointer; margin: 4px 4px 4px 0; }
-.daily-share { margin-top: 10px; }
+#daily-card .daily-share { margin: 4px 0 0; padding: 5px 12px; font-size: 13px; width: auto; min-height: 0; }
 .owner-intro { margin: 4px 0 14px; color: var(--gold); font-style: italic; line-height: 1.8; }
 .owner-outro { margin-top: 16px; padding: 14px 16px; border-left: 3px solid var(--gold); background: rgba(232, 201, 130, 0.07); border-radius: 0 10px 10px 0; line-height: 1.8; }
 .owner-outro h4 { margin: 0 0 4px; color: var(--gold); font-size: 14px; }

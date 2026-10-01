@@ -1462,15 +1462,18 @@
     const advice = pickAdvice(item.card.advice && item.card.advice[orientation]);
     activeRng = Math.random;
     const slug = (typeof TAROT_SLUGS !== 'undefined') ? TAROT_SLUGS[item.card.cardId] : null;
+    // 한 화면을 차지하지 않도록 이름·한 줄 조언만 보이고 나머지는 접어 둔다
     body.innerHTML =
-      '<img class="daily-card-img' + (orientation === 'reversed' ? ' reversed' : '') + '" src="' + item.card.image + '" alt="' + escapeHtml(item.card.name) + '" width="120" height="206">' +
+      '<img class="daily-card-img' + (orientation === 'reversed' ? ' reversed' : '') + '" src="' + item.card.image + '" alt="' + escapeHtml(item.card.name) + '" width="64" height="110">' +
       '<div class="daily-card-text"><h3>' + escapeHtml(item.card.name) + ' <small>(' + label + ')</small></h3>' +
       '<p class="owner-intro">' + escapeHtml(getVoiceLine('daily', createRng(['voice-intro', 'daily', owner, day]))) + '</p>' +
-      (keywords ? '<p>키워드: ' + escapeHtml(keywords.join(' · ')) + '</p>' : '') +
-      (advice ? '<p>조언: ' + escapeHtml(advice) + '</p>' : '') +
-      (slug ? '<a class="card-detail-link" href="tarot/' + slug + '.html">이 카드 자세히 보기 →</a>' : '') +
+      (advice ? '<p class="daily-advice">' + escapeHtml(advice) + '</p>' : '') +
       (streak >= 2 ? '<p class="streak">' + streak + '일 연속 방문 중이에요.</p>' : '') +
+      '<details class="daily-more"><summary>키워드와 자세한 설명</summary>' +
+      (keywords ? '<p>키워드: ' + escapeHtml(keywords.join(' · ')) + '</p>' : '') +
+      (slug ? '<a class="card-detail-link" href="tarot/' + slug + '.html">이 카드 자세히 보기 →</a>' : '') +
       (shared ? '<p class="streak">친구가 공유한 오늘의 한 장이에요.</p>' : '<p class="editorial-meta">오늘 날짜와 이 기기를 기준으로 뽑았어요. 오늘은 계속 같은 카드이고, 내일이면 새 카드가 나옵니다.</p>') +
+      '</details>' +
       '<button type="button" class="daily-share">이미지로 공유</button></div>';
     const dailyShare = body.querySelector('.daily-share');
     dailyShare.addEventListener('click', function () {
