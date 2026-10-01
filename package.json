@@ -9,5 +9,8 @@
     "build:guides-pages": "node scripts/generate-guides-pages.js",
     "build:sitemap": "node scripts/generate-sitemap.js",
     "build:cache-version": "node scripts/bump-cache-version.js"
+  },
+  "devDependencies": {
+    "jsdom": "^30.1.1"
   }
 }

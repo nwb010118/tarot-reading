@@ -2,3 +2,4 @@
 .claude/worktrees/
 tarot-adsense-redesign-spec.md
 .playwright-mcp/
+node_modules/
