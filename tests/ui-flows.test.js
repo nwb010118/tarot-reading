@@ -66,6 +66,13 @@ async function main() {
   app.click('#draw-button');
   await wait(60);
   assert.ok(app.text('#summary').includes('용띠'));
+  ['오늘의 총운', '애정운', '재물운', '직장운', '오늘의 조언', '행운의 숫자', '행운의 색'].forEach(function (label) {
+    assert.ok(app.text('#summary .ddi-day').includes(label), 'ddi daily structure: ' + label);
+  });
+  {
+    const dayLen = app.text('#summary .ddi-day').replace(/이번 리딩의 한마디/g, '').replace(/\s+/g, ' ').trim().length;
+    assert.ok(dayLen >= 400 && dayLen <= 600, 'ddi daily length ' + dayLen);
+  }
   app.click('#new-reading-button');
   await wait(30);
 

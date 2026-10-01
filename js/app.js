@@ -802,27 +802,79 @@
     currentEntryId = saveReading(storage, entry)[0].id;
   }
 
+  const DDI_OVERALL_RANGE = { min: 140, max: 175 };
+  const DDI_SECTION_RANGE = { min: 70, max: 100 };
+  const DDI_ADVICE_RANGE = { min: 45, max: 70 };
+  const DDI_CORE_SECTIONS = [
+    { category: 'love', label: '애정운' },
+    { category: 'money', label: '재물운' },
+    { category: 'workplace', label: '직장운' }
+  ];
+
+  // 띠운세 하루 구성: 총운 + 애정·재물·직장 + (고른 주제가 다르면 그 주제) + 조언 + 행운의 숫자·색
+  function renderDdiDay(ddi) {
+    const daily = DDI_DAILY[ddi.key];
+    const traitCombos = combineSentences(ddi.trait.a, ddi.trait.b);
+    const overallCandidates = [];
+    traitCombos.forEach(function (t) { daily.daily.forEach(function (d) { overallCandidates.push(t + ' ' + d); }); });
+    const overall = pickWithinRange(overallCandidates, DDI_OVERALL_RANGE);
+
+    function sectionText(category) {
+      if (category === selectedCategory) {
+        const sensitive = getSensitiveReading(category, selectedSubChoice, ddi.keywords);
+        if (sensitive) return sensitive;
+      }
+      const sub = (category === selectedCategory) ? selectedSubChoice : (CATEGORY_SUBCHOICES[category] ? CATEGORY_SUBCHOICES[category][0].key : null);
+      const value = resolveSubchoiceValue(category, ddi.categories[category], sub);
+      return (typeof value === 'string') ? value : pickWithinRange(combineSentences(value.a, value.b), DDI_SECTION_RANGE);
+    }
+
+    const sections = DDI_CORE_SECTIONS.map(function (s) { return { label: s.label, text: sectionText(s.category) }; });
+    const isCore = DDI_CORE_SECTIONS.some(function (s) { return s.category === selectedCategory; });
+    if (selectedCategory && !isCore) {
+      sections.push({ label: CATEGORY_LABELS[selectedCategory], text: resolveCategoryMeaning(ddi, selectedCategory, selectedPeriod, selectedSubChoice) });
+    }
+
+    const adviceCandidates = [];
+    ddi.advice.forEach(function (a) { daily.tip.forEach(function (t) { adviceCandidates.push(a + ' ' + t); }); });
+    const advice = pickWithinRange(adviceCandidates, DDI_ADVICE_RANGE);
+
+    const shuffled = daily.numbers.slice();
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(activeRng() * (i + 1));
+      const t = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = t;
+    }
+    const numbers = shuffled.slice(0, 2).sort(function (x, y) { return x - y; });
+    const color = pickRandom(daily.colors);
+
+    return '<div class="reading-detail ddi-day">' +
+      '<h4>오늘의 총운</h4>' + renderReadingMeaning(overall) +
+      sections.map(function (s) { return '<h4>' + s.label + '</h4><p class="reading-body">' + escapeHtml(s.text) + '</p>'; }).join('') +
+      '<h4>오늘의 조언</h4><p class="card-advice">' + escapeHtml(advice) + '</p>' +
+      '<p class="card-keywords">행운의 숫자 ' + numbers.join(', ') + ' · 행운의 색 ' + escapeHtml(color) + '</p>' +
+      '</div>';
+  }
+
   function showDdiSummary() {
     const ddi = getDdiByYear(selectedBirthYear);
-    activeRng = createRng(['ddi', ddi.key, readingDay()].concat(variantParts(), [selectedCategory, selectedSubChoice, selectedPeriod]));
+    activeRng = createRng(['ddi', ddi.key, readingDay()].concat(variantParts(), ['daily']));
     const category = selectedCategory;
     const period = selectedPeriod;
     const heading = ddi.name_kr + ' · ' + (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩';
 
-    const meaning = resolveCategoryMeaning(ddi, category, period, selectedSubChoice);
-    const extraHtml = renderKeywordsAdviceHtml(ddi.keywords, ddi.advice);
+    const dayHtml = renderDdiDay(ddi);
 
     const evidenceHtml = renderEvidence([
       sharedView ? '공유된 띠: ' + ddi.name_kr : '입력한 출생연도: ' + selectedBirthYear + '년 → ' + ddi.name_kr,
       sharedView ? '공유된 링크는 띠만 담고 있어요.' : (selectedDdiNote || '생일을 입력하지 않으면 출생연도만으로 띠를 정해요. 1~2월생은 생일을 함께 입력하면 설날 기준으로 계산합니다.'),
       '띠는 설날, 사주의 연주는 입춘이 기준이라 두 결과가 다를 수 있어요.',
-      '문장은 띠, 날짜, 이 기기를 기준으로 골라요. 같은 조건이면 오늘은 같은 문장이고, 같은 띠여도 기기마다 다른 문장을 받을 수 있어요.'
+      '문장은 띠, 날짜, 이 기기를 기준으로 골라요. 같은 조건이면 오늘은 같은 문장이고, 같은 띠여도 기기마다 다른 문장을 받을 수 있어요.',
+      '행운의 색은 띠의 전통적인 오행 연상이고, 숫자는 날짜를 기준으로 후보 중에서 골라요. 결과를 보장하는 값은 아니에요.'
     ]);
 
     const voiceKey = [ddi.key, readingDay(), selectedCategory, selectedSubChoice, selectedPeriod].join('|');
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' + renderOwnerIntro('ddi', voiceKey) +
-      '<div class="reading-detail">' + renderReadingMeaning(meaning) + '</div>' +
-      extraHtml + renderPracticePlan() + renderOwnerOutro(voiceKey) + evidenceHtml;
+      dayHtml + renderPracticePlan() + renderOwnerOutro(voiceKey) + evidenceHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     setShareState(heading, [], { kind: 'ddi', a: ddi.key, c: selectedCategory, b: linkSubChoice(), p: selectedPeriod, d: readingDay(), v: readingVariant() });
