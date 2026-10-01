@@ -291,6 +291,206 @@ html body .section-heading p { font-size: 14px; line-height: 1.6; }
 html body .mode-btn .mode-free { font-size: 11px; }
 html body .showcase-note { font-size: 12px; }
 
+/* ── 홈 첫 화면(home-hero) ───────────────── */
+html body .home-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  align-items: center;
+  gap: 48px;
+  padding: 76px 0 84px;
+  min-height: 0;
+}
+
+html body .home-hero .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  color: #d8aa95;
+  margin: 0 0 22px;
+}
+
+html body .home-hero .eyebrow::before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: #d8aa9599;
+}
+
+html body .home-hero h1 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: clamp(40px, 5vw, 60px);
+  line-height: 1.26;
+  letter-spacing: -0.035em;
+  color: #f3ead8;
+  margin: 0;
+}
+
+html body .home-hero h1 em {
+  font-style: normal;
+  color: var(--gold-strong);
+  background: none;
+  text-decoration: underline;
+  text-decoration-color: #d8c08f66;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.18em;
+}
+
+html body .home-hero .hero-copy {
+  max-width: 30em;
+  margin: 24px 0 34px;
+  font-size: 17px;
+  line-height: 1.8;
+  color: #b9c3cf;
+}
+
+html body .home-hero .hero-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px 26px;
+}
+
+html body .home-hero .hero-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 16px 30px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #eed9ad, #d9bd86);
+  color: #141d2b;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  box-shadow: 0 12px 32px #d8c08f24, inset 0 1px 0 #fff6;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+html body .home-hero .hero-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 38px #d8c08f33, inset 0 1px 0 #fff6;
+}
+
+html body .home-hero .hero-sub {
+  color: var(--ink-soft);
+  font-size: 15px;
+  text-decoration: none;
+  border-bottom: 1px solid #d8c08f55;
+  padding-bottom: 3px;
+}
+
+html body .home-hero .hero-sub:hover { color: var(--gold-strong); border-bottom-color: currentColor; }
+
+html body .home-hero .hero-trust {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 26px;
+  margin: 40px 0 0;
+  padding: 22px 0 0;
+  border-top: 1px solid #2c394999;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+html body .home-hero .hero-trust li { display: inline-flex; align-items: center; gap: 9px; }
+
+html body .home-hero .hero-trust li::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 10px #d8c08f99;
+}
+
+/* 오른쪽 예시: 별 카드 한 장 + 궤도선 + 유리 느낌 카드 두 개 */
+html body .reading-showcase {
+  position: relative;
+  height: 470px;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  isolation: isolate;
+}
+
+html body .reading-showcase .showcase-orbit {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  top: 34px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1px solid #d8c08f22;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, #d8c08f12, transparent 62%);
+  box-shadow: 0 0 0 46px #d8c08f05, 0 0 0 96px #d8c08f03;
+  z-index: -1;
+}
+
+html body .reading-showcase .showcase-orbit::before,
+html body .reading-showcase .showcase-orbit::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f0dcae;
+  box-shadow: 0 0 14px 3px #f0dcae80;
+}
+
+html body .reading-showcase .showcase-orbit::before { top: 46px; right: 58px; }
+html body .reading-showcase .showcase-orbit::after { bottom: 70px; left: 26px; width: 4px; height: 4px; }
+
+html body .reading-showcase .showcase-card {
+  position: absolute;
+  left: 50%;
+  top: 44px;
+  width: 210px;
+  margin: 0;
+  transform: translateX(-50%) rotate(-5deg);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 34px 70px #000b, 0 0 0 1px #d8c08f55;
+}
+
+html body .reading-showcase .showcase-card img { display: block; width: 100%; height: auto; }
+
+html body .reading-showcase .showcase-chip {
+  position: absolute;
+  padding: 13px 18px;
+  border-radius: 14px;
+  background: #101d2ec7;
+  border: 1px solid #d8c08f30;
+  box-shadow: 0 18px 40px #0008;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+html body .reading-showcase .showcase-chip span {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+html body .reading-showcase .showcase-chip strong {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: #f0e4c8;
+  letter-spacing: -0.02em;
+}
+
+html body .reading-showcase .chip-top { right: -8px; top: 92px; }
+html body .reading-showcase .chip-bottom { left: -8px; bottom: 54px; }
+
 /* ── 휴대폰 ─────────────────────────────── */
 @media (max-width: 640px) {
   .legal-page .legal-section,
@@ -305,4 +505,28 @@ html body .showcase-note { font-size: 12px; }
   .card-page-main tbody th { white-space: normal; }
   .legal-section caption,
   .card-page-main caption { display: block; padding: 12px 14px 6px; }
+}
+
+/* 홈 첫 화면 · 태블릿 */
+@media (max-width: 980px) {
+  html body .home-hero { gap: 24px; padding: 56px 0 64px; }
+  html body .reading-showcase { transform: scale(0.88); transform-origin: center; }
+}
+
+/* 홈 첫 화면 · 휴대폰 (salon-flow.js가 예시 영역을 모드 선택 아래로 옮긴다) */
+@media (max-width: 700px) {
+  html body .home-hero { display: block; padding: 36px 0 28px; }
+  html body .home-hero h1 { font-size: clamp(32px, 9vw, 42px); }
+  html body .home-hero .hero-copy { font-size: 16px; margin: 18px 0 26px; }
+  html body .home-hero .hero-actions { flex-direction: column; align-items: stretch; gap: 16px; }
+  html body .home-hero .hero-cta { display: flex; justify-content: center; }
+  html body .home-hero .hero-sub { align-self: center; }
+  html body .home-hero .hero-trust { gap: 10px 18px; margin-top: 30px; font-size: 13px; }
+  html body .reading-showcase { transform: none; height: 400px; max-width: 360px; margin: 32px auto 0; }
+  html body .reading-showcase .showcase-orbit { width: 300px; height: 300px; top: 40px; }
+  html body .reading-showcase .showcase-card { width: 168px; top: 40px; }
+  html body .reading-showcase .chip-top { right: 0; top: 64px; }
+  html body .reading-showcase .chip-bottom { left: 0; bottom: 36px; }
+  html body .reading-showcase .showcase-chip { padding: 10px 14px; }
+  html body .reading-showcase .showcase-chip strong { font-size: 14px; }
 }
