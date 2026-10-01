@@ -352,3 +352,14 @@ label, .category-btn, .spread-btn { font-size: 15px; }
 .evidence summary { cursor: pointer; color: var(--gold); }
 .evidence ul { margin: 8px 0 0; padding-left: 18px; }
 @media (max-width: 700px) { #daily-card-body { flex-direction: column; } }
+.promise-box { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.promise-box label { flex-basis: 100%; font-size: 13px; color: var(--gold); }
+.promise-box input { flex: 1 1 220px; min-width: 0; }
+.promise-open, .promise-save, .promise-actions button { padding: 8px 14px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: inherit; cursor: pointer; }
+.promise-done, .promise-reply { margin: 0; line-height: 1.8; color: var(--gold); }
+.promise-item { padding: 12px 0; border-top: 1px dashed var(--line); }
+.promise-text { margin: 0 0 8px; line-height: 1.8; }
+.promise-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.history-promise { margin: 4px 0; font-size: 13px; }
+.promise-status { color: var(--gold); margin-left: 6px; }
+.streak { color: var(--gold); margin: 6px 0 0; font-size: 13px; }

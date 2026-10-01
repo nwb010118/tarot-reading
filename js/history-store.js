@@ -10,9 +10,23 @@ function getHistory(storage) {
   }
 }
 
+function newEntryId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
 function saveReading(storage, entry) {
   const history = getHistory(storage);
+  if (!entry.id) entry.id = newEntryId();
   history.unshift(entry);
+  storage.setItem(HISTORY_KEY, JSON.stringify(history));
+  return history;
+}
+
+function updateReading(storage, id, patch) {
+  const history = getHistory(storage);
+  const target = history.find(function (item) { return item.id === id; });
+  if (!target) return history;
+  Object.assign(target, patch);
   storage.setItem(HISTORY_KEY, JSON.stringify(history));
   return history;
 }
@@ -30,5 +44,5 @@ function clearHistory(storage) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { getHistory, saveReading, deleteReading, clearHistory, HISTORY_KEY };
+  module.exports = { getHistory, saveReading, updateReading, deleteReading, clearHistory, HISTORY_KEY };
 }

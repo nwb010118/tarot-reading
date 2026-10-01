@@ -33,6 +33,7 @@
   const storage = getStorage();
   const deck = getFullDeck();
   let activeRng = Math.random;
+  let currentEntryId = null;
   let selectedSpread = 1;
   let selectedCategory = null;
   let selectedPeriod = 'today';
@@ -341,6 +342,7 @@
       screenReading.classList.remove('hidden');
       showZodiacSummary();
       saveZodiacReading();
+      setupPromiseBox();
       return;
     }
 
@@ -354,6 +356,7 @@
       screenReading.classList.remove('hidden');
       showDdiSummary();
       saveDdiReading();
+      setupPromiseBox();
       return;
     }
 
@@ -366,6 +369,7 @@
       screenReading.classList.remove('hidden');
       showSajuSummary(input, saju);
       saveSajuReading(input, saju);
+      setupPromiseBox();
       return;
     }
 
@@ -473,7 +477,7 @@
       subChoice: selectedSubChoice,
       cards: []
     };
-    saveReading(storage, entry);
+    currentEntryId = saveReading(storage, entry)[0].id;
   }
 
   function showDdiSummary() {
@@ -511,7 +515,7 @@
       subChoice: selectedSubChoice,
       cards: []
     };
-    saveReading(storage, entry);
+    currentEntryId = saveReading(storage, entry)[0].id;
   }
 
   // 입력을 검증하고 calculateSaju에 넘길 형태로 정규화. 실패 시 null을 반환하고 에러 메시지를 표시.
@@ -832,7 +836,7 @@
       subChoice: selectedSubChoice,
       cards: []
     };
-    saveReading(storage, entry);
+    currentEntryId = saveReading(storage, entry)[0].id;
   }
 
   function showCompatibilitySummary(label1, label2, tierInfo, saju1, saju2) {
@@ -868,7 +872,7 @@
       score: tierInfo.score,
       cards: []
     };
-    saveReading(storage, entry);
+    currentEntryId = saveReading(storage, entry)[0].id;
   }
 
   function renderCards(draw) {
@@ -903,6 +907,7 @@
         if (flippedCount === draw.length && !historySaved) {
           showSummary(draw);
           saveCurrentReading(draw);
+          setupPromiseBox();
           historySaved = true;
         }
       }
@@ -971,7 +976,7 @@
         return { name: item.card.name, orientation: item.orientation };
       })
     };
-    saveReading(storage, entry);
+    currentEntryId = saveReading(storage, entry)[0].id;
   }
 
   const SHARE_SELECTOR = 'h3, h4, .compat-score, .compat-tier-label, .reading-lead, .reading-body, .card-keywords, .card-advice, .practice-plan p';
@@ -1101,6 +1106,14 @@
     renderHistory();
   });
 
+  const PROMISE_STATUS_LABELS = { pending: '⏳ 확인 대기', done: '✓ 했어요', partial: '△ 조금 했어요', skipped: '✗ 못 했어요' };
+
+  function renderHistoryPromise(entry) {
+    if (!entry.promise) return '';
+    return '<p class="history-promise">약속: ' + escapeHtml(entry.promise.text) +
+      ' <span class="promise-status">' + (PROMISE_STATUS_LABELS[entry.promise.status] || '') + '</span></p>';
+  }
+
   function renderHistory() {
     if (!storage) {
       historyList.innerHTML = '<p>이 브라우저에서는 기록 저장을 사용할 수 없습니다.</p>';
@@ -1140,6 +1153,7 @@
         '<p class="history-date">' + dateText + '</p>' +
         '<p class="history-question">' + topicText + '</p>' +
         '<p class="history-cards">' + cardsText + '</p>' +
+        renderHistoryPromise(entry) +
         '<button type="button" class="history-delete-button" data-index="' + index + '">삭제</button>' +
         '</div>';
     }).join('');
@@ -1156,6 +1170,8 @@
   function renderDailyCard() {
     const body = document.getElementById('daily-card-body');
     if (!body) return;
+    recordVisit(storage, todayKey());
+    const streak = getStreak(storage, todayKey());
     const rng = createRng(['daily', getDeviceId(storage), todayKey()]);
     const item = drawCards(deck, 1, rng)[0];
     const orientation = item.orientation;
@@ -1171,8 +1187,76 @@
       (keywords ? '<p>키워드: ' + escapeHtml(keywords.join(' · ')) + '</p>' : '') +
       (advice ? '<p>조언: ' + escapeHtml(advice) + '</p>' : '') +
       (slug ? '<a class="card-detail-link" href="tarot/' + slug + '.html">이 카드 자세히 보기 →</a>' : '') +
+      (streak >= 2 ? '<p class="streak">' + streak + '일 연속 방문 중이에요.</p>' : '') +
       '<p class="editorial-meta">오늘 날짜와 이 기기를 기준으로 뽑았어요. 오늘은 계속 같은 카드이고, 내일이면 새 카드가 나옵니다.</p></div>';
   }
 
+  // 결과 화면의 실천 안내 아래에 "약속하기"를 붙인다 (저장소를 못 쓰거나 실천 안내가 없으면 생략)
+  function setupPromiseBox() {
+    if (!storage || !currentEntryId) return;
+    const plan = summaryEl.querySelector('.practice-plan');
+    if (!plan) return;
+    const entryId = currentEntryId;
+    const period = selectedPeriod;
+    const defaultText = getPracticePlan(period, selectedCategory).focus;
+    const days = PROMISE_DUE_DAYS[period] || 1;
+    const box = document.createElement('div');
+    box.className = 'promise-box';
+    box.innerHTML = '<button type="button" class="promise-open">이 실천을 약속할게요</button>';
+    plan.appendChild(box);
+    box.querySelector('.promise-open').addEventListener('click', function () {
+      box.innerHTML = '<label for="promise-input">나의 한 줄 약속</label>' +
+        '<input type="text" id="promise-input" maxlength="80">' +
+        '<button type="button" class="promise-save">약속하기</button>';
+      const input = box.querySelector('input');
+      input.value = defaultText;
+      input.focus();
+      box.querySelector('.promise-save').addEventListener('click', function () {
+        const text = input.value.trim() || defaultText;
+        updateReading(storage, entryId, {
+          promise: { text: text, status: 'pending', dueDate: dueDateFor(period, todayKey()), answeredAt: null }
+        });
+        box.innerHTML = '<p class="promise-done">약속했어요 ✓ ' + (days === 1 ? '내일 ' : days + '일 뒤에 ') + '어땠는지 물어볼게요.</p>';
+        renderPromiseCheck();
+      });
+    });
+  }
+
+  // 홈 화면: 확인일이 지난 약속을 묻는다
+  function renderPromiseCheck() {
+    const el = document.getElementById('promise-check');
+    if (!el) return;
+    const due = storage ? getDueEntries(getHistory(storage), todayKey()) : [];
+    if (!due.length) {
+      el.classList.add('hidden');
+      el.innerHTML = '';
+      return;
+    }
+    el.classList.remove('hidden');
+    el.innerHTML = '<p class="eyebrow">약속 확인</p><h2>지난번 약속, 해봤나요?</h2>' +
+      due.map(function (entry) {
+        return '<div class="promise-item" data-id="' + escapeHtml(entry.id) + '">' +
+          '<p class="promise-text">“' + escapeHtml(entry.promise.text) + '”</p>' +
+          '<div class="promise-actions">' +
+          '<button type="button" data-status="done">했어요</button>' +
+          '<button type="button" data-status="partial">조금 했어요</button>' +
+          '<button type="button" data-status="skipped">못 했어요</button>' +
+          '</div></div>';
+      }).join('');
+    el.querySelectorAll('.promise-item').forEach(function (item) {
+      item.querySelectorAll('button').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const entry = getHistory(storage).find(function (e) { return e.id === item.dataset.id; });
+          if (!entry || !entry.promise) return;
+          updateReading(storage, entry.id, {
+            promise: Object.assign({}, entry.promise, { status: btn.dataset.status, answeredAt: todayKey() })
+          });
+          item.innerHTML = '<p class="promise-reply">' + escapeHtml(PROMISE_REPLIES[btn.dataset.status]) + '</p>';
+        });
+      });
+    });
+  }
+
+  renderPromiseCheck();
   renderDailyCard();
 })();
