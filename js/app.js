@@ -38,6 +38,9 @@
   let sharedView = false;
   let readingDateOverride = null;
   let currentTarotSeed = null;
+  let currentQuestion = '';
+  let questionIntent = null;
+  let lastAppliedIntent = '';
   let selectedSpread = 1;
   let selectedCategory = null;
   let selectedPeriod = 'today';
@@ -117,6 +120,10 @@
   const shareImageButton = document.getElementById('share-image-button');
   const shareLinkButton = document.getElementById('share-link-button');
   const sharedBanner = document.getElementById('shared-banner');
+  const questionSection = document.getElementById('question-section');
+  const questionInput = document.getElementById('question-input');
+  const questionChip = document.getElementById('question-chip');
+  const questionSafety = document.getElementById('question-safety');
   const historyOpenButton = document.getElementById('history-open-button');
   const historyModal = document.getElementById('history-modal');
   const historyList = document.getElementById('history-list');
@@ -133,6 +140,7 @@
       sajuSelect.classList.toggle('hidden', selectedMode !== 'saju');
       compatibilitySelect.classList.toggle('hidden', selectedMode !== 'compatibility');
       spreadSelect.classList.toggle('hidden', selectedMode !== 'tarot');
+      questionSection.classList.toggle('hidden', selectedMode !== 'tarot');
       subchoiceSelect.classList.toggle('hidden', !SUBCHOICE_ENABLED_MODES.has(selectedMode) || !CATEGORY_SUBCHOICES[selectedCategory]);
       categorySection.classList.toggle('hidden', selectedMode === 'compatibility');
       periodSection.classList.toggle('hidden', selectedMode === 'compatibility');
@@ -293,6 +301,56 @@
         selectedSubChoice = btn.dataset.subchoice;
       });
     });
+  }
+
+  // 질문을 읽어 주제·하위선택·실천 기간을 기존 버튼에 반영한다 (같은 해석이면 사용자가 고친 선택을 덮어쓰지 않는다)
+  function applyQuestionIntent() {
+    const text = questionInput.value.trim();
+    questionIntent = classifyQuestion(text);
+    questionSafety.textContent = questionIntent.safety ? QUESTION_SAFETY_MESSAGE : '';
+    questionSafety.classList.toggle('hidden', !questionIntent.safety);
+    if (!text || questionIntent.safety) {
+      questionChip.classList.add('hidden');
+      lastAppliedIntent = '';
+      return;
+    }
+    const signature = [questionIntent.category, questionIntent.subchoice, questionIntent.period].join('|');
+    if (signature === lastAppliedIntent) return;
+    lastAppliedIntent = signature;
+    const parts = [];
+    if (questionIntent.category) {
+      const catBtn = Array.prototype.find.call(categoryButtons, function (b) { return b.dataset.category === questionIntent.category; });
+      if (catBtn) {
+        catBtn.click();
+        parts.push(CATEGORY_LABELS[questionIntent.category]);
+      }
+      if (questionIntent.subchoice) {
+        const subBtn = Array.prototype.find.call(subchoiceSelect.querySelectorAll('.subchoice-btn'), function (b) { return b.dataset.subchoice === questionIntent.subchoice; });
+        if (subBtn) {
+          subBtn.click();
+          parts.push(subBtn.textContent);
+        }
+      }
+      if (questionIntent.period) {
+        const perBtn = Array.prototype.find.call(periodButtons, function (b) { return b.dataset.period === questionIntent.period && !b.disabled; });
+        if (perBtn) {
+          perBtn.click();
+          parts.push(PERIOD_LABELS[questionIntent.period]);
+        }
+      }
+    }
+    questionChip.textContent = parts.length
+      ? '이렇게 읽을게요: ' + parts.join(' · ') + ' (아래에서 바꿀 수 있어요)'
+      : '주제를 찾지 못했어요. 아래에서 직접 골라 주세요.';
+    questionChip.classList.remove('hidden');
+  }
+
+  questionInput.addEventListener('input', applyQuestionIntent);
+
+  function renderQuestionQuote() {
+    if (!currentQuestion) return '';
+    const frame = QUESTION_FRAME_LINES[(questionIntent && questionIntent.form) || 'general'];
+    return '<blockquote class="question-quote">“' + escapeHtml(currentQuestion) + '”<footer>' + escapeHtml(frame) + '</footer></blockquote>';
   }
 
   // 점집 주인의 도입·마무리 한 줄. 같은 조건이면 같은 문구가 나오도록 시드로 고른다.
@@ -483,6 +541,14 @@
       return;
     }
 
+    currentQuestion = questionInput.value.trim();
+    questionIntent = currentQuestion ? classifyQuestion(currentQuestion) : null;
+    if (questionIntent && questionIntent.safety) {
+      questionSafety.textContent = QUESTION_SAFETY_MESSAGE;
+      questionSafety.classList.remove('hidden');
+      questionSafety.scrollIntoView({ block: 'center' });
+      return;
+    }
     activeRng = Math.random;
     currentTarotSeed = Math.random().toString(36).slice(2, 10);
     const currentDraw = drawCards(deck, selectedSpread);
@@ -1061,7 +1127,7 @@
         return '뽑힌 카드: ' + item.card.name + ' (' + (item.orientation === 'upright' ? '정방향' : '역방향') + ')';
       }).concat(['카드는 78장 덱에서 무작위로 뽑았고, 정방향과 역방향은 각각 절반의 확률입니다. 다시 뽑으면 새 카드가 나옵니다.'])
     );
-    summaryEl.innerHTML = '<h3>' + heading + '</h3>' + renderOwnerIntro('tarot', currentTarotSeed) + details.join('') + renderPracticePlan() + renderOwnerOutro(currentTarotSeed) + tarotEvidence;
+    summaryEl.innerHTML = '<h3>' + heading + '</h3>' + renderOwnerIntro('tarot', currentTarotSeed) + renderQuestionQuote() + details.join('') + renderPracticePlan() + renderOwnerOutro(currentTarotSeed) + tarotEvidence;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     setShareState(heading, draw.map(function (item) { return { src: item.card.image, reversed: item.orientation === 'reversed' }; }), {
@@ -1077,6 +1143,7 @@
     const entry = {
       date: new Date().toISOString(),
       mode: 'tarot',
+      question: currentQuestion || undefined,
       category: selectedCategory,
       period: selectedPeriod,
       subChoice: selectedSubChoice,
@@ -1182,6 +1249,12 @@
       newReadingButton.textContent = '새 리딩 시작';
       if (history.replaceState) history.replaceState(null, '', location.pathname + location.search);
     }
+    questionInput.value = '';
+    currentQuestion = '';
+    questionIntent = null;
+    lastAppliedIntent = '';
+    questionChip.classList.add('hidden');
+    questionSafety.classList.add('hidden');
     screenReading.classList.add('hidden');
     screenStart.classList.remove('hidden');
     categoryButtons.forEach(function (b) { b.classList.remove('selected'); });
@@ -1322,6 +1395,7 @@
         '<p class="history-date">' + dateText + '</p>' +
         '<p class="history-question">' + topicText + '</p>' +
         '<p class="history-cards">' + cardsText + '</p>' +
+        (entry.mode === 'tarot' && entry.question ? '<p class="history-asked">질문: ' + escapeHtml(entry.question) + '</p>' : '') +
         renderHistoryPromise(entry) +
         '<button type="button" class="history-delete-button" data-index="' + index + '">삭제</button>' +
         '</div>';
@@ -1455,6 +1529,8 @@
     selectedPeriod = shared.p;
     readingDateOverride = shared.d;
     sharedView = true;
+    currentQuestion = '';
+    questionIntent = null;
     sharedBanner.classList.remove('hidden');
     newReadingButton.textContent = '나도 운세 보기';
     screenStart.classList.add('hidden');
