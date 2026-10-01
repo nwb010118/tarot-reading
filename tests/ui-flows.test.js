@@ -121,6 +121,20 @@ async function main() {
   assert.ok(app.text('.question-quote').includes('올해 이직해도 될까요?'), 'question quote');
   assert.ok(app.text('.question-quote').includes('조건을 함께 읽어'), 'decision frame');
   assert.ok(app.text('#summary').includes('주인의 한마디'));
+
+  // 6-2. 원카드 구성: 키워드 3~4개, 해석 150~200자, 질문에 대한 조언 150~200자 (실천 안내·근거 패널 제외)
+  {
+    const textLen = function (selector) {
+      return app.qa('#summary ' + selector).map(function (el) { return el.textContent; }).join(' ').replace(/\s+/g, ' ').trim().length;
+    };
+    const keywordCount = app.text('#summary .card-keywords').replace('키워드:', '').split('·').length;
+    assert.ok(keywordCount >= 3 && keywordCount <= 4, 'one-card keywords: ' + keywordCount);
+    const meaningLen = textLen('.reading-lead, #summary .reading-body');
+    assert.ok(meaningLen >= 150 && meaningLen <= 200, 'one-card meaning length ' + meaningLen);
+    const adviceLen = textLen('.card-advice, #summary .card-action');
+    assert.ok(adviceLen >= 150 && adviceLen <= 200, 'one-card advice length ' + adviceLen);
+    assert.ok(app.text('#summary').includes('질문에 대한 조언'), 'one-card advice label');
+  }
   app.click('.promise-open');
   assert.ok(app.q('#promise-input').value.length > 5, 'promise prefilled');
   app.type('#promise-input', '지원서 한 곳 작성하기');

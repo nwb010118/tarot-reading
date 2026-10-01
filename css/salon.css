@@ -117,7 +117,8 @@ input[type='checkbox'] { accent-color: var(--gold); width: 16px; height: 16px; }
 #cards-container:empty { display: none; }
 #summary .card-extra { background: #d6bd8b08; padding: 18px; border: 1px solid #d6bd8b25; border-radius: 8px; }
 #summary .card-keywords { color: var(--gold); font-size: 14px; margin-bottom: 10px; }
-#summary .card-advice { color: #d5dde7; font-size: 16px; line-height: 1.8; }
+#summary .card-advice, #summary .card-action { color: #d5dde7; font-size: 16px; line-height: 1.8; }
+#summary .card-action { margin-bottom: 12px; }
 body { font-family: 'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; font-size: 16px; }
 .brand, .hero h1, .section-heading h2, #summary h3, .reading-detail h4, .modal-content h2 { font-family: inherit; }
 .brand { font-weight: 650; letter-spacing: -1px; }

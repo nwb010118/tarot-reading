@@ -457,6 +457,60 @@
     return resolveMeaningText(entity.trait);
   }
 
+  const ONECARD_RANGE = { min: 150, max: 200 };
+
+  function combineSentences(listA, listB) {
+    const out = [];
+    listA.forEach(function (a) { listB.forEach(function (b) { out.push(a + ' ' + b); }); });
+    return out;
+  }
+
+  // 후보 중 글자 수 범위에 드는 것을 시드로 고른다. 범위에 드는 후보가 없으면 가장 가까운 것을 쓴다.
+  function pickWithinRange(candidates) {
+    const fit = candidates.filter(function (t) { return t.length >= ONECARD_RANGE.min && t.length <= ONECARD_RANGE.max; });
+    if (fit.length) return pickRandom(fit);
+    const center = (ONECARD_RANGE.min + ONECARD_RANGE.max) / 2;
+    return candidates.slice().sort(function (x, y) { return Math.abs(x.length - center) - Math.abs(y.length - center); })[0];
+  }
+
+  // 원카드 결과: 키워드, 카드 의미 해석(기본 상징 + 그림 해석), 질문에 대한 조언(주제별 문장 + 구체적 행동)
+  function renderOneCardDetail(item, category, sensitiveText) {
+    const extra = TAROT_ONECARD[item.card.cardId][item.orientation];
+    const base = item.orientation === 'upright' ? item.card.upright : item.card.reversed;
+    // 기본 문장 두 개를 모두 쓰면 길이가 넘치는 카드는 첫 문장만 쓰는 후보도 함께 둔다
+    const interpretation = pickWithinRange(combineSentences(base.a, base.b).concat(base.a).map(function (t) { return t + ' ' + extra.deepen; }));
+    const keywords = pickKeywords(item.card.keywords[item.orientation], 4);
+
+    // 조언은 주제(또는 카드 조언) 문장과 카드별 행동 문장을 두 단락으로 나눠 보여 준다. 길이는 합쳐서 맞춘다.
+    let advice;
+    let action = '';
+    const categoryReading = category && item.card.categories && item.card.categories[category];
+    if (sensitiveText) {
+      advice = sensitiveText;
+    } else if (categoryReading) {
+      const value = resolveSubchoiceValue(category, categoryReading[item.orientation], selectedSubChoice);
+      const texts = (typeof value === 'string') ? [value] : combineSentences(value.a, value.b).concat(value.a, value.b);
+      advice = pickWithinRange(texts.map(function (t) { return t + ' ' + extra.action; }));
+      action = extra.action;
+    } else {
+      advice = pickWithinRange(item.card.advice[item.orientation].map(function (t) { return t + ' ' + extra.action; }));
+      action = extra.action;
+    }
+    if (action) advice = advice.slice(0, advice.length - action.length - 1);
+
+    const orientationLabel = item.orientation === 'upright' ? '정방향' : '역방향';
+    const slug = (typeof TAROT_SLUGS !== 'undefined') ? TAROT_SLUGS[item.card.cardId] : null;
+    return '<div class="reading-detail">' +
+      '<h4>' + item.card.name + ' (' + orientationLabel + ')</h4>' +
+      '<p class="card-keywords">키워드: ' + keywords.join(' · ') + '</p>' +
+      renderReadingMeaning(interpretation) +
+      '<p class="reading-lead-label">' + (category ? '질문에 대한 조언' : '오늘의 조언') + '</p>' +
+      '<p class="card-advice">' + escapeHtml(advice) + '</p>' +
+      (action ? '<p class="reading-lead-label">오늘 해볼 한 걸음</p><p class="card-action">' + escapeHtml(action) + '</p>' : '') +
+      (slug ? '<a class="card-detail-link" href="tarot/' + slug + '.html">이 카드 자세히 보기 →</a>' : '') +
+      '</div>';
+  }
+
   function renderKeywordsAdviceHtml(keywordsList, adviceText) {
     const resolvedKeywords = pickKeywords(keywordsList);
     const resolvedAdvice = pickAdvice(adviceText);
@@ -1134,6 +1188,9 @@
     const heading = (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩 요약';
 
     const details = draw.map(function (item) {
+      if (draw.length === 1 && typeof TAROT_ONECARD !== 'undefined' && TAROT_ONECARD[item.card.cardId]) {
+        return renderOneCardDetail(item, category, getSensitiveReading(category, selectedSubChoice, item.card.keywords && item.card.keywords[item.orientation]));
+      }
       const orientationLabel = item.orientation === 'upright' ? '정방향' : '역방향';
       const categoryReading = category && item.card.categories && item.card.categories[category];
       const baseMeaning = categoryReading
@@ -1189,7 +1246,7 @@
     currentEntryId = saveReading(storage, entry)[0].id;
   }
 
-  const SHARE_SELECTOR = 'h3, h4, .compat-score, .compat-tier-label, .reading-lead, .reading-body, .card-keywords, .card-advice, .practice-plan p, .owner-outro p';
+  const SHARE_SELECTOR = 'h3, h4, .compat-score, .compat-tier-label, .reading-lead, .reading-body, .card-keywords, .card-advice, .card-action, .practice-plan p, .owner-outro p';
   const SITE_URL = 'https://nwb010118.github.io/tarot-reading/';
   const SHARE_BUTTON_LABEL = '공유하기';
 
