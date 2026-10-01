@@ -71,7 +71,7 @@ assert.ok(compatBody.includes('사주 궁합'), 'must mention 사주 궁합 (mat
 
 // 모든 가이드(신규 글 포함)는 태그·공백을 제외한 본문이 1500자 이상이어야 한다.
 for (const guide of GUIDES) {
-  const length = bodyToText(guide).replace(/s/g, '').length;
+  const length = bodyToText(guide).replace(/\s/g, '').length;
   assert.ok(length >= 1500 && length <= 8000, guide.slug + ' body length must be 1500-8000, got ' + length);
 }
 

@@ -1321,7 +1321,7 @@
         '태어난 달의 오행: ' + interp.monthElement + ' (일간과의 관계: ' + SAJU_GROUP_LABEL[interp.seasonRelation] + ' 묶음)',
         '십성 묶음 분포: ' + SAJU_GROUP_ORDER.map(function (g) { return SAJU_GROUP_LABEL[g] + ' ' + interp.groupCounts[g]; }).join(' · ') + ' (천간과 지지의 본기 기준)',
         '올해 세운과 일간의 관계: ' + (interp.yearGroup ? SAJU_GROUP_LABEL[interp.yearGroup] + ' 묶음' : '계산하지 않음'),
-        '입춘 기준 연주와 절기 기준 월주로 명식을 계산했고, 같은 생년월일시면 같은 해 안에서는 언제 봐도 같은 문장이 나옵니다. 올해 세운 부분만 해가 바뀌면 달라질 수 있어요.'
+        '입춘 기준 연주와 절기 기준 월주로 명식을 계산했고, 같은 생년월일시면 같은 달 안에서는 언제 봐도 같은 문장이 나옵니다. 올해 세운 문장은 해가 바뀌면, 지금 계절에 맞춘 돌봄 문장은 달이 바뀌면 달라질 수 있어요.'
       ]) + renderResultLinks('saju');
     const accToggle = summaryEl.querySelector('.saju-acc-toggle');
     if (accToggle) {

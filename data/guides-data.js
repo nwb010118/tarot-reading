@@ -1,11 +1,12 @@
-const GUIDE_CATEGORY_ORDER = ['tarot', 'zodiac', 'ddi', 'saju', 'compatibility'];
+const GUIDE_CATEGORY_ORDER = ['tarot', 'zodiac', 'ddi', 'saju', 'compatibility', 'standards'];
 
 const GUIDE_CATEGORY_LABELS = {
   tarot: '타로',
   zodiac: '별자리',
   ddi: '띠운세',
   saju: '사주',
-  compatibility: '궁합'
+  compatibility: '궁합',
+  standards: '가만점방의 기준'
 };
 
 // 카테고리별로 최소 1편이 반영된 뒤에만 이 맵에 항목을 추가한다.
@@ -15,7 +16,8 @@ const GUIDE_CATEGORY_INTROS = {
   ddi: '열두 띠의 순서와 출생연도 계산법을 살펴봅니다. 설날·입춘 경계와 사이트의 간단한 연도 표시 방식이 어떻게 다른지 안내하고, 띠 궁합에 쓰이는 삼합·육합·충도 표로 정리합니다.',
   zodiac: '양력 생일로 구분하는 12별자리의 날짜 구간과 네 원소를 살펴봅니다. 경계일의 차이와 성향 설명을 읽는 한계를 함께 알아두면 운세를 더 가볍게 즐길 수 있고, 별자리와 띠의 차이, 원소와 양태의 짜임새도 이어서 살펴볼 수 있습니다.',
   tarot: '타로는 78장의 카드를 통해 지금의 생각을 다른 각도에서 들여다보는 도구입니다. 아래 글들에서 카드 구성부터 정방향·역방향 읽는 법, 원 카드와 3장 스프레드, 질문 만드는 법을 차례로 익히고, 질문 예시와 수트별 정리, 리딩 일기, 켈틱 크로스까지 더 깊이 살펴볼 수 있습니다.',
-  compatibility: '별자리 궁합, 띠 궁합, 사주 궁합이 서로 어떻게 다른지, 그리고 궁합 결과를 관계의 성적표가 아니라 대화의 소재로 활용하는 법을 살펴보고, 가만점방 궁합이 어떤 유형과 관계 요소로 풀이되는지도 설명합니다.'
+  compatibility: '별자리 궁합, 띠 궁합, 사주 궁합이 서로 어떻게 다른지, 그리고 궁합 결과를 관계의 성적표가 아니라 대화의 소재로 활용하는 법을 살펴보고, 가만점방 궁합이 어떤 유형과 관계 요소로 풀이되는지도 설명합니다.',
+  standards: '가만점방이 결과 문장을 어떤 원칙으로 쓰고 고르는지 공개합니다. 쓰지 않는 표현과 분량 기준, 건강·투자·위기 질문을 다루는 방식, 결과가 같거나 달라지는 규칙, 띠운세와 별자리 하루 운세의 구성을 차례로 설명합니다.'
 };
 
 const GUIDES = [
@@ -271,6 +273,8 @@ if (typeof module !== 'undefined' && module.exports) {
   const { GUIDE_EXTRA_SECTIONS } = require('./guides-extra.js');
   const { NEW_GUIDES } = require('./guides-articles.js');
   GUIDES.push(...NEW_GUIDES);
+  const { STANDARDS_GUIDES } = require('./guides-standards.js');
+  GUIDES.push(...STANDARDS_GUIDES);
   GUIDES.forEach(function (guide) {
     const extra = GUIDE_EXTRA_SECTIONS[guide.slug];
     if (extra) guide.bodyHtml.splice(guide.bodyHtml.length - 1, 0, ...extra);
