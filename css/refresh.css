@@ -530,3 +530,152 @@ html body .reading-showcase .chip-bottom { left: -8px; bottom: 54px; }
   html body .reading-showcase .showcase-chip { padding: 10px 14px; }
   html body .reading-showcase .showcase-chip strong { font-size: 14px; }
 }
+
+/* ── 홈 · 오늘의 한 장 ──────────────────── */
+html body #daily-card {
+  position: relative;
+  overflow: hidden;
+  max-width: none;
+  margin: 8px 0 28px;
+  padding: 26px 30px 28px;
+  border: 1px solid #d8c08f2e;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #17253a, #0f1a2a 70%);
+  box-shadow: 0 20px 50px #0006;
+}
+
+html body #daily-card::after {
+  content: "";
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  right: -90px;
+  top: -120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #d8c08f1f, transparent 70%);
+  pointer-events: none;
+}
+
+html body #daily-card .eyebrow { font-size: 13px; letter-spacing: 0.14em; color: #d8aa95; margin: 0; }
+
+html body #daily-card > h2 {
+  font-family: var(--font-serif);
+  font-size: 21px;
+  font-weight: 600;
+  color: #f0e4c8;
+  letter-spacing: -0.02em;
+  margin: 6px 0 20px;
+}
+
+html body #daily-card-body { gap: 24px; align-items: center; }
+
+html body #daily-card .daily-card-img {
+  width: 96px;
+  border-radius: 8px;
+  box-shadow: 0 14px 30px #0009, 0 0 0 1px #d8c08f40;
+}
+
+html body #daily-card .daily-card-text h3 {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--gold-strong);
+  margin: 0 0 4px;
+}
+
+html body #daily-card .daily-card-text h3 small { font-family: var(--font-sans); font-size: 13px; color: var(--muted); }
+html body #daily-card .owner-intro { font-size: 14px; font-style: normal; color: #d8aa95; margin: 0 0 8px; }
+html body #daily-card .daily-advice { font-size: 17px; line-height: 1.75; color: var(--ink); margin: 0 0 12px; }
+
+html body #daily-card .streak {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 3px 12px;
+  border: 1px solid #d8c08f40;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--gold);
+}
+
+html body #daily-card .daily-more { font-size: 14px; margin: 0 0 12px; }
+html body #daily-card .daily-more summary { color: var(--gold-strong); }
+
+html body #daily-card .daily-share,
+html body #share-image-button,
+html body #share-link-button {
+  border: 1px solid #d8c08f55;
+  border-radius: 999px;
+  color: var(--gold-strong);
+  background: transparent;
+  transition: background 0.15s ease;
+}
+
+html body #daily-card .daily-share { padding: 7px 18px; font-size: 13px; }
+html body #daily-card .daily-share:hover,
+html body #share-image-button:hover,
+html body #share-link-button:hover { background: #d8c08f14; }
+
+/* ── 홈 · 모드 선택 ─────────────────────── */
+html body .mode-btn .mode-free { display: none; }
+html body .mode-btn .mode-invite { font-size: 13px; letter-spacing: 0.02em; opacity: 0.9; }
+html body .section-heading h2 { font-weight: 600; color: #f0e4c8; }
+
+/* ── 홈 · 안내 구간 ─────────────────────── */
+html body .info-section h2 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 24px;
+  color: var(--gold-strong);
+  letter-spacing: -0.02em;
+}
+
+html body .info-section > p:not(.hero-copy) {
+  max-width: 680px;
+  font-size: 16px;
+  line-height: 1.85;
+  color: var(--ink-soft);
+}
+
+html body .info-section > p.hero-copy { font-size: 15px; line-height: 1.8; color: var(--muted); max-width: 680px; }
+
+html body .info-section > p.hero-copy > a {
+  color: var(--gold-strong);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid #d8c08f55;
+  padding-bottom: 2px;
+  transition: border-color 0.15s ease;
+}
+
+html body .info-section > p.hero-copy > a:hover { border-bottom-color: currentColor; }
+
+html body .fortune-guide-item::before {
+  font: 600 24px var(--font-serif);
+  font-style: normal;
+  color: #d8c08f80;
+}
+
+html body .fortune-guide-item h3 { font-family: var(--font-serif); font-weight: 600; color: #f0e4c8; }
+html body .fortune-guide-item p { font-size: 14.5px; }
+
+html body .faq-preview-item {
+  padding: 22px;
+  border: 1px solid #2c3949;
+  border-radius: 14px;
+  background: #101d2e;
+}
+
+html body .faq-preview-item dt { font-family: var(--font-serif); font-size: 16px; font-weight: 600; color: #f0e4c8; margin-bottom: 8px; }
+html body .faq-preview-item dd { font-size: 14.5px; line-height: 1.75; color: var(--ink-soft); }
+
+html body .hub-card-link span { color: var(--ink-soft); }
+html body .hub-card-link img { transition: transform 0.15s ease, border-color 0.15s ease; }
+html body .hub-card-link:hover img { transform: translateY(-3px); }
+
+@media (max-width: 700px) {
+  html body #daily-card { padding: 20px 18px 22px; }
+  html body #daily-card-body { gap: 16px; align-items: flex-start; }
+  html body #daily-card .daily-card-img { width: 78px; }
+  html body #daily-card .daily-advice { font-size: 16px; }
+  html body .info-section h2 { font-size: 21px; }
+}
