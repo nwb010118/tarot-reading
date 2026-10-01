@@ -41,6 +41,32 @@ function getSensitiveReading(category, subchoice, keywords) {
   return null;
 }
 
+// 민감 주제(건강·투자)에서 고정 안전 문구 뒤에 덧붙이는 자기성찰 문장. 길이가 다른 문장을 두고 화면마다 규격에 맞는 것을 고른다.
+// 상태나 결과를 예측하지 않고, 카드를 판단 근거가 아니라 생각을 정리하는 거울로만 쓴다.
+const SENSITIVE_REFLECTIONS = {
+  health: [
+    '카드는 지금의 나를 비추는 거울로만 읽어 주세요.',
+    '카드를 보며 떠오른 생각을 적어 두고, 그것이 몸이 보내는 신호인지 마음이 보내는 신호인지 구분해 보세요.',
+    '카드에서 눈에 띈 장면이 요즘 내 하루와 어디서 겹치는지 떠올려 보세요. 겹치는 곳이 있다면 그 자리가 오늘 내가 돌볼 곳입니다.',
+    '이 풀이는 오늘의 생각을 정리하는 도구일 뿐 상태를 판단하는 기준이 아닙니다. 잠, 식사, 쉬는 시간처럼 내가 직접 조절할 수 있는 것부터 하나만 정해 보면 충분합니다.',
+    '카드가 건네는 말은 정답이 아니라 질문에 가깝습니다. 요즘 내가 가장 오래 참고 있는 것은 무엇인지, 그것을 줄이려면 오늘 무엇을 내려놓을 수 있는지 차분히 적어 보세요. 적어 둔 글은 나중에 전문가와 이야기할 때도 좋은 참고가 됩니다.'
+  ],
+  invest: [
+    '카드는 돈의 방향이 아니라 내 마음의 온도를 비춥니다.',
+    '결정을 내리기 전에 지금 내 마음에 불안과 욕심이 얼마나 섞여 있는지 한 줄로 적어 보세요.',
+    '카드에서 눈에 띈 장면을 지금의 돈 이야기와 나란히 놓고, 내가 서두르고 있는지 망설이고 있는지 살펴보세요. 서두름도 망설임도 판단을 흐리는 마음의 신호일 수 있습니다.',
+    '이 풀이는 결정을 대신하지 않고 결정 전의 마음을 정리하는 데만 쓰입니다. 오늘은 새로 무언가를 하기보다 지금 가진 자료와 내가 감당할 수 있는 범위를 다시 적어 보는 정도로 충분합니다.',
+    '카드가 건네는 말은 정답이 아니라 질문에 가깝습니다. 이 선택이 틀렸을 때 내가 어디까지 감당할 수 있는지, 누구의 말에 마음이 흔들렸는지 차분히 적어 보세요. 적어 둔 기준은 나중에 실제 자료를 볼 때 흔들리지 않는 바탕이 됩니다.'
+  ]
+};
+
+// 민감 주제가 아니면 null. 반환값은 문장 배열이다.
+function getSensitiveReflections(category, subchoice) {
+  if (category === 'health') return SENSITIVE_REFLECTIONS.health;
+  if (category === 'money' && subchoice === 'invest') return SENSITIVE_REFLECTIONS.invest;
+  return null;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { getPracticePlan, getSensitiveReading };
+  module.exports = { getPracticePlan, getSensitiveReading, getSensitiveReflections, SENSITIVE_REFLECTIONS };
 }

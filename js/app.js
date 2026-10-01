@@ -470,8 +470,8 @@
     return Array.isArray(advicePool) ? pickRandom(advicePool) : advicePool;
   }
 
-  function resolveCategoryMeaning(entity, category, period, selectedSubChoice) {
-    const sensitive = getSensitiveReading(category, selectedSubChoice, entity.keywords);
+  function resolveCategoryMeaning(entity, category, period, selectedSubChoice, withoutTheme) {
+    const sensitive = getSensitiveReading(category, selectedSubChoice, withoutTheme ? [] : entity.keywords);
     if (sensitive) return sensitive;
     if (category && entity.categories[category]) {
       const readingText = resolveSubchoiceValue(category, entity.categories[category], selectedSubChoice);
@@ -509,8 +509,11 @@
     const frames = THREECARD_FRAMES[posKey];
     const candidates = [];
     if (sensitiveText) {
-      frames.forEach(function (f) { candidates.push(f + ' ' + base.a[0] + ' ' + sensitiveText); });
-      return pickRandom(candidates);
+      frames.forEach(function (f) {
+        candidates.push(f + ' ' + sensitiveText);
+        base.a.forEach(function (a) { candidates.push(f + ' ' + a + ' ' + sensitiveText); });
+      });
+      return pickWithinRange(candidates, THREECARD_POSITION_RANGE);
     }
     const categoryReading = category && item.card.categories && item.card.categories[category];
     if (categoryReading) {
@@ -560,7 +563,14 @@
     let story;
     let action = '';
     if (sensitiveAny) {
-      story = { lead: pickRandom(stories), body: pickRandom(patterns) };
+      const reflections = getSensitiveReflections(category, selectedSubChoice);
+      const sensitiveCombos = [];
+      stories.forEach(function (s) {
+        patterns.forEach(function (p) {
+          reflections.forEach(function (r) { sensitiveCombos.push({ lead: s, body: p + ' ' + r, text: s + ' ' + p + ' ' + r }); });
+        });
+      });
+      story = pickWithinRange(sensitiveCombos, THREECARD_SUMMARY_RANGE, function (c) { return c.text; });
     } else {
       const actions = draw.map(function (item) { return TAROT_ONECARD[item.card.cardId][item.orientation].action; });
       const combos = [];
@@ -594,7 +604,7 @@
     let action = '';
     const categoryReading = category && item.card.categories && item.card.categories[category];
     if (sensitiveText) {
-      advice = sensitiveText;
+      advice = pickWithinRange(getSensitiveReflections(category, selectedSubChoice).map(function (r) { return sensitiveText + ' ' + r; }));
     } else if (categoryReading) {
       const value = resolveSubchoiceValue(category, categoryReading[item.orientation], selectedSubChoice);
       const texts = (typeof value === 'string') ? [value] : combineSentences(value.a, value.b).concat(value.a, value.b);
@@ -797,18 +807,21 @@
     const daily = ZODIAC_DAILY[zodiac.key];
     const overallCandidates = [];
     combineSentences(zodiac.trait.a, zodiac.trait.b).forEach(function (t) { daily.mood.forEach(function (m) { overallCandidates.push(t + ' ' + m); }); });
-    const overall = pickWithinRange(overallCandidates, DDI_OVERALL_RANGE);
+    // 안전 문구 구간은 고정 문구가 길어 본문 합계가 600자를 넘기 쉬워, 총운과 조언의 범위를 좁힌다
+    const tight = !!selectedCategory && !ZODIAC_CORE_SECTIONS.some(function (s) { return s.category === selectedCategory; }) &&
+      !!getSensitiveReading(selectedCategory, selectedSubChoice, []);
+    const overall = pickWithinRange(overallCandidates, tight ? { min: 140, max: 146 } : DDI_OVERALL_RANGE);
 
-    const sections = ZODIAC_CORE_SECTIONS.map(function (s) { return { label: s.label, text: daySectionText(zodiac, s.category) }; });
+    const sections = ZODIAC_CORE_SECTIONS.map(function (s) { return { label: s.label, text: daySectionText(zodiac, s.category, tight ? { min: 70, max: 76 } : null) }; });
     sections.push({ label: '선택의 순간', text: pickRandom(daily.choice) });
     const isCore = ZODIAC_CORE_SECTIONS.some(function (s) { return s.category === selectedCategory; });
     if (selectedCategory && !isCore) {
-      sections.push({ label: CATEGORY_LABELS[selectedCategory], text: resolveCategoryMeaning(zodiac, selectedCategory, selectedPeriod, selectedSubChoice) });
+      sections.push({ label: CATEGORY_LABELS[selectedCategory], text: resolveCategoryMeaning(zodiac, selectedCategory, selectedPeriod, selectedSubChoice, true) });
     }
 
     const adviceCandidates = [];
     zodiac.advice.forEach(function (a) { daily.tip.forEach(function (t) { adviceCandidates.push(a + ' ' + t); }); });
-    const advice = pickWithinRange(adviceCandidates, DDI_ADVICE_RANGE);
+    const advice = pickWithinRange(adviceCandidates, tight ? { min: 45, max: 49 } : DDI_ADVICE_RANGE);
     const keywords = pickKeywords(zodiac.keywords, 3);
 
     return '<div class="reading-detail zodiac-day">' +
@@ -867,14 +880,14 @@
   ];
 
   // 하루 구성의 한 섹션 문장: 고른 주제면 선택한 하위선택을, 아니면 첫 하위선택을 쓴다. 민감 주제는 안전 문구로 대신한다.
-  function daySectionText(entity, category) {
+  function daySectionText(entity, category, range) {
     if (category === selectedCategory) {
-      const sensitive = getSensitiveReading(category, selectedSubChoice, entity.keywords);
+      const sensitive = getSensitiveReading(category, selectedSubChoice, []);
       if (sensitive) return sensitive;
     }
     const sub = (category === selectedCategory) ? selectedSubChoice : (CATEGORY_SUBCHOICES[category] ? CATEGORY_SUBCHOICES[category][0].key : null);
     const value = resolveSubchoiceValue(category, entity.categories[category], sub);
-    return (typeof value === 'string') ? value : pickWithinRange(combineSentences(value.a, value.b), DDI_SECTION_RANGE);
+    return (typeof value === 'string') ? value : pickWithinRange(combineSentences(value.a, value.b), range || DDI_SECTION_RANGE);
   }
 
   // 띠운세 하루 구성: 총운 + 애정·재물·직장 + (고른 주제가 다르면 그 주제) + 조언 + 행운의 숫자·색
@@ -888,7 +901,7 @@
     const sections = DDI_CORE_SECTIONS.map(function (s) { return { label: s.label, text: daySectionText(ddi, s.category) }; });
     const isCore = DDI_CORE_SECTIONS.some(function (s) { return s.category === selectedCategory; });
     if (selectedCategory && !isCore) {
-      sections.push({ label: CATEGORY_LABELS[selectedCategory], text: resolveCategoryMeaning(ddi, selectedCategory, selectedPeriod, selectedSubChoice) });
+      sections.push({ label: CATEGORY_LABELS[selectedCategory], text: resolveCategoryMeaning(ddi, selectedCategory, selectedPeriod, selectedSubChoice, true) });
     }
 
     const adviceCandidates = [];

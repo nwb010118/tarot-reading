@@ -84,6 +84,10 @@ async function main() {
   app.click('#draw-button');
   await wait(60);
   assert.ok(app.text('#summary .zodiac-day').includes('예측하지 않습니다'), 'zodiac health safety text');
+  {
+    const healthLen = app.text('#summary .zodiac-day').replace(/이번 리딩의 한마디/g, '').replace(/\s+/g, ' ').trim().length;
+    assert.ok(healthLen >= 400 && healthLen <= 600, 'zodiac health day length ' + healthLen);
+  }
   app.click('#new-reading-button');
   await wait(30);
   app.click('.mode-btn[data-mode="ddi"]');
@@ -157,12 +161,12 @@ async function main() {
   // 5. 궁합 세 가지: 점수 없이 네 부분(개요, 성격 상성, 갈등의 원인과 해결, 관계 유지)과 관계 요소 근거가 보인다
   const checkCompat = function (name) {
     assert.strictEqual(app.q('.compat-score'), null, name + ': no score element');
-    assert.ok(!/ds*%/.test(app.text('#summary .compat-day')), name + ': no percentage');
+    assert.ok(!/\d\s*%/.test(app.text('#summary .compat-day')), name + ': no percentage');
     ['두 사람의 관계를 한 줄로', '개요', '성격 상성', '갈등의 원인과 해결', '관계를 오래 이어 가려면'].forEach(function (label) {
       assert.ok(app.text('#summary .compat-day').includes(label), name + ' structure: ' + label);
     });
-    const len = app.text('#summary .compat-day').replace(/s+/g, ' ').trim().length;
-    assert.ok(len >= 1100 && len <= 1500, name + ' body length ' + len);
+    const len = app.text('#summary .compat-day').replace(/\s+/g, ' ').trim().length;
+    assert.ok(len >= 1200 && len <= 1500, name + ' body length ' + len);
     assert.ok(app.text('#summary').includes('점수나 순위를 매기지 않고'), name + ': evidence says no score');
     assertResultLinks(app, 'compatibility-guide', name);
   };
