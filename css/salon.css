@@ -166,7 +166,8 @@ label, .category-btn, .spread-btn { font-size: 15px; }
 }
 /* 타로 카드 백과사전 페이지 */
 .site-nav { display: flex; gap: 18px; font-size: 13px; }
-.site-nav a { color: var(--muted); text-decoration: none; }
+.site-nav a { color: var(--muted); text-decoration: none; display: inline-block; padding: 12px 0; margin: -12px 0; }
+#summary .compat-day .reading-lead + h4 { margin-top: 24px; }
 .site-nav a:hover { color: var(--gold); }
 .card-page-main, .hub-main { border: 1px solid var(--line); background: linear-gradient(135deg, #142235, #0f1b2b); border-radius: 20px; padding: 36px; margin-top: 24px; }
 .card-hero-page { text-align: center; margin: 24px 0 32px; }

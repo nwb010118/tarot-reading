@@ -1,0 +1,12 @@
+# GitHub Pages(Jekyll) 빌드 설정.
+# 사이트 화면에 쓰이지 않는 개발용 파일(설계 문서, 테스트, 빌드 스크립트)은 공개 주소에 올리지 않는다.
+# 사이트가 쓰는 폴더(css, data, guides, images, js, tarot)와 루트의 html·robots.txt·sitemap.xml·ads.txt는 그대로 둔다.
+exclude:
+  - docs
+  - tests
+  - scripts
+  - node_modules
+  - operator-drafts
+  - scratchpad
+  - package.json
+  - package-lock.json

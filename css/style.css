@@ -222,7 +222,7 @@ label { display: block; margin-bottom: 8px; color: #c9bde0; }
   gap: 6px;
 }
 
-#saju-error { color: #e08080; font-size: 13px; margin: -4px 0 12px; }
+#saju-error, #ddi-error { color: #e08080; font-size: 13px; margin: -4px 0 12px; }
 
 .daeun-table {
   display: grid;
@@ -367,6 +367,7 @@ label { display: block; margin-bottom: 8px; color: #c9bde0; }
 .legal-section { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid #4a3a68; }
 .legal-section:last-child { border-bottom: none; }
 .legal-section h2 { color: #d4af37; margin-bottom: 12px; }
+.legal-section h1, .legal-page .page-title { color: #d4af37; margin-bottom: 12px; font-size: 26px; line-height: 1.4; }
 .legal-section > h1 { color: #d4af37; font-size: 1.5em; margin: .83em 0 12px; }
 .legal-section h3 { color: #c9bde0; font-size: 15px; margin: 16px 0 6px; }
 .legal-section p { font-size: 14px; line-height: 1.6; margin: 0 0 10px; }

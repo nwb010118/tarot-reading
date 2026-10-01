@@ -17,8 +17,8 @@
 <meta property="og:image" content="https://nwb010118.github.io/tarot-reading/images/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://nwb010118.github.io/tarot-reading/images/og-image.jpg">
-<link rel="stylesheet" href="css/style.css?v=874d5a87">
-<link rel="stylesheet" href="css/salon.css?v=b772763e">
+<link rel="stylesheet" href="css/style.css?v=94309ca7">
+<link rel="stylesheet" href="css/salon.css?v=602c12fb">
 </head>
 <body>
 <div id="app">
@@ -96,6 +96,7 @@
       <label for="birth-date-input">생일 (선택 · 1~2월생이면 입력하면 설날 기준으로 정확해져요)</label>
       <input type="date" id="birth-date-input" min="1900-01-01" max="2050-12-31">
       <p id="ddi-result" class="hidden"></p>
+      <p id="ddi-error" class="hidden" role="alert"></p>
     </div>
 
     <div id="saju-select" class="hidden">
@@ -257,8 +258,8 @@
       <p class="option-hint">선택한 기간에 맞춰 실천 방법을 안내합니다. 미래의 사건이나 발생 시점을 예측하는 기간이 아닙니다.</p>
       <div id="period-select">
         <button type="button" class="category-btn selected" data-period="today">오늘</button>
-        <button type="button" class="category-btn" data-period="week">이번주</button>
-        <button type="button" class="category-btn" data-period="month">이번달</button>
+        <button type="button" class="category-btn" data-period="week">이번 주</button>
+        <button type="button" class="category-btn" data-period="month">이번 달</button>
         <button type="button" class="category-btn" data-period="month3">3개월</button>
         <button type="button" class="category-btn" data-period="month6">6개월</button>
         <button type="button" class="category-btn" data-period="year">1년</button>
@@ -408,7 +409,7 @@
 <script src="data/lunar-table.js?v=60db5997"></script>
 <script src="data/saju-data.js?v=76675608"></script>
 <script src="data/saju-sections.js?v=c03889a4"></script>
-<script src="data/compatibility-data.js?v=959fa934"></script>
+<script src="data/compatibility-data.js?v=2590bfed"></script>
 <script src="data/compat-sections.js?v=218a68d8"></script>
 <script src="data/voice.js?v=427de1db"></script>
 <script src="data/category-labels.js?v=a1aed877"></script>
@@ -427,7 +428,7 @@
 <script src="js/saju-interpret.js?v=8949e683"></script>
 <script src="js/compatibility-calc.js?v=445dd65e"></script>
 <script src="data/reading-guidance.js?v=b344c091"></script>
-<script src="js/app.js?v=b3b224d5"></script>
+<script src="js/app.js?v=01b120db"></script>
 <script src="js/salon-flow.js?v=89e51729"></script>
 </body>
 </html>

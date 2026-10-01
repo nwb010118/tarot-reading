@@ -20,7 +20,7 @@
   const SUBCHOICE_ENABLED_MODES = new Set(['tarot', 'saju', 'zodiac', 'ddi']);
 
   const PERIOD_LABELS = {
-    today: '오늘', week: '이번주', month: '이번달', month3: '3개월', month6: '6개월', year: '1년'
+    today: '오늘', week: '이번 주', month: '이번 달', month3: '3개월', month6: '6개월', year: '1년'
   };
 
   const ZODIAC_LABELS = {};
@@ -69,6 +69,7 @@
   const ddiSelect = document.getElementById('ddi-select');
   const birthYearInput = document.getElementById('birth-year-input');
   const ddiResultEl = document.getElementById('ddi-result');
+  const ddiErrorEl = document.getElementById('ddi-error');
   const birthDateInput = document.getElementById('birth-date-input');
   const compatDdiDate1Input = document.getElementById('compat-ddi-date1-input');
   const compatDdiDate2Input = document.getElementById('compat-ddi-date2-input');
@@ -180,7 +181,8 @@
       month = parts[1];
       day = parts[2];
     }
-    if (!year || year < 1900 || year > 2100) return null;
+    // 소수(1990.5)나 범위 밖 연도는 띠를 정할 수 없다
+    if (!Number.isInteger(year) || year < 1900 || year > 2100) return null;
     const effective = getEffectiveDdiYear(year, month, day, lunarToSolar);
     const note = effective.adjusted
       ? personText + year + '년 ' + month + '월 ' + day + '일생은 설날(' + effective.seollal.month + '월 ' + effective.seollal.day + '일) 이전이라 ' + effective.year + '년 ' + getDdiByYear(effective.year).name_kr + '로 계산했어요.'
@@ -190,6 +192,7 @@
 
   function updateDdiResult() {
     const resolved = resolveDdiYear(birthYearInput, birthDateInput, '');
+    ddiErrorEl.classList.add('hidden');
     if (!resolved) {
       selectedBirthYear = null;
       selectedDdiNote = '';
@@ -508,14 +511,9 @@
     const base = item.orientation === 'upright' ? item.card.upright : item.card.reversed;
     const frames = THREECARD_FRAMES[posKey];
     const candidates = [];
-    if (sensitiveText) {
-      frames.forEach(function (f) {
-        candidates.push(f + ' ' + sensitiveText);
-        base.a.forEach(function (a) { candidates.push(f + ' ' + a + ' ' + sensitiveText); });
-      });
-      return pickWithinRange(candidates, THREECARD_POSITION_RANGE);
-    }
-    const categoryReading = category && item.card.categories && item.card.categories[category];
+    // 건강·투자처럼 민감한 주제는 안전 문구를 화면 위에 한 번만 보여 주고(renderThreeCardDetails),
+    // 자리별 본문은 주제 문장 대신 카드의 기본 의미로 쓴다. 세 자리에 같은 안전 문구가 반복되지 않게 하려는 것이다.
+    const categoryReading = !sensitiveText && category && item.card.categories && item.card.categories[category];
     if (categoryReading) {
       const value = resolveSubchoiceValue(category, categoryReading[item.orientation], selectedSubChoice);
       const texts = (typeof value === 'string') ? [value] : combineSentences(value.a, value.b).concat(value.a, value.b);
@@ -588,7 +586,11 @@
       '<p class="reading-body">' + escapeHtml(story.body) + '</p>' +
       (action ? '<p class="reading-lead-label">오늘 해볼 한 걸음</p><p class="card-action">' + escapeHtml(action) + '</p>' : '') +
       '</div>';
-    return blocks.concat(summaryHtml);
+    const noticeHtml = sensitiveAny
+      ? '<div class="reading-detail sensitive-note"><h4>먼저 알아 두세요</h4><p class="reading-body">' +
+        escapeHtml(getSensitiveReading(category, selectedSubChoice, [])) + '</p></div>'
+      : '';
+    return (noticeHtml ? [noticeHtml] : []).concat(blocks, summaryHtml);
   }
 
   // 원카드 결과: 키워드, 카드 의미 해석(기본 상징 + 그림 해석), 질문에 대한 조언(주제별 문장 + 구체적 행동)
@@ -682,6 +684,10 @@
 
     if (selectedMode === 'ddi') {
       if (!selectedBirthYear) {
+        ddiErrorEl.textContent = birthYearInput.value
+          ? '태어난 연도를 1900~2100년 사이의 네 자리 숫자로 입력해주세요.'
+          : '태어난 연도를 입력해주세요.';
+        ddiErrorEl.classList.remove('hidden');
         birthYearInput.focus();
         return;
       }

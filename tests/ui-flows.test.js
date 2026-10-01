@@ -102,6 +102,37 @@ async function main() {
   await wait(30);
   app.click('#category-select button[data-category=""]');
 
+  // 2-5. 띠 연도에 소수나 범위 밖 값을 넣으면 오류 없이 안내 문구가 뜬다
+  for (const bad of ['1990.5', '1800', '']) {
+    app.click('.mode-btn[data-mode="ddi"]');
+    app.type('#birth-year-input', bad);
+    app.click('#draw-button');
+    await wait(20);
+    assert.strictEqual(app.errors.length, 0, 'no script error for ddi year ' + JSON.stringify(bad) + ': ' + app.errors.join(' / '));
+    assert.ok(app.visible('#ddi-error'), 'ddi error message for ' + JSON.stringify(bad));
+    assert.ok(app.q('#screen-reading').classList.contains('hidden'), 'no reading for ddi year ' + JSON.stringify(bad));
+  }
+  app.type('#birth-year-input', '1990');
+  assert.strictEqual(app.visible('#ddi-error'), false, 'ddi error clears after a valid year');
+
+  // 2-6. 3장 타로의 건강·투자 주제는 안전 문구를 화면 위에 한 번만 보여 준다
+  {
+    const t3 = await loadApp();
+    t3.click('.mode-btn[data-mode="tarot"]');
+    t3.click('.spread-btn[data-spread="3"]');
+    t3.click('#category-select button[data-category="money"]');
+    t3.click('.subchoice-btn[data-subchoice="invest"]');
+    t3.click('#draw-button');
+    await wait(60);
+    t3.qa('.card').forEach(function (c) { c.click(); });
+    await wait(60);
+    assert.strictEqual(t3.qa('#summary .sensitive-note').length, 1, 'one safety notice');
+    const all = t3.text('#summary');
+    assert.strictEqual(all.split('매매 시점을 예측하지 않습니다').length - 1, 1, 'safety sentence appears once');
+    assert.strictEqual(t3.qa('#summary .reading-detail:not(.sensitive-note)').length, 4, 'three positions plus summary');
+    t3.close();
+  }
+
   // 3. 띠: 생일을 넣으면 설날 이전 출생은 전년도 띠
   app.click('.mode-btn[data-mode="ddi"]');
   app.type('#birth-year-input', '2000');
