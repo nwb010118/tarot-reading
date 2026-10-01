@@ -677,21 +677,24 @@
     if (selectedMode === 'compatibility') {
       let label1, label2, tier;
       let saju1, saju2;
-      let scoreFn;
-      let scoreNotes = [];
+      let factors;
+      let people;
+      let notes = [];
       if (selectedCompatSubtype === 'zodiac') {
-        label1 = getZodiacByKey(selectedCompatZodiac1).name_kr;
-        label2 = getZodiacByKey(selectedCompatZodiac2).name_kr;
+        people = [getZodiacByKey(selectedCompatZodiac1), getZodiacByKey(selectedCompatZodiac2)];
+        label1 = people[0].name_kr;
+        label2 = people[1].name_kr;
         tier = getZodiacCompatibility(selectedCompatZodiac1, selectedCompatZodiac2);
-        scoreFn = function (base) { return scoreZodiac(selectedCompatZodiac1, selectedCompatZodiac2, base); };
+        factors = zodiacFactors(selectedCompatZodiac1, selectedCompatZodiac2);
       } else if (selectedCompatSubtype === 'ddi') {
         const input = resolveCompatDdiInput();
         if (!input) return;
-        label1 = input.year1 + '년생 ' + getDdiByYear(input.year1).name_kr;
-        label2 = input.year2 + '년생 ' + getDdiByYear(input.year2).name_kr;
+        people = [getDdiByYear(input.year1), getDdiByYear(input.year2)];
+        label1 = input.year1 + '년생 ' + people[0].name_kr;
+        label2 = input.year2 + '년생 ' + people[1].name_kr;
         tier = getDdiCompatibility(input.year1, input.year2);
-        scoreFn = function (base) { return scoreDdi(getDdiByYear(input.year1).key, getDdiByYear(input.year2).key, base); };
-        scoreNotes = input.notes;
+        factors = ddiFactors(people[0].key, people[1].key);
+        notes = input.notes;
       } else {
         const input = resolveCompatSajuInput();
         if (!input) return;
@@ -701,15 +704,14 @@
         tier = sajuResult.tier;
         saju1 = sajuResult.saju1;
         saju2 = sajuResult.saju2;
-        scoreFn = function (base) { return scoreSaju(sajuResult.saju1, sajuResult.saju2, base); };
+        people = [getIlganByIndex(saju1.day.stemIdx), getIlganByIndex(saju2.day.stemIdx)];
+        factors = sajuFactors(saju1, saju2);
       }
       const tierInfo = getCompatTierInfo(tier, label1, label2, createRng(['compat-text', selectedCompatSubtype, label1, label2]));
-      const scoreResult = scoreFn(tierInfo.score);
-      tierInfo.score = scoreResult.score;
       cardsContainer.innerHTML = '';
       screenStart.classList.add('hidden');
       screenReading.classList.remove('hidden');
-      showCompatibilitySummary(label1, label2, tierInfo, saju1, saju2, scoreResult, scoreNotes);
+      showCompatibilitySummary(label1, label2, tierInfo, saju1, saju2, { tier: tier, factors: factors, people: people, notes: notes, labels: [label1, label2] });
       saveCompatibilityReading(selectedCompatSubtype, label1, label2, tierInfo);
       return;
     }
@@ -1259,25 +1261,59 @@
     currentEntryId = saveReading(storage, entry)[0].id;
   }
 
-  function showCompatibilitySummary(label1, label2, tierInfo, saju1, saju2, scoreResult, scoreNotes) {
+  function pickFactorTexts(factors, field) {
+    return factors.map(function (f) { return COMPAT_FACTOR_TEXT[f.key][field]; }).join(' ');
+  }
+
+  // 궁합 본문 네 부분을 두 사람(같은 두 사람이면 같은 결과)의 유형과 관계 요소로 조립한다.
+  function buildCompatibilityParts(tierInfo, detail) {
+    const text = COMPAT_SECTION_TEXT[detail.tier];
+    const extra = COMPAT_SECTION_EXTRA[detail.tier];
+    const summary = pickRandom(text.summary);
+    const keywordGroups = detail.people.map(function (p) { return pickKeywords(p.keywords, 2).join('·'); });
+    const keywordLine = pickRandom(COMPAT_KEYWORD_LINE).replace('{a}', '‘' + keywordGroups[0] + '’').replace('{b}', '‘' + keywordGroups[1] + '’');
+    const overview = tierInfo.text + ' ' + pickRandom(text.overview) + ' ' + pickFactorTexts(detail.factors, 'overview') + ' ' + keywordLine;
+    const sameKind = detail.people[0].key === detail.people[1].key;
+    // 사람별 문단: 기질 풀이와 관계 속 모습(대인관계 풀이의 기존 문장). 같은 별자리·띠·일간끼리는 한 사람의 풀이만 있으므로
+    // 새 인연과 기존 관계 문장을 모두 쓴다.
+    const personParagraphs = (sameKind ? [detail.people[0]] : detail.people).map(function (p, i) {
+      const relations = sameKind ? [p.categories.relationships.existing, p.categories.relationships.new] : [p.categories.relationships.existing];
+      return {
+        label: sameKind ? detail.labels[0] + ', ' + detail.labels[1] : detail.labels[i],
+        text: resolveMeaningText(p.trait) + ' ' + relations.map(resolveMeaningText).join(' ')
+      };
+    });
+    const chemistry = pickRandom(text.chemistry) + ' ' + pickRandom(extra.signal);
+    const conflict = pickRandom(text.conflict) + ' ' + pickFactorTexts(detail.factors, 'conflict') + ' ' + pickRandom(extra.trap);
+    const resolve = pickRandom(text.resolve);
+    const ownAdvice = sameKind ? [pickAdvice(detail.people[0].advice)] : detail.people.map(function (p) { return pickAdvice(p.advice); });
+    const keep = pickAdvice(tierInfo.advice) + ' ' + pickRandom(text.keep) + ' ' + pickRandom(extra.practice) + (ownAdvice.length ? ' ' + ownAdvice.join(' ') : '');
+    return { summary: summary, overview: overview, persons: personParagraphs, chemistry: chemistry, conflict: conflict, resolve: resolve, keep: keep };
+  }
+
+  function showCompatibilitySummary(label1, label2, tierInfo, saju1, saju2, detail) {
     activeRng = createRng(['compat', selectedCompatSubtype, label1, label2]);
     const heading = label1 + ' × ' + label2 + ' 궁합';
-    const extraHtml = renderKeywordsAdviceHtml(tierInfo.keywords, tierInfo.advice);
+    const parts = buildCompatibilityParts(tierInfo, detail);
     const chartsHtml = saju1 && saju2 ?
       '<h5 class="table-label">사람 1</h5>' + renderMyeongsikDetailTable(saju1) +
       '<h5 class="table-label">사람 2</h5>' + renderMyeongsikDetailTable(saju2) : '';
     const voiceKey = [selectedCompatSubtype, label1, label2].join('|');
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' + renderOwnerIntro('compat', voiceKey) +
-      '<p class="compat-score">' + tierInfo.score + '%</p>' +
       '<p class="compat-tier-label">' + tierInfo.tierLabel + '</p>' +
-      '<div class="reading-detail">' + renderReadingMeaning(tierInfo.text) + '</div>' +
-      extraHtml + chartsHtml + renderOwnerOutro(voiceKey) + renderEvidence(
+      '<div class="reading-detail compat-day">' +
+      '<p class="reading-lead-label">두 사람의 관계를 한 줄로</p><p class="reading-lead">' + escapeHtml(parts.summary) + '</p>' +
+      '<h4>개요</h4><p class="reading-body">' + escapeHtml(parts.overview) + '</p>' +
+      '<h4>성격 상성</h4>' + parts.persons.map(function (p) { return '<p class="reading-body"><strong>' + escapeHtml(p.label) + '</strong> ' + escapeHtml(p.text) + '</p>'; }).join('') +
+      '<p class="reading-body">' + escapeHtml(parts.chemistry) + '</p>' +
+      '<h4>갈등의 원인과 해결</h4><p class="reading-body">' + escapeHtml(parts.conflict) + '</p><p class="reading-body">' + escapeHtml(parts.resolve) + '</p>' +
+      '<h4>관계를 오래 이어 가려면</h4><p class="card-advice">' + escapeHtml(parts.keep) + '</p>' +
+      '</div>' + chartsHtml + renderOwnerOutro(voiceKey) + renderEvidence(
         ['비교한 두 사람: ' + label1 + ' × ' + label2,
-          '기본 점수: ' + tierInfo.tierLabel + ' ' + scoreResult.base + '점']
-          .concat(scoreResult.factors.map(function (f) { return f.label + ' ' + (f.delta > 0 ? '+' : '') + f.delta + '점'; }))
-          .concat(['최종 ' + scoreResult.score + '점 (20~99점 범위로 계산)'])
-          .concat(scoreNotes || [])
-          .concat(['같은 두 사람이면 언제 봐도 같은 결과가 나옵니다.'])
+          '관계 유형: ' + tierInfo.tierLabel]
+          .concat(detail.factors.map(function (f) { return '관계 요소: ' + f.label; }))
+          .concat(detail.notes || [])
+          .concat(['점수나 순위를 매기지 않고, 위 유형과 요소에 맞는 문장을 골라 보여 줘요.', '같은 두 사람이면 언제 봐도 같은 결과가 나옵니다.'])
       );
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
@@ -1294,7 +1330,6 @@
       person1Label: label1,
       person2Label: label2,
       tierLabel: tierInfo.tierLabel,
-      score: tierInfo.score,
       cards: []
     };
     currentEntryId = saveReading(storage, entry)[0].id;
@@ -1416,7 +1451,7 @@
     currentEntryId = saveReading(storage, entry)[0].id;
   }
 
-  const SHARE_SELECTOR = 'h3, h4, .compat-score, .compat-tier-label, .reading-lead, .reading-body, .card-keywords, .card-advice, .card-action, .practice-plan p, .owner-outro p';
+  const SHARE_SELECTOR = 'h3, h4, .compat-tier-label, .reading-lead, .reading-body, .card-keywords, .card-advice, .card-action, .practice-plan p, .owner-outro p';
   const SITE_URL = 'https://nwb010118.github.io/tarot-reading/';
   const SHARE_BUTTON_LABEL = '공유하기';
 
@@ -1641,7 +1676,7 @@
       } else if (entry.mode === 'saju') {
         cardsText = escapeHtml(entry.birthDate + ' ' + (entry.timeUnknown ? '(시간 모름)' : entry.birthTime) + ' · ' + entry.dayIlganName + ' 일간');
       } else if (entry.mode === 'compatibility') {
-        cardsText = escapeHtml(entry.person1Label + ' × ' + entry.person2Label + ' · ' + entry.score + '%');
+        cardsText = escapeHtml(entry.person1Label + ' × ' + entry.person2Label);
       } else {
         cardsText = entry.cards.map(function (c) {
           return c.name + '(' + (c.orientation === 'upright' ? '정' : '역') + ')';

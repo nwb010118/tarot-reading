@@ -355,7 +355,6 @@ label { display: block; margin-bottom: 8px; color: #c9bde0; }
 
 #compat-error { color: #e08080; font-size: 13px; margin: -4px 0 12px; }
 
-.compat-score { text-align: center; font-size: 32px; font-weight: bold; color: #d4af37; margin: 12px 0 4px; }
 .compat-tier-label { text-align: center; color: #c9bde0; font-size: 14px; margin: 0 0 12px; }
 
 @media (max-width: 480px) {

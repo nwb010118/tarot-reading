@@ -7,8 +7,14 @@ const BANNED_PHRASES = [
   '운이 트', '운이 좋아질', '복이 들어', '재물이 들어', '부자가 될', '결혼하게 될', '헤어지게 될'
 ];
 
+// 다른 낱말의 일부로 쓰이는 경우(장기적, 정기적)는 걸리지 않도록 낱말 앞 글자를 확인하는 표현
+const WORD_START_ONLY = ['기적', '귀인', '대박'];
+
 function findBannedPhrases(text) {
-  return BANNED_PHRASES.filter(function (phrase) { return text.indexOf(phrase) !== -1; });
+  return BANNED_PHRASES.filter(function (phrase) {
+    if (WORD_START_ONLY.indexOf(phrase) !== -1) return new RegExp('(^|[^가-힣])' + phrase).test(text);
+    return text.indexOf(phrase) !== -1;
+  });
 }
 
 module.exports = { BANNED_PHRASES, findBannedPhrases };

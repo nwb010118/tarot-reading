@@ -1,7 +1,6 @@
 const COMPAT_TIER_DATA = {
   same_element: {
-    score: 90,
-    label: '동일원소 — 최고의 궁합',
+    label: '동일원소',
     text: {
       a: [
         '{a}와(과) {b}은(는) 같은 원소라 마음이 잘 통하는 궁합이에요.',
@@ -22,8 +21,7 @@ const COMPAT_TIER_DATA = {
     ]
   },
   complement: {
-    score: 82,
-    label: '보완원소 — 좋은 궁합',
+    label: '보완원소',
     text: {
       a: [
         '{a}와(과) {b}은(는) 부족한 부분을 서로 채워주는 아늑한 궁합이에요.',
@@ -44,8 +42,7 @@ const COMPAT_TIER_DATA = {
     ]
   },
   other: {
-    score: 60,
-    label: '그 외 조합 — 무난한 궁합',
+    label: '그 외 조합',
     text: {
       a: [
         '{a}와(과) {b}은(는) 생활 리듬이나 취향의 결이 달라 맞춰가는 데 시간이 걸리는 궁합이에요.',
@@ -66,8 +63,7 @@ const COMPAT_TIER_DATA = {
     ]
   },
   samhap: {
-    score: 96,
-    label: '삼합 — 최고의 궁합',
+    label: '삼합',
     text: {
       a: [
         '{a}와(과) {b}은(는) 삼합으로 이어져 강한 인연을 만드는 환상의 궁합이에요.',
@@ -88,8 +84,7 @@ const COMPAT_TIER_DATA = {
     ]
   },
   yukhap: {
-    score: 86,
-    label: '육합 — 좋은 궁합',
+    label: '육합',
     text: {
       a: [
         '{a}와(과) {b}은(는) 육합이 살갑게 감싸주어 마음이 편안해지는 안정적인 궁합이에요.',
@@ -110,8 +105,7 @@ const COMPAT_TIER_DATA = {
     ]
   },
   same: {
-    score: 74,
-    label: '동일 띠 — 친근한 궁합',
+    label: '동일 띠',
     text: {
       a: [
         '{a}와(과) {b}은(는) 띠가 같아서 죽이 잘 맞는 사이예요.',
@@ -132,8 +126,7 @@ const COMPAT_TIER_DATA = {
     ]
   },
   none: {
-    score: 62,
-    label: '무관계 — 무난한 궁합',
+    label: '무관계',
     text: {
       a: [
         '{a}와(과) {b}은(는) 특별한 상충 관계가 없는 무난한 궁합이에요.',
@@ -154,8 +147,7 @@ const COMPAT_TIER_DATA = {
     ]
   },
   chung: {
-    score: 35,
-    label: '충 — 주의가 필요한 궁합',
+    label: '충',
     text: {
       a: [
         '{a}와(과) {b}은(는) 충이 작용해 정면으로 맞부딪는 기운이 거센 궁합이에요.',
@@ -176,8 +168,7 @@ const COMPAT_TIER_DATA = {
     ]
   },
   sangsaeng: {
-    score: 85,
-    label: '상생 — 좋은 궁합',
+    label: '상생',
     text: {
       a: [
         '{a}와(과) {b}은(는) 오행의 흐름이 서로 통하며 힘을 보태는 상생의 궁합이에요.',
@@ -198,8 +189,7 @@ const COMPAT_TIER_DATA = {
     ]
   },
   bihwa: {
-    score: 70,
-    label: '비화 — 무난한 궁합',
+    label: '비화',
     text: {
       a: [
         '{a}와(과) {b}은(는) 오행이 겹치는 조합이라 성향이 꼭 닮은 궁합이에요.',
@@ -220,8 +210,7 @@ const COMPAT_TIER_DATA = {
     ]
   },
   sanggeuk: {
-    score: 45,
-    label: '상극 — 주의가 필요한 궁합',
+    label: '상극',
     text: {
       a: [
         '{a}와(과) {b}은(는) 오행의 힘이 팽팽히 맞서 긴장감이 감도는 궁합이에요.',
@@ -259,7 +248,6 @@ function hasFinalConsonant(text) {
 function getCompatTierInfo(tier, labelA, labelB, rng) {
   const data = COMPAT_TIER_DATA[tier];
   return {
-    score: data.score,
     tierLabel: data.label,
     text: resolveTierText(data, rng).replace('{a}와(과)', labelA + (hasFinalConsonant(labelA) ? '과' : '와')).replace('{b}은(는)', labelB + (hasFinalConsonant(labelB) ? '은' : '는')).replace('{a}', labelA).replace('{b}', labelB),
     keywords: data.keywords,

@@ -119,14 +119,24 @@ async function main() {
   assert.ok(saju.includes('일간'), 'saju summary');
   assert.ok(saju.includes('오행 분포'), 'saju evidence');
 
-  // 5. 궁합 세 가지: 점수 근거가 보인다
+  // 5. 궁합 세 가지: 점수 없이 네 부분(개요, 성격 상성, 갈등의 원인과 해결, 관계 유지)과 관계 요소 근거가 보인다
+  const checkCompat = function (name) {
+    assert.strictEqual(app.q('.compat-score'), null, name + ': no score element');
+    assert.ok(!/ds*%/.test(app.text('#summary .compat-day')), name + ': no percentage');
+    ['두 사람의 관계를 한 줄로', '개요', '성격 상성', '갈등의 원인과 해결', '관계를 오래 이어 가려면'].forEach(function (label) {
+      assert.ok(app.text('#summary .compat-day').includes(label), name + ' structure: ' + label);
+    });
+    const len = app.text('#summary .compat-day').replace(/s+/g, ' ').trim().length;
+    assert.ok(len >= 1100 && len <= 1500, name + ' body length ' + len);
+    assert.ok(app.text('#summary').includes('점수나 순위를 매기지 않고'), name + ': evidence says no score');
+  };
   app.click('.mode-btn[data-mode="compatibility"]');
   {
     app.click('.compat-subtype-btn[data-compat-subtype="zodiac"]');
     app.qa('.compat-zodiac2-btn').forEach(function (b) { if (b.dataset.zodiac === 'leo') b.click(); });
     app.click('#draw-button');
     await wait(60);
-    assert.strictEqual(app.text('.compat-score'), '94%');
+    checkCompat('zodiac compat');
     assert.ok(app.text('#summary').includes('별자리 간격 4칸'));
     app.click('#new-reading-button');
     await wait(30);
@@ -137,7 +147,7 @@ async function main() {
   app.type('#compat-ddi-year2-input', '1993');
   app.click('#draw-button');
   await wait(60);
-  assert.strictEqual(app.text('.compat-score'), '54%', 'tiger x rooster wonjin');
+  checkCompat('ddi compat');
   assert.ok(app.text('#summary').includes('원진 관계'));
   app.click('#new-reading-button');
   await wait(30);
@@ -147,8 +157,9 @@ async function main() {
   app.type('#compat-saju-date2-input', '2026-08-06');
   app.click('#draw-button');
   await wait(60);
-  assert.strictEqual(app.text('.compat-score'), '50%', 'saju compat with 합 and 해');
+  checkCompat('saju compat');
   assert.ok(app.text('#summary').includes('일간 천간합'));
+  assert.ok(app.text('#summary').includes('일지 해'));
   app.click('#new-reading-button');
   await wait(30);
 

@@ -33,25 +33,15 @@ function assertPool(field, label) {
 // 구조 검증
 // ---------------------------------------------------------------------------
 
-const LOCKED_SCORE_LABELS = {
-  same_element: { score: 90, label: '동일원소 — 최고의 궁합' },
-  complement: { score: 82, label: '보완원소 — 좋은 궁합' },
-  other: { score: 60, label: '그 외 조합 — 무난한 궁합' },
-  samhap: { score: 96, label: '삼합 — 최고의 궁합' },
-  yukhap: { score: 86, label: '육합 — 좋은 궁합' },
-  same: { score: 74, label: '동일 띠 — 친근한 궁합' },
-  none: { score: 62, label: '무관계 — 무난한 궁합' },
-  chung: { score: 35, label: '충 — 주의가 필요한 궁합' },
-  sangsaeng: { score: 85, label: '상생 — 좋은 궁합' },
-  bihwa: { score: 70, label: '비화 — 무난한 궁합' },
-  sanggeuk: { score: 45, label: '상극 — 주의가 필요한 궁합' }
+const LOCKED_LABELS = {
+  same_element: '동일원소', complement: '보완원소', other: '그 외 조합', samhap: '삼합', yukhap: '육합', same: '동일 띠',
+  none: '무관계', chung: '충', sangsaeng: '상생', bihwa: '비화', sanggeuk: '상극'
 };
 
 EXPECTED_TIERS.forEach(function (tier) {
   const data = COMPAT_TIER_DATA[tier];
-  const locked = LOCKED_SCORE_LABELS[tier];
-  assert.strictEqual(data.score, locked.score, tier + '.score가 잠긴 값에서 변경됨');
-  assert.strictEqual(data.label, locked.label, tier + '.label이 잠긴 값에서 변경됨');
+  assert.strictEqual(data.score, undefined, tier + '에는 점수 필드가 없어야 함');
+  assert.strictEqual(data.label, LOCKED_LABELS[tier], tier + '.label이 잠긴 값에서 변경됨');
 
   assertPool(data.text, tier + '.text');
   data.text.a.forEach(function (s, i) {
@@ -66,7 +56,7 @@ EXPECTED_TIERS.forEach(function (tier) {
   assert.ok(Array.isArray(data.advice) && data.advice.length === 3, tier + ' advice must be an array of exactly 3 items');
 });
 
-console.log('All 11 tiers match locked score/label, have valid a/b pool structure, correct {a}/{b} placeholder placement, 6 keywords, 3 advice variants');
+console.log('All 11 tiers match locked label (no score), have valid a/b pool structure, correct {a}/{b} placeholder placement, 6 keywords, 3 advice variants');
 
 // ---------------------------------------------------------------------------
 // 중복 검사 — 공유 dedup-axes 헬퍼로 구현 (2026-09-08 dedup-axes 추출 설계 참고)
@@ -235,14 +225,14 @@ assert.strictEqual(staleDanglingClauseExceptions.length, 0,
 // ---------------------------------------------------------------------------
 
 const info = getCompatTierInfo('same_element', '갑목', '을목');
-assert.strictEqual(info.score, 90, 'getCompatTierInfo score 회귀');
-assert.strictEqual(info.tierLabel, '동일원소 — 최고의 궁합', 'getCompatTierInfo tierLabel 회귀');
+assert.strictEqual(info.score, undefined, 'getCompatTierInfo는 점수를 돌려주지 않음');
+assert.strictEqual(info.tierLabel, '동일원소', 'getCompatTierInfo tierLabel 회귀');
 assert.ok(info.text.indexOf('{a}') === -1 && info.text.indexOf('{b}') === -1, 'getCompatTierInfo text는 치환이 끝난 상태여야 함');
 assert.ok(info.text.indexOf('갑목') !== -1 && info.text.indexOf('을목') !== -1, 'getCompatTierInfo text에 실제 이름이 들어가야 함');
 assert.ok(Array.isArray(info.keywords) && info.keywords.length === 6, 'getCompatTierInfo keywords는 6개 풀 그대로 전달돼야 함');
 assert.ok(Array.isArray(info.advice) && info.advice.length === 3, 'getCompatTierInfo advice는 3개 풀 그대로 전달돼야 함');
 
-console.log('getCompatTierInfo() correctly substitutes names, returns unchanged score/tierLabel, and passes keywords/advice pools through unresolved');
+console.log('getCompatTierInfo() correctly substitutes names, returns tierLabel without a score, and passes keywords/advice pools through unresolved');
 
 console.log('All compatibility-data tests passed');
 
