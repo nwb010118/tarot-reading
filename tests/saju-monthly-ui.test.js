@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const calc = require('../js/saju-calc.js');
+const seeded = require('../js/seeded-random.js');
 
 // Execute the actual summary renderer, with only unrelated prose/DOM plumbing
 // stubbed. All date, pillar, age and fortune calculations use production code.
@@ -14,6 +15,8 @@ function render(now, birth) {
   const element = function () { return { innerHTML: '', classList: { remove: function () {} } }; };
   function FixedDate(value) { return new Date(arguments.length ? value : now); }
   const context = Object.assign({}, calc, {
+    createRng: seeded.createRng, todayKey: seeded.todayKey, activeRng: Math.random,
+    renderEvidence: function () { return ''; }, getElementCounts: calc.getElementCounts,
     Date: FixedDate, selectedCategory: null, selectedPeriod: 'today', selectedGender: 'male',
     selectedSubChoice: null, PERIOD_LABELS: { today: '오늘' }, CATEGORY_LABELS: {},
     getIlganByIndex: function () { return { name_kr: '일간', keywords: [], advice: '' }; },

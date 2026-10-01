@@ -18,7 +18,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://nwb010118.github.io/tarot-reading/images/og-image.jpg">
 <link rel="stylesheet" href="css/style.css?v=1708fba8">
-<link rel="stylesheet" href="css/salon.css?v=21bb6866">
+<link rel="stylesheet" href="css/salon.css?v=a5e265b8">
 </head>
 <body>
 <div id="app">
@@ -52,6 +52,11 @@
     </div>
   </div>
 
+  <section id="daily-card" class="daily-card" aria-labelledby="daily-card-title">
+    <p class="eyebrow">오늘의 한 장</p>
+    <h2 id="daily-card-title">오늘 하루를 위한 카드</h2>
+    <div id="daily-card-body"></div>
+  </section>
   <section id="screen-start">
     <div id="flow-choice">
     <div class="section-heading"><span class="step-number">01</span><div><h2>어떤 운세부터 만나볼까요?</h2><p>다섯 가지 모두 무료. 원하는 운세를 고르고 시작하세요.</p></div><span class="section-star" aria-hidden="true">✧</span></div>
@@ -270,7 +275,7 @@
       </li>
       <li class="fortune-guide-item">
         <h3>별자리</h3>
-        <p>선택한 별자리의 전통적인 성향을 바탕으로 준비된 문장을 무작위로 보여줍니다. 실제 천체의 이동을 계산한 예측은 아닙니다.</p>
+        <p>선택한 별자리의 전통적인 성향을 바탕으로 준비된 문장을 보여주며, 같은 별자리·주제·기간이면 하루 동안 같은 문장이 나옵니다. 실제 천체의 이동을 계산한 예측은 아닙니다.</p>
       </li>
       <li class="fortune-guide-item">
         <h3>띠운세</h3>
@@ -374,16 +379,17 @@
 <script src="data/ddi-data.js?v=e9f7bd79"></script>
 <script src="data/lunar-table.js?v=60db5997"></script>
 <script src="data/saju-data.js?v=7492a17f"></script>
-<script src="data/compatibility-data.js?v=4d607ef3"></script>
+<script src="data/compatibility-data.js?v=026e48e4"></script>
 <script src="data/category-labels.js?v=a1aed877"></script>
 <script src="data/tarot-slugs.js?v=13590464"></script>
+<script src="js/seeded-random.js?v=7c9965ef"></script>
 <script src="js/deck-logic.js?v=dc6f6068"></script>
 <script src="js/history-store.js?v=f74cd3f4"></script>
 <script src="js/lunar-convert.js?v=910db998"></script>
 <script src="js/saju-calc.js?v=49784fed"></script>
 <script src="js/compatibility-calc.js?v=445dd65e"></script>
 <script src="data/reading-guidance.js?v=483d9ca3"></script>
-<script src="js/app.js?v=5106c132"></script>
+<script src="js/app.js?v=ac67a991"></script>
 <script src="js/salon-flow.js?v=89e51729"></script>
 </body>
 </html>

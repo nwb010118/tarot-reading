@@ -250,3 +250,9 @@ console.log('All compatibility-data tests passed');
 assert.ok(getCompatTierInfo('same_element', '양자리', '물병자리').text.startsWith('양자리와 물병자리는 '));
 assert.ok(getCompatTierInfo('bihwa', '갑목', '임수').text.startsWith('갑목과 임수는 '));
 assert.ok(getCompatTierInfo('bihwa', '임수', '갑목').text.startsWith('임수와 갑목은 '));
+
+// 시드 난수를 주면 같은 문장이 나온다
+const { createRng } = require('../js/seeded-random.js');
+const seededA = getCompatTierInfo('same_element', '갑목', '을목', createRng(['t']));
+const seededB = getCompatTierInfo('same_element', '갑목', '을목', createRng(['t']));
+assert.strictEqual(seededA.text, seededB.text, '같은 시드는 같은 궁합 문장');

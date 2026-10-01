@@ -32,6 +32,7 @@
 
   const storage = getStorage();
   const deck = getFullDeck();
+  let activeRng = Math.random;
   let selectedSpread = 1;
   let selectedCategory = null;
   let selectedPeriod = 'today';
@@ -261,7 +262,7 @@
   }
 
   function pickRandom(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
+    return arr[Math.floor(activeRng() * arr.length)];
   }
 
   function resolveMeaningText(value) {
@@ -273,7 +274,7 @@
     if (!keywordsPool || keywordsPool.length <= count) return keywordsPool;
     const shuffled = keywordsPool.slice();
     for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+      const j = Math.floor(activeRng() * (i + 1));
       const t = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = t;
     }
     return shuffled.slice(0, count);
@@ -391,7 +392,7 @@
         saju1 = sajuResult.saju1;
         saju2 = sajuResult.saju2;
       }
-      const tierInfo = getCompatTierInfo(tier, label1, label2);
+      const tierInfo = getCompatTierInfo(tier, label1, label2, createRng(['compat-text', selectedCompatSubtype, label1, label2]));
       cardsContainer.innerHTML = '';
       screenStart.classList.add('hidden');
       screenReading.classList.remove('hidden');
@@ -400,6 +401,7 @@
       return;
     }
 
+    activeRng = Math.random;
     const currentDraw = drawCards(deck, selectedSpread);
     flippedCount = 0;
     historySaved = false;
@@ -423,14 +425,21 @@
       (rest ? '<p class="reading-body">' + escapeHtml(rest) + '</p>' : '');
   }
 
+  function renderEvidence(lines) {
+    return '<details class="evidence"><summary>이 풀이는 어떻게 나왔나요?</summary><ul>' +
+      lines.map(function (line) { return '<li>' + escapeHtml(line) + '</li>'; }).join('') +
+      '</ul></details>';
+  }
+
   function renderPracticePlan() {
     const plan = getPracticePlan(selectedPeriod, selectedCategory);
     return '<aside class="practice-plan"><h4>' + escapeHtml(plan.label) + ' 실천 안내</h4><p>' +
       escapeHtml(plan.focus) + '</p><p>' + escapeHtml(plan.schedule) +
-      '</p><p class="editorial-meta">선택한 기간은 실천과 회고를 위한 기간입니다. 사건이 일어날 시점을 예측하지 않습니다. 리딩 문장은 준비된 해석 중 무작위로 선택됩니다.</p></aside>';
+      '</p><p class="editorial-meta">선택한 기간은 실천과 회고를 위한 기간입니다. 사건이 일어날 시점을 예측하지 않습니다. 리딩 문장은 준비된 해석 중에서 고르며, 같은 조건이면 같은 문장이 나오도록 정해져 있습니다.</p></aside>';
   }
 
   function showZodiacSummary() {
+    activeRng = createRng(['zodiac', selectedZodiac, todayKey(), selectedCategory, selectedSubChoice, selectedPeriod]);
     const zodiac = getZodiacByKey(selectedZodiac);
     const category = selectedCategory;
     const period = selectedPeriod;
@@ -439,9 +448,15 @@
     const meaning = resolveCategoryMeaning(zodiac, category, period, selectedSubChoice);
     const extraHtml = renderKeywordsAdviceHtml(zodiac.keywords, zodiac.advice);
 
+    const evidenceHtml = renderEvidence([
+      '선택한 별자리: ' + zodiac.name_kr + ' (' + zodiac.dateRange + ')',
+      '같은 별자리, 주제, 기간이면 오늘은 같은 문장이 나옵니다. 날짜가 바뀌면 새 문장을 고릅니다.',
+      '천체의 실제 위치를 계산한 예측이 아니라, 별자리의 전통적인 성향을 바탕으로 준비된 문장입니다.'
+    ]);
+
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
       '<div class="reading-detail">' + renderReadingMeaning(meaning) + '</div>' +
-      extraHtml + renderPracticePlan();
+      extraHtml + renderPracticePlan() + evidenceHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     shareButton.classList.remove('hidden');
@@ -462,6 +477,7 @@
   }
 
   function showDdiSummary() {
+    activeRng = createRng(['ddi', selectedBirthYear, todayKey(), selectedCategory, selectedSubChoice, selectedPeriod]);
     const ddi = getDdiByYear(selectedBirthYear);
     const category = selectedCategory;
     const period = selectedPeriod;
@@ -470,9 +486,15 @@
     const meaning = resolveCategoryMeaning(ddi, category, period, selectedSubChoice);
     const extraHtml = renderKeywordsAdviceHtml(ddi.keywords, ddi.advice);
 
+    const evidenceHtml = renderEvidence([
+      '입력한 출생연도: ' + selectedBirthYear + '년 → ' + ddi.name_kr,
+      '출생연도만으로 띠를 정하며 설날이나 입춘 경계는 반영하지 않습니다.',
+      '같은 띠, 주제, 기간이면 오늘은 같은 문장이 나옵니다. 날짜가 바뀌면 새 문장을 고릅니다.'
+    ]);
+
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
       '<div class="reading-detail">' + renderReadingMeaning(meaning) + '</div>' +
-      extraHtml + renderPracticePlan();
+      extraHtml + renderPracticePlan() + evidenceHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     shareButton.classList.remove('hidden');
@@ -717,6 +739,7 @@
   }
 
   function showSajuSummary(input, saju) {
+    activeRng = createRng(['saju', JSON.stringify(input), selectedGender, selectedCategory, selectedSubChoice, selectedPeriod]);
     const category = selectedCategory;
     const period = selectedPeriod;
     const ilgan = getIlganByIndex(saju.day.stemIdx);
@@ -783,7 +806,11 @@
       '<div class="reading-detail">' + renderReadingMeaning(meaning) + '</div>' +
       myeongsikHtml + elementHtml +
       (daeunHtml ? '<details class="fortune-tables"><summary>대운 · 세운 · 월운 자세히 보기</summary>' + daeunHtml + seunHtml + wolunHtml + '</details>' : '') +
-      extraHtml + renderPracticePlan();
+      extraHtml + renderPracticePlan() + renderEvidence([
+        '일간: ' + ilgan.name_kr + ' (오행 ' + ilgan.element + ')',
+        '오행 분포: ' + ['목', '화', '토', '금', '수'].map(function (el) { return el + counts[el]; }).join(' '),
+        '입춘 기준 연주와 절기 기준 월주로 명식을 계산했고, 같은 생년월일시와 주제, 기간이면 언제 봐도 같은 문장이 나옵니다.'
+      ]);
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     shareButton.classList.remove('hidden');
@@ -809,6 +836,7 @@
   }
 
   function showCompatibilitySummary(label1, label2, tierInfo, saju1, saju2) {
+    activeRng = createRng(['compat', selectedCompatSubtype, label1, label2]);
     const heading = label1 + ' × ' + label2 + ' 궁합';
     const extraHtml = renderKeywordsAdviceHtml(tierInfo.keywords, tierInfo.advice);
     const chartsHtml = saju1 && saju2 ?
@@ -818,7 +846,11 @@
       '<p class="compat-score">' + tierInfo.score + '%</p>' +
       '<p class="compat-tier-label">' + tierInfo.tierLabel + '</p>' +
       '<div class="reading-detail">' + renderReadingMeaning(tierInfo.text) + '</div>' +
-      extraHtml + chartsHtml;
+      extraHtml + chartsHtml + renderEvidence([
+        '비교한 두 사람: ' + label1 + ' × ' + label2,
+        '점수 ' + tierInfo.score + '%는 관계 유형(' + tierInfo.tierLabel + ')에 정해진 값입니다.',
+        '같은 두 사람이면 언제 봐도 같은 결과가 나옵니다.'
+      ]);
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     shareButton.classList.remove('hidden');
@@ -915,7 +947,12 @@
         detailLinkHtml +
         '</div>';
     });
-    summaryEl.innerHTML = '<h3>' + heading + '</h3>' + details.join('') + renderPracticePlan();
+    const tarotEvidence = renderEvidence(
+      draw.map(function (item) {
+        return '뽑힌 카드: ' + item.card.name + ' (' + (item.orientation === 'upright' ? '정방향' : '역방향') + ')';
+      }).concat(['카드는 78장 덱에서 무작위로 뽑았고, 정방향과 역방향은 각각 절반의 확률입니다. 다시 뽑으면 새 카드가 나옵니다.'])
+    );
+    summaryEl.innerHTML = '<h3>' + heading + '</h3>' + details.join('') + renderPracticePlan() + tarotEvidence;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     shareButton.classList.remove('hidden');
@@ -1114,4 +1151,28 @@
       });
     });
   }
+
+  // 오늘의 한 장: 기기 ID와 날짜가 같으면 하루 종일 같은 카드가 나온다 (기록에는 저장하지 않음)
+  function renderDailyCard() {
+    const body = document.getElementById('daily-card-body');
+    if (!body) return;
+    const rng = createRng(['daily', getDeviceId(storage), todayKey()]);
+    const item = drawCards(deck, 1, rng)[0];
+    const orientation = item.orientation;
+    const label = orientation === 'upright' ? '정방향' : '역방향';
+    activeRng = rng;
+    const keywords = pickKeywords(item.card.keywords && item.card.keywords[orientation]);
+    const advice = pickAdvice(item.card.advice && item.card.advice[orientation]);
+    activeRng = Math.random;
+    const slug = (typeof TAROT_SLUGS !== 'undefined') ? TAROT_SLUGS[item.card.cardId] : null;
+    body.innerHTML =
+      '<img class="daily-card-img' + (orientation === 'reversed' ? ' reversed' : '') + '" src="' + item.card.image + '" alt="' + escapeHtml(item.card.name) + '" width="120" height="206">' +
+      '<div class="daily-card-text"><h3>' + escapeHtml(item.card.name) + ' <small>(' + label + ')</small></h3>' +
+      (keywords ? '<p>키워드: ' + escapeHtml(keywords.join(' · ')) + '</p>' : '') +
+      (advice ? '<p>조언: ' + escapeHtml(advice) + '</p>' : '') +
+      (slug ? '<a class="card-detail-link" href="tarot/' + slug + '.html">이 카드 자세히 보기 →</a>' : '') +
+      '<p class="editorial-meta">오늘 날짜와 이 기기를 기준으로 뽑았어요. 오늘은 계속 같은 카드이고, 내일이면 새 카드가 나옵니다.</p></div>';
+  }
+
+  renderDailyCard();
 })();

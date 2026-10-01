@@ -243,12 +243,12 @@ const COMPAT_TIER_DATA = {
   }
 };
 
-function pickRandom(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
+function pickRandom(arr, rng) {
+  return arr[Math.floor((rng || Math.random)() * arr.length)];
 }
 
-function resolveTierText(data) {
-  return typeof data.text === 'string' ? data.text : (pickRandom(data.text.a) + ' ' + pickRandom(data.text.b));
+function resolveTierText(data, rng) {
+  return typeof data.text === 'string' ? data.text : (pickRandom(data.text.a, rng) + ' ' + pickRandom(data.text.b, rng));
 }
 
 function hasFinalConsonant(text) {
@@ -256,12 +256,12 @@ function hasFinalConsonant(text) {
   return code >= 0 && code <= 11171 && code % 28 !== 0;
 }
 
-function getCompatTierInfo(tier, labelA, labelB) {
+function getCompatTierInfo(tier, labelA, labelB, rng) {
   const data = COMPAT_TIER_DATA[tier];
   return {
     score: data.score,
     tierLabel: data.label,
-    text: resolveTierText(data).replace('{a}와(과)', labelA + (hasFinalConsonant(labelA) ? '과' : '와')).replace('{b}은(는)', labelB + (hasFinalConsonant(labelB) ? '은' : '는')).replace('{a}', labelA).replace('{b}', labelB),
+    text: resolveTierText(data, rng).replace('{a}와(과)', labelA + (hasFinalConsonant(labelA) ? '과' : '와')).replace('{b}은(는)', labelB + (hasFinalConsonant(labelB) ? '은' : '는')).replace('{a}', labelA).replace('{b}', labelB),
     keywords: data.keywords,
     advice: data.advice
   };
