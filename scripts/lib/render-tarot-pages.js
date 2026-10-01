@@ -82,8 +82,14 @@ function renderCardPage(vm, nav) {
     '<meta property="og:image" content="' + OG_IMAGE_URL + '">\n' +
     '<meta name="twitter:card" content="summary_large_image">\n' +
     '<meta name="twitter:image" content="' + OG_IMAGE_URL + '">\n' +
+    '<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>\n' +
+    '<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">\n' +
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600&display=swap">\n' +
     '<link rel="stylesheet" href="../css/style.css">\n' +
     '<link rel="stylesheet" href="../css/salon.css">\n' +
+    '<link rel="stylesheet" href="../css/refresh.css">\n' +
     '</head>\n' +
     '<body>\n' +
     '<div id="app" class="tarot-page">\n' +
@@ -161,8 +167,14 @@ function renderHubPage(allViewModels, canonicalUrl) {
     '<meta property="og:image" content="' + OG_IMAGE_URL + '">\n' +
     '<meta name="twitter:card" content="summary_large_image">\n' +
     '<meta name="twitter:image" content="' + OG_IMAGE_URL + '">\n' +
+    '<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>\n' +
+    '<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">\n' +
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600&display=swap">\n' +
     '<link rel="stylesheet" href="../css/style.css">\n' +
     '<link rel="stylesheet" href="../css/salon.css">\n' +
+    '<link rel="stylesheet" href="../css/refresh.css">\n' +
     '</head>\n' +
     '<body>\n' +
     '<div id="app" class="tarot-page">\n' +

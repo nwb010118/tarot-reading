@@ -1,0 +1,308 @@
+/* 디자인 정리(2026-10): style.css·salon.css 뒤에 불러와 글꼴과 읽기 레이아웃만 덮어쓴다.
+   - 글꼴: 본문 Pretendard, 제목 Noto Serif KR(웹폰트가 없으면 기기의 명조·고딕으로 대체)
+   - 안쪽 페이지(가이드·카드 해설·FAQ·법적 고지): 가운데 읽기 칼럼, 큰 본문, 넉넉한 줄간격
+   - 색: 채도 높은 금색(#d4af37) 대신 차분한 샴페인 금색 */
+
+:root {
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-serif: "Noto Serif KR", "Nanum Myeongjo", AppleMyungjo, serif;
+  --gold: #d8c08f;
+  --gold-strong: #ead6a8;
+  --ink: #ece6da;
+  --ink-soft: #c9cfd8;
+  --muted: #9aa7b6;
+  --reading-width: 700px;
+}
+
+/* ── 글꼴 ───────────────────────────────── */
+html body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+html body button,
+html body input,
+html body textarea,
+html body select { font-family: inherit; }
+
+html body .brand,
+html body .hero h1,
+html body .section-heading h2,
+html body #summary h3,
+html body .reading-detail h4,
+html body .modal-content h2,
+html body .orientation-block h2,
+html body .hub-suit-group h2,
+html body .info-section h2,
+html body #mode-select .mode-btn strong,
+html body .legal-section h1,
+html body .legal-section h2,
+html body .legal-page .page-title,
+html body .card-page-main h1,
+html body .card-page-main h2,
+html body .hub-main h1 {
+  font-family: var(--font-serif);
+  letter-spacing: -0.02em;
+}
+
+html body .brand { font-weight: 600; letter-spacing: -0.03em; }
+html body .brand > .brand-seal { font-family: var(--font-serif); font-weight: 600; }
+html body .hero h1 { font-weight: 600; letter-spacing: -0.04em; line-height: 1.32; }
+html body .step-number { font-family: var(--font-serif); }
+
+/* 너무 작은 글씨는 최소 13px */
+html body .brand small,
+html body .header-note,
+html body .site-nav { font-size: 13px; }
+
+/* ── 안쪽 페이지 공통 읽기 칼럼 ───────────── */
+.legal-page .legal-section,
+.legal-page > p,
+.legal-page > .page-title,
+.legal-page > nav,
+.tarot-page .card-page-main,
+.tarot-page .hub-main {
+  max-width: var(--reading-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.legal-page .legal-section {
+  border-bottom: 1px solid #2c394980;
+  padding-bottom: 40px;
+  margin-bottom: 40px;
+}
+
+.legal-page .legal-section,
+.tarot-page .card-page-main {
+  font-size: 17px;
+  line-height: 1.85;
+  color: var(--ink-soft);
+}
+
+/* 클래스가 없는 일반 문단·목록만 칼럼 크기를 따른다(분류 표시·출처 메모 같은 보조 문구는 원래 크기 유지) */
+.legal-page .legal-section p:not([class]),
+.legal-page .legal-section li,
+.tarot-page .card-page-main p:not([class]),
+.tarot-page .card-page-main li {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.tarot-page .card-page-main .orientation-block .card-keywords { font-size: 14px; line-height: 1.7; }
+.tarot-page .card-page-main .orientation-block .card-advice { font-size: 16px; line-height: 1.8; }
+.tarot-page .card-page-main .suit-links { font-size: 14px; line-height: 1.9; }
+
+.tarot-page .card-page-main .editorial-meta,
+.tarot-page .card-page-main .reading-context,
+.legal-page .legal-section .editorial-meta { font-size: 14px; line-height: 1.7; color: var(--muted); }
+
+.legal-page .legal-section p,
+.tarot-page .card-page-main p {
+  margin: 0 0 1.15em;
+}
+
+/* 제목 계층 */
+html body .legal-section h1,
+html body .legal-page .page-title,
+html body .card-page-main h1,
+html body .hub-main h1 {
+  color: var(--gold-strong);
+  font-size: clamp(28px, 4vw, 36px);
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 8px 0 14px;
+}
+
+html body .legal-section h2,
+html body .card-page-main h2 {
+  color: var(--gold);
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 1.45;
+  margin: 2.1em 0 0.7em;
+}
+
+html body .legal-section h3,
+html body .card-page-main h3 {
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 650;
+  line-height: 1.5;
+  margin: 1.8em 0 0.6em;
+}
+
+.legal-section .eyebrow,
+.card-page-main .eyebrow {
+  display: inline-block;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: #d8aa95;
+  margin: 0 0 24px;
+}
+
+/* 첫 문단은 조금 크게 (가이드 도입부) */
+.legal-page .legal-section > .eyebrow + p {
+  font-size: 18.5px;
+  line-height: 1.8;
+  color: var(--ink);
+}
+
+/* 빵부스러기·돌아가기 링크 */
+.legal-page > p.hero-copy,
+.legal-page > p:first-of-type {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 28px;
+}
+
+/* 링크: 밑줄은 얇고 은은하게 */
+.legal-page a,
+.tarot-page .card-page-main a {
+  color: var(--gold-strong);
+  text-decoration: underline;
+  text-decoration-color: #d8c08f55;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition: text-decoration-color 0.15s ease, color 0.15s ease;
+}
+
+.legal-page a:hover,
+.tarot-page .card-page-main a:hover {
+  color: #fff3d6;
+  text-decoration-color: currentColor;
+}
+
+/* 헤더·푸터 링크는 밑줄 없이 */
+html body .site-header a,
+html body .site-footer a,
+html body footer a {
+  text-decoration: none;
+}
+
+/* 목록 */
+.legal-section ul,
+.legal-section ol,
+.card-page-main ul,
+.card-page-main ol {
+  padding-left: 1.3em;
+  margin: 0 0 1.3em;
+}
+
+.legal-section li,
+.card-page-main li { margin: 0 0 0.55em; }
+
+.legal-section li::marker,
+.card-page-main li::marker { color: var(--gold); }
+
+.legal-section strong,
+.card-page-main strong { color: var(--ink); font-weight: 650; }
+
+/* 표 */
+.legal-section table,
+.card-page-main table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.4em 0 1.8em;
+  font-size: 15px;
+  line-height: 1.65;
+  background: #0f1b2b;
+  border: 1px solid #2c3949;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.legal-section caption,
+.card-page-main caption {
+  caption-side: top;
+  text-align: left;
+  font-size: 13px;
+  color: var(--muted);
+  padding: 0 2px 8px;
+}
+
+.legal-section th,
+.legal-section td,
+.card-page-main th,
+.card-page-main td {
+  padding: 11px 14px;
+  border-bottom: 1px solid #2c394999;
+  text-align: left;
+  vertical-align: top;
+}
+
+.legal-section thead th,
+.card-page-main thead th {
+  background: #16243a;
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.legal-section tbody th,
+.card-page-main tbody th {
+  color: var(--ink);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.legal-section tbody tr:last-child th,
+.legal-section tbody tr:last-child td,
+.card-page-main tbody tr:last-child th,
+.card-page-main tbody tr:last-child td { border-bottom: 0; }
+
+/* 인용·참고 상자 */
+.legal-section blockquote,
+.card-page-main blockquote {
+  margin: 1.4em 0;
+  padding: 14px 18px;
+  border-left: 2px solid var(--gold);
+  background: #d8c08f0d;
+  color: var(--ink);
+  border-radius: 0 8px 8px 0;
+}
+
+/* ── 홈·결과 화면 다듬기 ─────────────────── */
+html body #summary .reading-body,
+html body #summary .card-advice,
+html body #summary .card-action { line-height: 1.85; }
+
+html body #summary .reading-lead { font-family: var(--font-serif); letter-spacing: -0.02em; }
+
+/* 홈 화면의 작은 안내 글씨: 읽어야 하는 문구는 최소 13px(장식용 미리보기 일러스트 안의 라벨은 제외) */
+html body .hero .eyebrow,
+html body .hero-caption,
+html body .free-services,
+html body .free-services span,
+html body .daily-card .eyebrow,
+html body .daily-card h3 small,
+html body .daily-more .editorial-meta,
+html body .mode-btn .mode-description,
+html body .mode-btn .mode-invite,
+html body .hub-card-link span { font-size: 13px; }
+html body .free-hero .hero-caption,
+html body #mode-select .mode-btn .mode-description { font-size: 13px; }
+html body .section-heading p { font-size: 14px; line-height: 1.6; }
+html body .mode-btn .mode-free { font-size: 11px; }
+html body .showcase-note { font-size: 12px; }
+
+/* ── 휴대폰 ─────────────────────────────── */
+@media (max-width: 640px) {
+  .legal-page .legal-section,
+  .tarot-page .card-page-main { font-size: 16px; line-height: 1.8; }
+  .legal-page .legal-section > .eyebrow + p { font-size: 17px; }
+  html body .legal-section h2,
+  html body .card-page-main h2 { font-size: 21px; }
+  /* 넓은 표는 가로로 밀어서 본다 */
+  .legal-section table,
+  .card-page-main table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .legal-section tbody th,
+  .card-page-main tbody th { white-space: normal; }
+  .legal-section caption,
+  .card-page-main caption { display: block; padding: 12px 14px 6px; }
+}
