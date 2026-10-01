@@ -93,6 +93,8 @@
     <div id="ddi-select" class="hidden">
       <label for="birth-year-input">태어난 연도를 입력하세요 (양력 기준)</label>
       <input type="number" id="birth-year-input" placeholder="예: 1995" min="1900" max="2100">
+      <label for="birth-date-input">생일 (선택 · 1~2월생이면 입력하면 설날 기준으로 정확해져요)</label>
+      <input type="date" id="birth-date-input" min="1900-01-01" max="2050-12-31">
       <p id="ddi-result" class="hidden"></p>
     </div>
 
@@ -177,10 +179,14 @@
         <div class="compat-person-col">
           <label for="compat-ddi-year1-input">사람 1 태어난 연도</label>
           <input type="number" id="compat-ddi-year1-input" placeholder="예: 1995" min="1900" max="2100">
+          <label for="compat-ddi-date1-input">생일 (선택)</label>
+          <input type="date" id="compat-ddi-date1-input" min="1900-01-01" max="2050-12-31">
         </div>
         <div class="compat-person-col">
           <label for="compat-ddi-year2-input">사람 2 태어난 연도</label>
           <input type="number" id="compat-ddi-year2-input" placeholder="예: 1997" min="1900" max="2100">
+          <label for="compat-ddi-date2-input">생일 (선택)</label>
+          <input type="date" id="compat-ddi-date2-input" min="1900-01-01" max="2050-12-31">
         </div>
       </div>
 
@@ -390,13 +396,15 @@
 <script src="js/journal-logic.js?v=6a79f44d"></script>
 <script src="js/share-logic.js?v=51440bca"></script>
 <script src="js/share-card.js?v=1fc76775"></script>
+<script src="js/compat-score.js?v=4fd8f342"></script>
+<script src="js/ddi-boundary.js?v=51a9834a"></script>
 <script src="js/deck-logic.js?v=dc6f6068"></script>
 <script src="js/history-store.js?v=46cfcf66"></script>
 <script src="js/lunar-convert.js?v=910db998"></script>
 <script src="js/saju-calc.js?v=49784fed"></script>
 <script src="js/compatibility-calc.js?v=445dd65e"></script>
 <script src="data/reading-guidance.js?v=483d9ca3"></script>
-<script src="js/app.js?v=a8c3ebc8"></script>
+<script src="js/app.js?v=9914d9d8"></script>
 <script src="js/salon-flow.js?v=89e51729"></script>
 </body>
 </html>

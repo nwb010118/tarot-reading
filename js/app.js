@@ -65,6 +65,10 @@
   const ddiSelect = document.getElementById('ddi-select');
   const birthYearInput = document.getElementById('birth-year-input');
   const ddiResultEl = document.getElementById('ddi-result');
+  const birthDateInput = document.getElementById('birth-date-input');
+  const compatDdiDate1Input = document.getElementById('compat-ddi-date1-input');
+  const compatDdiDate2Input = document.getElementById('compat-ddi-date2-input');
+  let selectedDdiNote = '';
   const sajuSelect = document.getElementById('saju-select');
   const calendarTypeButtons = document.querySelectorAll('#calendar-type-select .calendar-type-btn');
   const intercalationSelect = document.getElementById('intercalation-select');
@@ -152,18 +156,46 @@
 
   updateZodiacResult();
 
-  birthYearInput.addEventListener('input', function () {
-    const year = Number(birthYearInput.value);
-    if (!year || year < 1900 || year > 2100) {
+  // 연도 입력과 (선택) 생일을 합쳐 설날 기준 띠 연도를 구한다. 생일 연도가 있으면 연도 칸에 맞춘다.
+  function resolveDdiYear(yearInput, dateInput, personText) {
+    let year = Number(yearInput.value);
+    let month = null;
+    let day = null;
+    if (dateInput.value) {
+      const parts = dateInput.value.split('-').map(Number);
+      if (parts[0] !== year) {
+        year = parts[0];
+        yearInput.value = String(year);
+      }
+      month = parts[1];
+      day = parts[2];
+    }
+    if (!year || year < 1900 || year > 2100) return null;
+    const effective = getEffectiveDdiYear(year, month, day, lunarToSolar);
+    const note = effective.adjusted
+      ? personText + year + '년 ' + month + '월 ' + day + '일생은 설날(' + effective.seollal.month + '월 ' + effective.seollal.day + '일) 이전이라 ' + effective.year + '년 ' + getDdiByYear(effective.year).name_kr + '로 계산했어요.'
+      : (month && effective.seollal ? personText + month + '월 ' + day + '일생은 설날(' + effective.seollal.month + '월 ' + effective.seollal.day + '일) 이후라 출생연도 그대로 계산했어요.' : '');
+    return { year: effective.year, note: note };
+  }
+
+  function updateDdiResult() {
+    const resolved = resolveDdiYear(birthYearInput, birthDateInput, '');
+    if (!resolved) {
       selectedBirthYear = null;
+      selectedDdiNote = '';
       ddiResultEl.classList.add('hidden');
       return;
     }
-    selectedBirthYear = year;
-    const ddi = getDdiByYear(year);
-    ddiResultEl.textContent = year + '년생 → ' + ddi.name_kr;
+    selectedBirthYear = resolved.year;
+    selectedDdiNote = resolved.note;
+    const ddi = getDdiByYear(resolved.year);
+    ddiResultEl.textContent = resolved.note || (resolved.year + '년생 → ' + ddi.name_kr);
+    if (resolved.note && birthDateInput.value && resolved.note.indexOf('이후') !== -1) ddiResultEl.textContent = resolved.year + '년생 → ' + ddi.name_kr;
     ddiResultEl.classList.remove('hidden');
-  });
+  }
+
+  birthYearInput.addEventListener('input', updateDdiResult);
+  birthDateInput.addEventListener('input', updateDdiResult);
 
   calendarTypeButtons.forEach(function (btn) {
     btn.addEventListener('click', function () {
@@ -403,16 +435,21 @@
     if (selectedMode === 'compatibility') {
       let label1, label2, tier;
       let saju1, saju2;
+      let scoreFn;
+      let scoreNotes = [];
       if (selectedCompatSubtype === 'zodiac') {
         label1 = getZodiacByKey(selectedCompatZodiac1).name_kr;
         label2 = getZodiacByKey(selectedCompatZodiac2).name_kr;
         tier = getZodiacCompatibility(selectedCompatZodiac1, selectedCompatZodiac2);
+        scoreFn = function (base) { return scoreZodiac(selectedCompatZodiac1, selectedCompatZodiac2, base); };
       } else if (selectedCompatSubtype === 'ddi') {
         const input = resolveCompatDdiInput();
         if (!input) return;
         label1 = input.year1 + '년생 ' + getDdiByYear(input.year1).name_kr;
         label2 = input.year2 + '년생 ' + getDdiByYear(input.year2).name_kr;
         tier = getDdiCompatibility(input.year1, input.year2);
+        scoreFn = function (base) { return scoreDdi(getDdiByYear(input.year1).key, getDdiByYear(input.year2).key, base); };
+        scoreNotes = input.notes;
       } else {
         const input = resolveCompatSajuInput();
         if (!input) return;
@@ -422,12 +459,15 @@
         tier = sajuResult.tier;
         saju1 = sajuResult.saju1;
         saju2 = sajuResult.saju2;
+        scoreFn = function (base) { return scoreSaju(sajuResult.saju1, sajuResult.saju2, base); };
       }
       const tierInfo = getCompatTierInfo(tier, label1, label2, createRng(['compat-text', selectedCompatSubtype, label1, label2]));
+      const scoreResult = scoreFn(tierInfo.score);
+      tierInfo.score = scoreResult.score;
       cardsContainer.innerHTML = '';
       screenStart.classList.add('hidden');
       screenReading.classList.remove('hidden');
-      showCompatibilitySummary(label1, label2, tierInfo, saju1, saju2);
+      showCompatibilitySummary(label1, label2, tierInfo, saju1, saju2, scoreResult, scoreNotes);
       saveCompatibilityReading(selectedCompatSubtype, label1, label2, tierInfo);
       return;
     }
@@ -523,7 +563,8 @@
 
     const evidenceHtml = renderEvidence([
       sharedView ? '공유된 띠: ' + ddi.name_kr : '입력한 출생연도: ' + selectedBirthYear + '년 → ' + ddi.name_kr,
-      '출생연도만으로 띠를 정하며 설날이나 입춘 경계는 반영하지 않습니다.',
+      sharedView ? '공유된 링크는 띠만 담고 있어요.' : (selectedDdiNote || '생일을 입력하지 않으면 출생연도만으로 띠를 정해요. 1~2월생은 생일을 함께 입력하면 설날 기준으로 계산합니다.'),
+      '띠는 설날, 사주의 연주는 입춘이 기준이라 두 결과가 다를 수 있어요.',
       '같은 띠, 주제, 기간이면 오늘은 같은 문장이 나옵니다. 날짜가 바뀌면 새 문장을 고릅니다.'
     ]);
 
@@ -619,19 +660,29 @@
 
   function resolveCompatDdiInput() {
     compatErrorEl.classList.add('hidden');
-    const year1 = Number(compatDdiYear1Input.value);
-    const year2 = Number(compatDdiYear2Input.value);
-    if (!compatDdiYear1Input.value || !year1 || year1 < 1900 || year1 > 2100) {
+    if (!compatDdiYear1Input.value && !compatDdiDate1Input.value) {
       compatErrorEl.textContent = '사람 1의 태어난 연도를 1900~2100년 사이로 입력해주세요.';
       compatErrorEl.classList.remove('hidden');
       return null;
     }
-    if (!compatDdiYear2Input.value || !year2 || year2 < 1900 || year2 > 2100) {
+    if (!compatDdiYear2Input.value && !compatDdiDate2Input.value) {
       compatErrorEl.textContent = '사람 2의 태어난 연도를 1900~2100년 사이로 입력해주세요.';
       compatErrorEl.classList.remove('hidden');
       return null;
     }
-    return { year1: year1, year2: year2 };
+    const person1 = resolveDdiYear(compatDdiYear1Input, compatDdiDate1Input, '사람 1: ');
+    const person2 = resolveDdiYear(compatDdiYear2Input, compatDdiDate2Input, '사람 2: ');
+    if (!person1) {
+      compatErrorEl.textContent = '사람 1의 태어난 연도를 1900~2100년 사이로 입력해주세요.';
+      compatErrorEl.classList.remove('hidden');
+      return null;
+    }
+    if (!person2) {
+      compatErrorEl.textContent = '사람 2의 태어난 연도를 1900~2100년 사이로 입력해주세요.';
+      compatErrorEl.classList.remove('hidden');
+      return null;
+    }
+    return { year1: person1.year, year2: person2.year, notes: [person1.note, person2.note].filter(Boolean) };
   }
 
   // 궁합 사주 날짜 한 사람분을 검증. 실패 시 null을 반환하고 compatErrorEl에 에러를 표시.
@@ -872,7 +923,7 @@
     currentEntryId = saveReading(storage, entry)[0].id;
   }
 
-  function showCompatibilitySummary(label1, label2, tierInfo, saju1, saju2) {
+  function showCompatibilitySummary(label1, label2, tierInfo, saju1, saju2, scoreResult, scoreNotes) {
     activeRng = createRng(['compat', selectedCompatSubtype, label1, label2]);
     const heading = label1 + ' × ' + label2 + ' 궁합';
     const extraHtml = renderKeywordsAdviceHtml(tierInfo.keywords, tierInfo.advice);
@@ -883,11 +934,14 @@
       '<p class="compat-score">' + tierInfo.score + '%</p>' +
       '<p class="compat-tier-label">' + tierInfo.tierLabel + '</p>' +
       '<div class="reading-detail">' + renderReadingMeaning(tierInfo.text) + '</div>' +
-      extraHtml + chartsHtml + renderEvidence([
-        '비교한 두 사람: ' + label1 + ' × ' + label2,
-        '점수 ' + tierInfo.score + '%는 관계 유형(' + tierInfo.tierLabel + ')에 정해진 값입니다.',
-        '같은 두 사람이면 언제 봐도 같은 결과가 나옵니다.'
-      ]);
+      extraHtml + chartsHtml + renderEvidence(
+        ['비교한 두 사람: ' + label1 + ' × ' + label2,
+          '기본 점수: ' + tierInfo.tierLabel + ' ' + scoreResult.base + '점']
+          .concat(scoreResult.factors.map(function (f) { return f.label + ' ' + (f.delta > 0 ? '+' : '') + f.delta + '점'; }))
+          .concat(['최종 ' + scoreResult.score + '점 (20~99점 범위로 계산)'])
+          .concat(scoreNotes || [])
+          .concat(['같은 두 사람이면 언제 봐도 같은 결과가 나옵니다.'])
+      );
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     setShareState(heading.replace(/\d{4}년생 /g, ''), [], null);
@@ -1125,6 +1179,8 @@
     selectedZodiac = 'aries';
     updateZodiacResult();
     birthYearInput.value = '';
+    birthDateInput.value = '';
+    selectedDdiNote = '';
     ddiResultEl.classList.add('hidden');
     selectedBirthYear = null;
     calendarTypeButtons.forEach(function (b) { b.classList.remove('selected'); });
@@ -1158,6 +1214,8 @@
     compatZodiac2Buttons[0].classList.add('selected');
     selectedCompatZodiac2 = 'aries';
     compatDdiYear1Input.value = '';
+    compatDdiDate1Input.value = '';
+    compatDdiDate2Input.value = '';
     compatDdiYear2Input.value = '';
     compatCalendarTypeButtons.forEach(function (b) { b.classList.remove('selected'); });
     compatCalendarTypeButtons[0].classList.add('selected');
