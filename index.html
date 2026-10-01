@@ -18,7 +18,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://nwb010118.github.io/tarot-reading/images/og-image.jpg">
 <link rel="stylesheet" href="css/style.css?v=1708fba8">
-<link rel="stylesheet" href="css/salon.css?v=57afc5c1">
+<link rel="stylesheet" href="css/salon.css?v=11670055">
 </head>
 <body>
 <div id="app">
@@ -261,8 +261,11 @@
   </section>
 
   <section id="screen-reading" class="hidden">
+    <p id="shared-banner" class="shared-banner hidden">친구가 공유한 리딩이에요. 같은 결과를 읽기 전용으로 보여드려요.</p>
     <div id="cards-container"></div>
     <div id="summary" class="hidden"></div>
+    <button type="button" id="share-image-button" class="hidden">이미지로 공유</button>
+    <button type="button" id="share-link-button" class="hidden">링크 복사</button>
     <button type="button" id="share-button" class="hidden">공유하기</button>
     <button type="button" id="new-reading-button" class="hidden">새 리딩 시작</button>
   </section>
@@ -385,13 +388,15 @@
 <script src="data/tarot-slugs.js?v=13590464"></script>
 <script src="js/seeded-random.js?v=7c9965ef"></script>
 <script src="js/journal-logic.js?v=6a79f44d"></script>
+<script src="js/share-logic.js?v=51440bca"></script>
+<script src="js/share-card.js?v=1fc76775"></script>
 <script src="js/deck-logic.js?v=dc6f6068"></script>
 <script src="js/history-store.js?v=46cfcf66"></script>
 <script src="js/lunar-convert.js?v=910db998"></script>
 <script src="js/saju-calc.js?v=49784fed"></script>
 <script src="js/compatibility-calc.js?v=445dd65e"></script>
 <script src="data/reading-guidance.js?v=483d9ca3"></script>
-<script src="js/app.js?v=299d95a6"></script>
+<script src="js/app.js?v=a8c3ebc8"></script>
 <script src="js/salon-flow.js?v=89e51729"></script>
 </body>
 </html>

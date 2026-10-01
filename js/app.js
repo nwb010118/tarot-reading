@@ -34,6 +34,10 @@
   const deck = getFullDeck();
   let activeRng = Math.random;
   let currentEntryId = null;
+  let shareState = null;
+  let sharedView = false;
+  let readingDateOverride = null;
+  let currentTarotSeed = null;
   let selectedSpread = 1;
   let selectedCategory = null;
   let selectedPeriod = 'today';
@@ -106,6 +110,9 @@
   const summaryEl = document.getElementById('summary');
   const newReadingButton = document.getElementById('new-reading-button');
   const shareButton = document.getElementById('share-button');
+  const shareImageButton = document.getElementById('share-image-button');
+  const shareLinkButton = document.getElementById('share-link-button');
+  const sharedBanner = document.getElementById('shared-banner');
   const historyOpenButton = document.getElementById('history-open-button');
   const historyModal = document.getElementById('history-modal');
   const historyList = document.getElementById('history-list');
@@ -254,6 +261,26 @@
         selectedSubChoice = btn.dataset.subchoice;
       });
     });
+  }
+
+  function readingDay() {
+    return readingDateOverride || todayKey();
+  }
+
+  function linkSubChoice() {
+    return (selectedCategory && CATEGORY_SUBCHOICES[selectedCategory]) ? selectedSubChoice : null;
+  }
+
+  function firstLeadText() {
+    const el = summaryEl.querySelector('.reading-lead');
+    return el ? el.textContent.trim() : '';
+  }
+
+  // 이미지 카드와 링크에 쓸 현재 결과를 기억한다 (params가 null이면 링크 없이 이미지만 공유)
+  function setShareState(title, images, params) {
+    shareState = { title: title, lead: firstLeadText(), images: images, params: params };
+    shareImageButton.classList.remove('hidden');
+    shareLinkButton.classList.toggle('hidden', !params);
   }
 
   function resolveSubchoiceValue(category, value, selectedSubChoice) {
@@ -406,6 +433,7 @@
     }
 
     activeRng = Math.random;
+    currentTarotSeed = Math.random().toString(36).slice(2, 10);
     const currentDraw = drawCards(deck, selectedSpread);
     flippedCount = 0;
     historySaved = false;
@@ -418,6 +446,8 @@
     summaryEl.innerHTML = '';
     newReadingButton.classList.add('hidden');
     shareButton.classList.add('hidden');
+    shareImageButton.classList.add('hidden');
+    shareLinkButton.classList.add('hidden');
   });
 
   function renderReadingMeaning(meaning) {
@@ -443,7 +473,7 @@
   }
 
   function showZodiacSummary() {
-    activeRng = createRng(['zodiac', selectedZodiac, todayKey(), selectedCategory, selectedSubChoice, selectedPeriod]);
+    activeRng = createRng(['zodiac', selectedZodiac, readingDay(), selectedCategory, selectedSubChoice, selectedPeriod]);
     const zodiac = getZodiacByKey(selectedZodiac);
     const category = selectedCategory;
     const period = selectedPeriod;
@@ -463,6 +493,7 @@
       extraHtml + renderPracticePlan() + evidenceHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
+    setShareState(heading, [], { kind: 'zodiac', z: selectedZodiac, c: selectedCategory, b: linkSubChoice(), p: selectedPeriod, d: readingDay() });
     shareButton.classList.remove('hidden');
   }
 
@@ -481,8 +512,8 @@
   }
 
   function showDdiSummary() {
-    activeRng = createRng(['ddi', selectedBirthYear, todayKey(), selectedCategory, selectedSubChoice, selectedPeriod]);
     const ddi = getDdiByYear(selectedBirthYear);
+    activeRng = createRng(['ddi', ddi.key, readingDay(), selectedCategory, selectedSubChoice, selectedPeriod]);
     const category = selectedCategory;
     const period = selectedPeriod;
     const heading = ddi.name_kr + ' · ' + (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩';
@@ -491,7 +522,7 @@
     const extraHtml = renderKeywordsAdviceHtml(ddi.keywords, ddi.advice);
 
     const evidenceHtml = renderEvidence([
-      '입력한 출생연도: ' + selectedBirthYear + '년 → ' + ddi.name_kr,
+      sharedView ? '공유된 띠: ' + ddi.name_kr : '입력한 출생연도: ' + selectedBirthYear + '년 → ' + ddi.name_kr,
       '출생연도만으로 띠를 정하며 설날이나 입춘 경계는 반영하지 않습니다.',
       '같은 띠, 주제, 기간이면 오늘은 같은 문장이 나옵니다. 날짜가 바뀌면 새 문장을 고릅니다.'
     ]);
@@ -501,6 +532,7 @@
       extraHtml + renderPracticePlan() + evidenceHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
+    setShareState(heading, [], { kind: 'ddi', a: ddi.key, c: selectedCategory, b: linkSubChoice(), p: selectedPeriod, d: readingDay() });
     shareButton.classList.remove('hidden');
   }
 
@@ -817,6 +849,7 @@
       ]);
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
+    setShareState(heading, [], null);
     shareButton.classList.remove('hidden');
   }
 
@@ -857,6 +890,7 @@
       ]);
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
+    setShareState(heading.replace(/\d{4}년생 /g, ''), [], null);
     shareButton.classList.remove('hidden');
   }
 
@@ -925,6 +959,7 @@
   }
 
   function showSummary(draw) {
+    activeRng = createRng(['tarot', currentTarotSeed]);
     const category = selectedCategory;
     const period = selectedPeriod;
     const heading = (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩 요약';
@@ -960,11 +995,16 @@
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' + details.join('') + renderPracticePlan() + tarotEvidence;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
+    setShareState(heading, draw.map(function (item) { return { src: item.card.image, reversed: item.orientation === 'reversed' }; }), {
+      kind: 'tarot',
+      cards: draw.map(function (item) { return item.card.cardId + '.' + (item.orientation === 'upright' ? 'u' : 'r'); }).join(','),
+      c: selectedCategory, b: linkSubChoice(), p: selectedPeriod, d: todayKey(), k: currentTarotSeed
+    });
     shareButton.classList.remove('hidden');
   }
 
   function saveCurrentReading(draw) {
-    if (!storage) return;
+    if (!storage || sharedView) return;
     const entry = {
       date: new Date().toISOString(),
       mode: 'tarot',
@@ -1016,7 +1056,63 @@
 
   shareButton.addEventListener('click', shareCurrentReading);
 
+  function flashButton(button, text, label) {
+    button.textContent = text;
+    setTimeout(function () { button.textContent = label; }, 1500);
+  }
+
+  // 이미지 카드를 만들어 모바일은 공유 시트로, 그 외에는 PNG 다운로드로 내보낸다
+  function shareImageCard(spec, link, button) {
+    const label = button.textContent;
+    button.disabled = true;
+    return renderShareCard(spec).then(function (blob) {
+      const file = new File([blob], 'jeomjip-' + todayKey() + '.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        return navigator.share({ files: [file], text: '점집에서 나도 운세 보기', url: link }).catch(function (err) {
+          if (!err || err.name !== 'AbortError') throw err;
+        });
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      flashButton(button, '이미지를 저장했어요!', label);
+    }).catch(function () {
+      flashButton(button, '이미지를 만들지 못했어요', label);
+    }).then(function () { button.disabled = false; });
+  }
+
+  function cardSpec(title, lead, images) {
+    return { title: title, lead: lead, images: images, dateText: readingDay().replace(/-/g, '. '), siteText: SITE_URL.replace('https://', '') };
+  }
+
+  shareImageButton.addEventListener('click', function () {
+    if (!shareState) return;
+    const link = shareState.params ? SITE_URL + buildShareHash(shareState.params) : SITE_URL;
+    shareImageCard(cardSpec(shareState.title, shareState.lead, shareState.images), link, shareImageButton);
+  });
+
+  shareLinkButton.addEventListener('click', function () {
+    if (!shareState || !shareState.params || !navigator.clipboard) return;
+    navigator.clipboard.writeText(SITE_URL + buildShareHash(shareState.params)).then(function () {
+      flashButton(shareLinkButton, '링크를 복사했어요!', '링크 복사');
+    }).catch(function () {
+      flashButton(shareLinkButton, '복사에 실패했어요', '링크 복사');
+    });
+  });
+
   newReadingButton.addEventListener('click', function () {
+    if (sharedView) {
+      sharedView = false;
+      readingDateOverride = null;
+      sharedBanner.classList.add('hidden');
+      newReadingButton.textContent = '새 리딩 시작';
+      if (history.replaceState) history.replaceState(null, '', location.pathname + location.search);
+    }
     screenReading.classList.add('hidden');
     screenStart.classList.remove('hidden');
     categoryButtons.forEach(function (b) { b.classList.remove('selected'); });
@@ -1167,12 +1263,14 @@
   }
 
   // 오늘의 한 장: 기기 ID와 날짜가 같으면 하루 종일 같은 카드가 나온다 (기록에는 저장하지 않음)
-  function renderDailyCard() {
+  function renderDailyCard(shared) {
     const body = document.getElementById('daily-card-body');
     if (!body) return;
-    recordVisit(storage, todayKey());
-    const streak = getStreak(storage, todayKey());
-    const rng = createRng(['daily', getDeviceId(storage), todayKey()]);
+    const day = shared ? shared.d : todayKey();
+    const owner = shared ? shared.k : getDeviceId(storage);
+    if (!shared) recordVisit(storage, day);
+    const streak = shared ? 0 : getStreak(storage, day);
+    const rng = createRng(['daily', owner, day]);
     const item = drawCards(deck, 1, rng)[0];
     const orientation = item.orientation;
     const label = orientation === 'upright' ? '정방향' : '역방향';
@@ -1188,12 +1286,20 @@
       (advice ? '<p>조언: ' + escapeHtml(advice) + '</p>' : '') +
       (slug ? '<a class="card-detail-link" href="tarot/' + slug + '.html">이 카드 자세히 보기 →</a>' : '') +
       (streak >= 2 ? '<p class="streak">' + streak + '일 연속 방문 중이에요.</p>' : '') +
-      '<p class="editorial-meta">오늘 날짜와 이 기기를 기준으로 뽑았어요. 오늘은 계속 같은 카드이고, 내일이면 새 카드가 나옵니다.</p></div>';
+      (shared ? '<p class="streak">친구가 공유한 오늘의 한 장이에요.</p>' : '<p class="editorial-meta">오늘 날짜와 이 기기를 기준으로 뽑았어요. 오늘은 계속 같은 카드이고, 내일이면 새 카드가 나옵니다.</p>') +
+      '<button type="button" class="daily-share">이미지로 공유</button></div>';
+    const dailyShare = body.querySelector('.daily-share');
+    dailyShare.addEventListener('click', function () {
+      const lead = (keywords ? '키워드: ' + keywords.join(' · ') + '. ' : '') + (advice || '');
+      const spec = cardSpec(item.card.name + ' (' + label + ')', lead, [{ src: item.card.image, reversed: orientation === 'reversed' }]);
+      spec.dateText = day.replace(/-/g, '. ');
+      shareImageCard(spec, SITE_URL + buildShareHash({ kind: 'daily', k: owner, d: day }), dailyShare);
+    });
   }
 
   // 결과 화면의 실천 안내 아래에 "약속하기"를 붙인다 (저장소를 못 쓰거나 실천 안내가 없으면 생략)
   function setupPromiseBox() {
-    if (!storage || !currentEntryId) return;
+    if (!storage || !currentEntryId || sharedView) return;
     const plan = summaryEl.querySelector('.practice-plan');
     if (!plan) return;
     const entryId = currentEntryId;
@@ -1257,6 +1363,57 @@
     });
   }
 
+  // 공유 링크로 들어온 경우: 검증을 통과한 값으로만 같은 결과를 읽기 전용으로 보여준다
+  function buildShareContext() {
+    const ddiKeys = new Set();
+    DDI_DATA.forEach(function (d) { ddiKeys.add(d.key); });
+    const cardIds = new Set();
+    deck.forEach(function (c) { cardIds.add(c.cardId); });
+    return {
+      cardIds: cardIds, categories: CATEGORY_LABELS, subchoices: CATEGORY_SUBCHOICES, periods: PERIOD_LABELS,
+      zodiacKeys: new Set(Object.keys(ZODIAC_LABELS)), ddiKeys: ddiKeys
+    };
+  }
+
+  function showSharedReading(shared) {
+    selectedCategory = shared.c || null;
+    selectedSubChoice = shared.b || null;
+    selectedPeriod = shared.p;
+    readingDateOverride = shared.d;
+    sharedView = true;
+    sharedBanner.classList.remove('hidden');
+    newReadingButton.textContent = '나도 운세 보기';
+    screenStart.classList.add('hidden');
+    screenReading.classList.remove('hidden');
+    cardsContainer.innerHTML = '';
+    if (shared.kind === 'zodiac') {
+      selectedZodiac = shared.z;
+      showZodiacSummary();
+    } else if (shared.kind === 'ddi') {
+      let year = 2000;
+      while (getDdiByYear(year).key !== shared.a) year += 1;
+      selectedBirthYear = year;
+      showDdiSummary();
+    } else {
+      currentTarotSeed = shared.k;
+      selectedSpread = shared.cards.length;
+      flippedCount = 0;
+      historySaved = false;
+      const draw = shared.cards.map(function (c) {
+        return { card: deck.find(function (d) { return d.cardId === c.cardId; }), orientation: c.orientation };
+      });
+      renderCards(draw);
+      cardsContainer.querySelectorAll('.card').forEach(function (el) { el.click(); });
+    }
+  }
+
   renderPromiseCheck();
-  renderDailyCard();
+  const sharedReading = parseShareHash(location.hash, buildShareContext());
+  if (sharedReading && sharedReading.kind === 'daily') {
+    renderDailyCard(sharedReading);
+    document.getElementById('daily-card').scrollIntoView();
+  } else {
+    renderDailyCard();
+    if (sharedReading) showSharedReading(sharedReading);
+  }
 })();

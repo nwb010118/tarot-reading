@@ -16,6 +16,7 @@ function render(now, birth) {
   function FixedDate(value) { return new Date(arguments.length ? value : now); }
   const context = Object.assign({}, calc, {
     createRng: seeded.createRng, todayKey: seeded.todayKey, activeRng: Math.random,
+    readingDay: seeded.todayKey, setShareState: function () {}, sharedView: false,
     renderEvidence: function () { return ''; }, getElementCounts: calc.getElementCounts,
     Date: FixedDate, selectedCategory: null, selectedPeriod: 'today', selectedGender: 'male',
     selectedSubChoice: null, PERIOD_LABELS: { today: '오늘' }, CATEGORY_LABELS: {},

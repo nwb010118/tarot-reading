@@ -12,7 +12,7 @@ function extract(name) {
   assert.ok(start >= 0 && end > start);
   return source.slice(start, end);
 }
-const context = Object.assign({}, guidance, { createRng: seeded.createRng, todayKey: seeded.todayKey, activeRng: Math.random }, {
+const context = Object.assign({}, guidance, { createRng: seeded.createRng, todayKey: seeded.todayKey, activeRng: Math.random, readingDay: seeded.todayKey, linkSubChoice: () => null, setShareState() {}, sharedView: false }, {
   selectedCategory: 'money', selectedSubChoice: 'invest', selectedPeriod: 'year',
   selectedMode: 'tarot', CATEGORY_SUBCHOICES, CATEGORY_LABELS,
   SUBCHOICE_ENABLED_MODES: new Set(['tarot', 'saju', 'ddi', 'zodiac']),
