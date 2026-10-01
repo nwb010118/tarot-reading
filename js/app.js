@@ -124,6 +124,7 @@
   const questionInput = document.getElementById('question-input');
   const questionChip = document.getElementById('question-chip');
   const questionSafety = document.getElementById('question-safety');
+  const questionSuggest = document.getElementById('question-suggest');
   const historyOpenButton = document.getElementById('history-open-button');
   const historyModal = document.getElementById('history-modal');
   const historyList = document.getElementById('history-list');
@@ -304,6 +305,11 @@
   }
 
   // 질문을 읽어 주제·하위선택·실천 기간을 기존 버튼에 반영한다 (같은 해석이면 사용자가 고친 선택을 덮어쓰지 않는다)
+  function hideQuestionSuggest() {
+    questionSuggest.classList.add('hidden');
+    questionSuggest.innerHTML = '';
+  }
+
   function applyQuestionIntent() {
     const text = questionInput.value.trim();
     questionIntent = classifyQuestion(text);
@@ -311,12 +317,14 @@
     questionSafety.classList.toggle('hidden', !questionIntent.safety);
     if (!text || questionIntent.safety) {
       questionChip.classList.add('hidden');
+      hideQuestionSuggest();
       lastAppliedIntent = '';
       return;
     }
-    const signature = [questionIntent.category, questionIntent.subchoice, questionIntent.period].join('|');
+    const signature = [questionIntent.category, questionIntent.subchoice, questionIntent.period, questionIntent.candidates.join(',')].join('|');
     if (signature === lastAppliedIntent) return;
     lastAppliedIntent = signature;
+    hideQuestionSuggest();
     const parts = [];
     if (questionIntent.category) {
       const catBtn = Array.prototype.find.call(categoryButtons, function (b) { return b.dataset.category === questionIntent.category; });
@@ -341,8 +349,22 @@
     }
     questionChip.textContent = parts.length
       ? '이렇게 읽을게요: ' + parts.join(' · ') + ' (아래에서 바꿀 수 있어요)'
-      : '주제를 찾지 못했어요. 아래에서 직접 골라 주세요.';
+      : (questionIntent.candidates.length ? '주제를 하나로 정하지 못했어요. 가까운 주제를 골라 주세요.' : '주제를 찾지 못했어요. 아래에서 직접 골라 주세요.');
     questionChip.classList.remove('hidden');
+    if (!questionIntent.category && questionIntent.candidates.length) {
+      questionSuggest.innerHTML = '<span class="suggest-label">혹시 이런 주제인가요?</span>' + questionIntent.candidates.map(function (key) {
+        return '<button type="button" class="suggest-btn" data-category="' + key + '">' + escapeHtml(CATEGORY_LABELS[key]) + '</button>';
+      }).join('');
+      questionSuggest.classList.remove('hidden');
+      questionSuggest.querySelectorAll('.suggest-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const catBtn = Array.prototype.find.call(categoryButtons, function (b) { return b.dataset.category === btn.dataset.category; });
+          if (catBtn) catBtn.click();
+          questionChip.textContent = '이렇게 읽을게요: ' + CATEGORY_LABELS[btn.dataset.category] + ' (아래에서 바꿀 수 있어요)';
+          hideQuestionSuggest();
+        });
+      });
+    }
   }
 
   questionInput.addEventListener('input', applyQuestionIntent);
@@ -1254,6 +1276,7 @@
     questionIntent = null;
     lastAppliedIntent = '';
     questionChip.classList.add('hidden');
+    hideQuestionSuggest();
     questionSafety.classList.add('hidden');
     screenReading.classList.add('hidden');
     screenStart.classList.remove('hidden');

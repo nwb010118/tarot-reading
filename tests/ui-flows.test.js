@@ -139,6 +139,16 @@ async function main() {
   assert.strictEqual(bad.q('#screen-reading').classList.contains('hidden'), true);
   bad.close();
 
+  // 8-2. 주제를 하나로 정하지 못하면 후보를 눌러 고른다
+  const pick = await loadApp();
+  pick.type('#question-input', '연애와 돈 둘 다 궁금해요');
+  const suggests = pick.qa('.suggest-btn').map(function (b) { return b.textContent; }).sort();
+  assert.deepStrictEqual(suggests, ['연애운', '재물운'], 'candidate chips');
+  pick.click('.suggest-btn[data-category="love"]');
+  assert.strictEqual(pick.q('#category-select .selected').dataset.category, 'love', 'candidate picks the category');
+  assert.strictEqual(pick.visible('#question-suggest'), false, 'suggestions disappear after choosing');
+  pick.close();
+
   // 9. 위기 표현: 카드를 뽑지 않고 상담 안내
   const safe = await loadApp();
   safe.type('#question-input', '죽고 싶어요');

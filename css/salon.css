@@ -378,3 +378,6 @@ label, .category-btn, .spread-btn { font-size: 15px; }
 .question-quote { margin: 0 0 16px; padding: 12px 16px; border-left: 3px solid var(--gold); line-height: 1.8; }
 .question-quote footer { margin-top: 6px; color: var(--gold); font-size: 13px; }
 .history-asked { margin: 4px 0; font-size: 13px; }
+.question-suggest { margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.question-suggest .suggest-label { font-size: 13px; color: var(--muted); }
+.suggest-btn { padding: 6px 14px; border: 1px solid var(--gold); border-radius: 999px; background: transparent; color: var(--gold); cursor: pointer; }
