@@ -19,7 +19,7 @@ const context = Object.assign({}, guidance, { createRng: seeded.createRng, today
   subchoiceSelect: { innerHTML: '', classList: { add() {}, toggle() {} }, querySelectorAll() { return []; } },
   escapeHtml: text => String(text).replace(/</g, '&lt;'),
   getZodiacByKey: () => ({ name_kr: '양자리', dateRange: '3/21 ~ 4/19', categories: { money: { invest: '수익을 확신하는 원래 문장' } }, keywords: ['판단'], advice: '' }),
-  selectedZodiac: 'aries', renderKeywordsAdviceHtml: () => '',
+  selectedZodiac: 'aries', renderKeywordsAdviceHtml: () => '', renderResultLinks: () => '',
   summaryEl: { innerHTML: '', classList: { remove() {} } },
   newReadingButton: { classList: { remove() {} } }, shareButton: { classList: { remove() {} } }
 });

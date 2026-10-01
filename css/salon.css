@@ -389,6 +389,12 @@ label, .category-btn, .spread-btn { font-size: 15px; }
 .question-suggest .suggest-label { font-size: 13px; color: var(--muted); }
 .suggest-btn { padding: 6px 14px; border: 1px solid var(--gold); border-radius: 999px; background: transparent; color: var(--gold); cursor: pointer; }
 
+/* 결과 맨 아래 더 알아보기 */
+.result-links { margin-top: 20px; padding: 14px 16px; border-top: 1px solid var(--line); }
+.result-links-title { margin: 0 0 8px; color: var(--gold); font-size: 14px; font-weight: 600; }
+.result-links ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.9; }
+.result-links a { color: #c3cddd; }
+
 /* 사주 풀이 아코디언 */
 .saju-acc { margin: 18px 0; }
 .saju-acc-toggle { display: block; margin: 0 0 10px auto; padding: 6px 12px; background: transparent; border: 1px solid var(--line); border-radius: 999px; color: var(--gold); font-size: 13px; cursor: pointer; }

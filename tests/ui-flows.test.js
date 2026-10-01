@@ -19,6 +19,12 @@ async function drawReading(app, mode, setup) {
   return summary;
 }
 
+// 모든 결과 맨 아래에는 관련 가이드와 자주 묻는 질문 링크가 있다
+function assertResultLinks(app, guideSlug, name) {
+  assert.ok(app.q('#summary .result-links a[href="guides/' + guideSlug + '.html"]'), name + ': guide link ' + guideSlug);
+  assert.ok(app.q('#summary .result-links a[href="faq.html"]'), name + ': faq link');
+}
+
 async function main() {
   // 1. 홈: 오늘의 한 장, 오류 없음
   let app = await loadApp();
@@ -67,6 +73,7 @@ async function main() {
     const dayLen = app.text('#summary .zodiac-day').replace(/이번 리딩의 한마디/g, '').replace(/\s+/g, ' ').trim().length;
     assert.ok(dayLen >= 400 && dayLen <= 600, 'zodiac daily length ' + dayLen);
     assert.ok(!app.text('#summary .zodiac-day').includes('재물운'), 'zodiac day does not repeat the ddi money/work sections');
+    assertResultLinks(app, 'what-is-zodiac', 'zodiac');
   }
   app.click('#new-reading-button');
   await wait(30);
@@ -108,6 +115,7 @@ async function main() {
     const dayLen = app.text('#summary .ddi-day').replace(/이번 리딩의 한마디/g, '').replace(/\s+/g, ' ').trim().length;
     assert.ok(dayLen >= 400 && dayLen <= 600, 'ddi daily length ' + dayLen);
   }
+  assertResultLinks(app, 'zodiac-animals', 'ddi');
   app.click('#new-reading-button');
   await wait(30);
 
@@ -141,6 +149,7 @@ async function main() {
     ['태어난 달의 오행', '십성 묶음 분포', '올해 세운과 일간의 관계'].forEach(function (label) {
       assert.ok(app.text('#summary .evidence').includes(label), 'saju evidence: ' + label);
     });
+    assertResultLinks(app, 'what-is-saju', 'saju');
     app.click('#new-reading-button');
     await wait(30);
   }
@@ -155,6 +164,7 @@ async function main() {
     const len = app.text('#summary .compat-day').replace(/s+/g, ' ').trim().length;
     assert.ok(len >= 1100 && len <= 1500, name + ' body length ' + len);
     assert.ok(app.text('#summary').includes('점수나 순위를 매기지 않고'), name + ': evidence says no score');
+    assertResultLinks(app, 'compatibility-guide', name);
   };
   app.click('.mode-btn[data-mode="compatibility"]');
   {
@@ -213,6 +223,8 @@ async function main() {
     const adviceLen = textLen('.card-advice, #summary .card-action');
     assert.ok(adviceLen >= 150 && adviceLen <= 200, 'one-card advice length ' + adviceLen);
     assert.ok(app.text('#summary').includes('질문에 대한 조언'), 'one-card advice label');
+    assertResultLinks(app, 'one-card-reading', 'one-card');
+    assert.ok(app.qa('#summary .result-links a').some(function (a) { return a.getAttribute('href').indexOf('tarot/') === 0; }), 'one-card meaning link');
   }
   app.click('.promise-open');
   assert.ok(app.q('#promise-input').value.length > 5, 'promise prefilled');
@@ -316,6 +328,8 @@ async function main() {
     assert.ok(blocks[3].querySelector('h4').textContent.includes('하나로'), 'summary heading');
     assert.ok(blocks[3].querySelector('.reading-lead').textContent.length > 20, 'summary story line');
     assert.ok(blocks[3].querySelector('.card-action'), 'summary action');
+    assertResultLinks(three, 'three-card-spread', 'three-card');
+    assert.strictEqual(three.qa('#summary .result-links a').filter(function (a) { return a.getAttribute('href').indexOf('tarot/') === 0; }).length, 3, 'three card meaning links');
   }
   assert.deepStrictEqual(three.errors, [], 'no script errors in three-card session');
   three.close();

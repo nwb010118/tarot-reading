@@ -26,7 +26,7 @@ function render(now, birth) {
     resolveCategoryMeaning: function () { return ''; },
     renderKeywordsAdviceHtml: function () { return ''; },
     // 5섹션 해석은 saju-interpret/ui-flows 테스트가 확인하고, 여기서는 표 계산만 본다
-    interpretSaju: require('../js/saju-interpret.js').interpretSaju, renderSajuSections: function () { return ''; },
+    interpretSaju: require('../js/saju-interpret.js').interpretSaju, renderSajuSections: function () { return ''; }, renderResultLinks: function () { return ''; },
     SAJU_GROUP_LABEL: {}, SAJU_GROUP_ORDER: require('../js/saju-interpret.js').SAJU_GROUP_ORDER,
     renderReadingMeaning: function () { return ''; },
     renderPracticePlan: function () { return ''; },

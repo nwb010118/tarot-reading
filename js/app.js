@@ -377,6 +377,29 @@
   }
 
   // 가만점방 주인의 도입·마무리 한 줄. 같은 조건이면 같은 문구가 나오도록 시드로 고른다.
+  // 결과 맨 아래의 "더 알아보기": 이 풀이와 관련된 가이드와 자주 묻는 질문, 타로는 뽑힌 카드의 의미 페이지
+  const RESULT_GUIDE_LINKS = {
+    tarot1: [['one-card-reading', '원 카드 리딩 활용법'], ['upright-and-reversed', '정방향과 역방향 읽는 법']],
+    tarot3: [['three-card-spread', '3장 스프레드 읽는 법'], ['upright-and-reversed', '정방향과 역방향 읽는 법']],
+    zodiac: [['what-is-zodiac', '12별자리 기본 가이드'], ['zodiac-vs-ddi', '별자리와 띠, 무엇이 어떻게 다른가']],
+    ddi: [['zodiac-animals', '12띠 기본 가이드'], ['zodiac-vs-ddi', '별자리와 띠, 무엇이 어떻게 다른가']],
+    saju: [['what-is-saju', '사주란 무엇인가'], ['saju-sipseong-guide', '십성 열 가지를 규칙으로 이해하기'], ['saju-daeun-seun-wolun', '대운·세운·월운은 무엇을 보여주는 표일까']],
+    compat: [['compatibility-guide', '궁합은 어떻게 보는가'], ['compatibility-type-guide', '가만점방 궁합은 어떻게 풀이되는가']]
+  };
+
+  function renderResultLinks(kind, cards) {
+    const items = [];
+    (cards || []).forEach(function (item) {
+      const slug = (typeof TAROT_SLUGS !== 'undefined') ? TAROT_SLUGS[item.card.cardId] : null;
+      if (slug) items.push('<li><a href="tarot/' + slug + '.html">' + escapeHtml(item.card.name) + ' 카드 의미</a></li>');
+    });
+    (RESULT_GUIDE_LINKS[kind] || []).forEach(function (g) {
+      items.push('<li><a href="guides/' + g[0] + '.html">' + escapeHtml(g[1]) + '</a></li>');
+    });
+    items.push('<li><a href="faq.html">자주 묻는 질문</a></li>');
+    return '<nav class="result-links" aria-label="더 알아보기"><p class="result-links-title">더 알아보기</p><ul>' + items.join('') + '</ul></nav>';
+  }
+
   function renderOwnerIntro(kind, key) {
     return '<p class="owner-intro">' + escapeHtml(getVoiceLine(kind, createRng(['voice-intro', kind, key]))) + '</p>';
   }
@@ -813,7 +836,7 @@
 
     const voiceKey = [selectedZodiac, readingDay(), selectedCategory, selectedSubChoice, selectedPeriod].join('|');
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' + renderOwnerIntro('zodiac', voiceKey) +
-      dayHtml + renderPracticePlan() + renderOwnerOutro(voiceKey) + evidenceHtml;
+      dayHtml + renderPracticePlan() + renderOwnerOutro(voiceKey) + evidenceHtml + renderResultLinks('zodiac');
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     setShareState(heading, [], { kind: 'zodiac', z: selectedZodiac, c: selectedCategory, b: linkSubChoice(), p: selectedPeriod, d: readingDay(), v: readingVariant() });
@@ -907,7 +930,7 @@
 
     const voiceKey = [ddi.key, readingDay(), selectedCategory, selectedSubChoice, selectedPeriod].join('|');
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' + renderOwnerIntro('ddi', voiceKey) +
-      dayHtml + renderPracticePlan() + renderOwnerOutro(voiceKey) + evidenceHtml;
+      dayHtml + renderPracticePlan() + renderOwnerOutro(voiceKey) + evidenceHtml + renderResultLinks('ddi');
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     setShareState(heading, [], { kind: 'ddi', a: ddi.key, c: selectedCategory, b: linkSubChoice(), p: selectedPeriod, d: readingDay(), v: readingVariant() });
@@ -1286,7 +1309,7 @@
         '십성 묶음 분포: ' + SAJU_GROUP_ORDER.map(function (g) { return SAJU_GROUP_LABEL[g] + ' ' + interp.groupCounts[g]; }).join(' · ') + ' (천간과 지지의 본기 기준)',
         '올해 세운과 일간의 관계: ' + (interp.yearGroup ? SAJU_GROUP_LABEL[interp.yearGroup] + ' 묶음' : '계산하지 않음'),
         '입춘 기준 연주와 절기 기준 월주로 명식을 계산했고, 같은 생년월일시면 같은 해 안에서는 언제 봐도 같은 문장이 나옵니다. 올해 세운 부분만 해가 바뀌면 달라질 수 있어요.'
-      ]);
+      ]) + renderResultLinks('saju');
     const accToggle = summaryEl.querySelector('.saju-acc-toggle');
     if (accToggle) {
       accToggle.addEventListener('click', function () {
@@ -1374,7 +1397,7 @@
           .concat(detail.factors.map(function (f) { return '관계 요소: ' + f.label; }))
           .concat(detail.notes || [])
           .concat(['점수나 순위를 매기지 않고, 위 유형과 요소에 맞는 문장을 골라 보여 줘요.', '같은 두 사람이면 언제 봐도 같은 결과가 나옵니다.'])
-      );
+      ) + renderResultLinks('compat');
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     setShareState(heading.replace(/\d{4}년생 /g, ''), [], null);
@@ -1483,7 +1506,7 @@
         return '뽑힌 카드: ' + item.card.name + ' (' + (item.orientation === 'upright' ? '정방향' : '역방향') + ')';
       }).concat(['카드는 78장 덱에서 무작위로 뽑았고, 정방향과 역방향은 각각 절반의 확률입니다. 다시 뽑으면 새 카드가 나옵니다.'])
     );
-    summaryEl.innerHTML = '<h3>' + heading + '</h3>' + renderOwnerIntro('tarot', currentTarotSeed) + renderQuestionQuote() + details.join('') + renderPracticePlan() + renderOwnerOutro(currentTarotSeed) + tarotEvidence;
+    summaryEl.innerHTML = '<h3>' + heading + '</h3>' + renderOwnerIntro('tarot', currentTarotSeed) + renderQuestionQuote() + details.join('') + renderPracticePlan() + renderOwnerOutro(currentTarotSeed) + tarotEvidence + renderResultLinks(draw.length === 3 ? 'tarot3' : 'tarot1', draw);
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     setShareState(heading, draw.map(function (item) { return { src: item.card.image, reversed: item.orientation === 'reversed' }; }), {
