@@ -17,4 +17,33 @@ function findBannedPhrases(text) {
   });
 }
 
-module.exports = { BANNED_PHRASES, findBannedPhrases };
+
+// 기존 대형 데이터(타로·띠·별자리·사주·궁합 본문)용 검사. 새로 쓰는 문구는 위 findBannedPhrases로 전부 막고,
+// 기존 데이터에서는 안내·부정 문장에 쓰인 단정 강조어(반드시·확실히·무조건)와 카드 이름 '운명의 수레바퀴'는 허용한다.
+// 사건을 보장하거나 기운을 말하는 문장(결실로 돌아옵니다, 기운이 가득한 시기 등)은 허용하지 않는다.
+const SOFT_INTENSIFIERS = ['반드시', '확실히', '무조건'];
+const LEGACY_NAME_OK = ['운명의 수레바퀴', '운명적인 전환점', '운명적'];
+
+function findLegacyViolations(text) {
+  const out = [];
+  findBannedPhrases(text).forEach(function (phrase) {
+    if (phrase === '운명') {
+      if (LEGACY_NAME_OK.indexOf(text) === -1 && text.indexOf('운명적 신호로 확정하지 않습니다') === -1) out.push(phrase);
+      return;
+    }
+    if (SOFT_INTENSIFIERS.indexOf(phrase) === -1) {
+      if (phrase === '대박' && text.indexOf('대박을 기대하기보다') !== -1) return;
+      out.push(phrase);
+      return;
+    }
+    text.split(/(?<=[.!?])\s+/).forEach(function (sentence) {
+      if (sentence.indexOf(phrase) === -1) return;
+      const advice = /(세요|십시오)[.!]?$/.test(sentence) || /(필요합니다|좋습니다|중요합니다|편합니다|질문입니다)[.!]?$/.test(sentence);
+      const negated = /(않습니다|아닙니다|아니라는|보다|말고|보장|여기지)/.test(sentence);
+      if (!advice && !negated) out.push(phrase);
+    });
+  });
+  return out;
+}
+
+module.exports = { BANNED_PHRASES, findBannedPhrases, findLegacyViolations };
