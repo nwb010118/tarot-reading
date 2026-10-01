@@ -32,7 +32,7 @@ function renderNav(links) {
 
 function renderHeader(links) {
   return '<header class="site-header">' +
-    '<a class="brand" href="' + links.homeHref + '" aria-label="점집 처음으로"><span class="brand-seal" aria-hidden="true">점</span> 점집 <small>마음을 비추는 곳</small></a>' +
+    '<a class="brand" href="' + links.homeHref + '" aria-label="가만점방 처음으로"><span class="brand-seal" aria-hidden="true">가</span> 가만점방 <small>마음을 비추는 곳</small></a>' +
     renderNav(links) +
     '</header>';
 }
@@ -50,11 +50,11 @@ function renderFooter(links) {
 }
 
 function renderGuidePage(guide, categoryGuides) {
-  const pageTitle = guide.title + ' | 운세 가이드 | 점집';
+  const pageTitle = guide.title + ' | 운세 가이드 | 가만점방';
   const canonicalUrl = SITE_BASE + 'guides/' + guide.slug + '.html';
   const categoryLabel = GUIDE_CATEGORY_LABELS[guide.category];
   const toolHref = guide.category === 'tarot' ? GUIDES_DIR_LINKS.tarotHubHref : GUIDES_DIR_LINKS.homeHref;
-  const toolLabel = guide.category === 'tarot' ? '타로 카드 백과사전' : '점집 홈';
+  const toolLabel = guide.category === 'tarot' ? '타로 카드 백과사전' : '가만점방 홈';
 
   const siblingLinksHtml = categoryGuides
     .filter(function (g) { return g.slug !== guide.slug; })
@@ -101,7 +101,7 @@ function renderGuidePage(guide, categoryGuides) {
 }
 
 function renderGuidesIndexPage(allGuides) {
-  const pageTitle = '운세 가이드 | 점집';
+  const pageTitle = '운세 가이드 | 가만점방';
   const pageDescription = '운세를 더 깊이 이해하고 싶을 때 참고할 수 있는 운세 가이드 모음입니다.';
   const canonicalUrl = SITE_BASE + 'guides/index.html';
 
@@ -146,7 +146,7 @@ function renderGuidesIndexPage(allGuides) {
     '<body>\n' +
     '<div id="app" class="legal-page">\n' +
     renderHeader(GUIDES_DIR_LINKS) +
-    '<p><a href="' + GUIDES_DIR_LINKS.homeHref + '">← 점집으로 돌아가기</a></p>\n' +
+    '<p><a href="' + GUIDES_DIR_LINKS.homeHref + '">← 가만점방으로 돌아가기</a></p>\n' +
     '<section class="legal-section"><h1>운세 가이드</h1><p>' + escapeHtml(pageDescription) + '</p></section>\n' +
     sectionsHtml + '\n' +
     renderFooter(GUIDES_DIR_LINKS) +

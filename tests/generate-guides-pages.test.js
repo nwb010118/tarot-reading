@@ -44,7 +44,7 @@ for (const guide of sajuGuides) {
   assert.ok(page.includes('<h1>' + guide.title + '</h1>'));
   assert.ok(page.includes('<link rel="canonical" href="https://nwb010118.github.io/tarot-reading/guides/' + guide.slug + '.html">'));
   assert.ok(indexHtml.includes('href="' + guide.slug + '.html"'));
-  assert.ok(page.includes('<a href="../index.html">점집 홈에서 직접 해보기 ↗</a>'));
+  assert.ok(page.includes('<a href="../index.html">가만점방 홈에서 직접 해보기 ↗</a>'));
   for (const sibling of sajuGuides.filter(g => g.slug !== guide.slug)) {
     assert.ok(page.includes('href="' + sibling.slug + '.html"'), guide.slug + ' links to ' + sibling.slug);
   }
@@ -56,7 +56,7 @@ assert.ok(indexHtml.includes('href="compatibility-guide.html">' + compatGuide.ti
 const compatHtml = fs.readFileSync(path.join(guidesDir, 'compatibility-guide.html'), 'utf8');
 assert.ok(compatHtml.includes('<h1>' + compatGuide.title + '</h1>'));
 assert.ok(compatHtml.includes('<link rel="canonical" href="https://nwb010118.github.io/tarot-reading/guides/compatibility-guide.html">'));
-assert.ok(compatHtml.includes('<a href="../index.html">점집 홈에서 직접 해보기 ↗</a>'));
+assert.ok(compatHtml.includes('<a href="../index.html">가만점방 홈에서 직접 해보기 ↗</a>'));
 
 fs.rmSync(tmpDir, { recursive: true, force: true });
 

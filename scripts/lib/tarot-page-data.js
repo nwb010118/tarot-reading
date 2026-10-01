@@ -79,7 +79,7 @@ function buildCardViewModel(deckCard) {
     image: deckCard.image,
     imageSourceUrl: 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(deckCard.image.replace(/^images\//, '').replace(/\.webp$/, '.jpg').replace(/^Pentacles/, 'Pents')),
     editorial: TAROT_EDITORIAL[deckCard.cardId],
-    title: titleName + ' 카드 의미 — 정방향·역방향 키워드와 운세 | 점집',
+    title: titleName + ' 카드 의미 — 정방향·역방향 키워드와 운세 | 가만점방',
     description: '타로 ' + deckCard.name + ' 카드의 정방향·역방향 의미와 키워드(' + upKeywordsPreview + '), 조언, 연애·재물·직장 등 상황별 운세를 확인해보세요.',
     upright: buildOrientationView(deckCard, 'upright'),
     reversed: buildOrientationView(deckCard, 'reversed'),

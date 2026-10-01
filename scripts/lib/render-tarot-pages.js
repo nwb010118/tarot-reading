@@ -20,7 +20,7 @@ function renderNav(links) {
 
 function renderHeader(links) {
   return '<header class="site-header">' +
-    '<a class="brand" href="' + links.homeHref + '" aria-label="점집 처음으로"><span class="brand-seal" aria-hidden="true">점</span> 점집 <small>마음을 비추는 곳</small></a>' +
+    '<a class="brand" href="' + links.homeHref + '" aria-label="가만점방 처음으로"><span class="brand-seal" aria-hidden="true">가</span> 가만점방 <small>마음을 비추는 곳</small></a>' +
     renderNav(links) +
     '</header>';
 }
@@ -112,22 +112,22 @@ function renderCardPage(vm, nav) {
 
 function renderEditorial(editorial) {
   return '<article class="card-editorial">' +
-    '<p class="editorial-meta">편집: 점집 · 해설 보완: 2026년 9월 30일</p>' +
+    '<p class="editorial-meta">편집: 가만점방 · 해설 보완: 2026년 9월 30일</p>' +
     '<h2>그림에서 읽는 상징</h2><p>' + escapeHtml(editorial.scene) + '</p>' +
-    '<h2>점집의 해석</h2><p>' + escapeHtml(editorial.interpretation) + '</p>' +
+    '<h2>가만점방의 해석</h2><p>' + escapeHtml(editorial.interpretation) + '</p>' +
     '<h3>역방향에서 돌아볼 점</h3><p>' + escapeHtml(editorial.reversed) + '</p>' +
     '<h2>질문에 적용하는 예시</h2><p class="example-question">“' + escapeHtml(editorial.question) + '”</p><p>' + escapeHtml(editorial.practice) + '</p>' +
-    '<p class="editorial-meta">예시는 점집이 구성한 가상 상황입니다. 실제 상담 사례나 효과를 입증한 사례가 아닙니다.</p>' +
+    '<p class="editorial-meta">예시는 가만점방이 구성한 가상 상황입니다. 실제 상담 사례나 효과를 입증한 사례가 아닙니다.</p>' +
     '<details class="editorial-sources"><summary>해설 기준과 참고 자료</summary>' +
-    '<p>그림 설명은 라이더–웨이트–스미스 덱의 도상을 관찰한 내용입니다. 이어지는 해석·역방향 질문·실천 예시는 점집의 자기성찰용 설명이며, 원전의 예언 문구를 번역한 것이 아닙니다. 덱과 해석 전통에 따라 의미는 달라질 수 있습니다.</p>' +
-    '<p>전통적 도상 설명 참고: A. E. Waite, <a href="https://sacred-texts.com/tarot/pkt/">The Pictorial Key to the Tarot</a>. <a href="../about.html#editorial">점집의 편집 원칙</a> · <a href="../guides/how-to-ask-tarot.html">질문 만드는 법</a></p>' +
+    '<p>그림 설명은 라이더–웨이트–스미스 덱의 도상을 관찰한 내용입니다. 이어지는 해석·역방향 질문·실천 예시는 가만점방의 자기성찰용 설명이며, 원전의 예언 문구를 번역한 것이 아닙니다. 덱과 해석 전통에 따라 의미는 달라질 수 있습니다.</p>' +
+    '<p>전통적 도상 설명 참고: A. E. Waite, <a href="https://sacred-texts.com/tarot/pkt/">The Pictorial Key to the Tarot</a>. <a href="../about.html#editorial">가만점방의 편집 원칙</a> · <a href="../guides/how-to-ask-tarot.html">질문 만드는 법</a></p>' +
     '</details></article>\n';
 }
 
 function renderHubPage(allViewModels, canonicalUrl) {
   const suitOrder = ['major', 'wands', 'cups', 'swords', 'pentacles'];
   const suitLabels = { major: '메이저 아르카나', wands: '완드', cups: '컵', swords: '소드', pentacles: '펜타클' };
-  const hubTitle = '타로 카드 78장 백과사전 | 점집';
+  const hubTitle = '타로 카드 78장 백과사전 | 가만점방';
   const hubDescription = '메이저 아르카나 22장과 마이너 아르카나(완드·컵·소드·펜타클) 56장, 타로 78장 전체의 정방향·역방향 키워드와 운세를 확인해보세요.';
 
   const sections = suitOrder.map(function (suitKey) {

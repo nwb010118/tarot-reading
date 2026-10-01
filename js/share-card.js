@@ -38,7 +38,7 @@ function renderShareCard(spec) {
     ctx.textAlign = 'center';
     ctx.fillStyle = '#e8c982';
     ctx.font = '600 38px ' + SHARE_CARD_FONT;
-    ctx.fillText('점집 · 마음을 비추는 곳', W / 2, 96);
+    ctx.fillText('가만점방 · 마음을 비추는 곳', W / 2, 96);
 
     let y = 150;
     const images = loaded.filter(Boolean);

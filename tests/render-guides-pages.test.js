@@ -16,10 +16,10 @@ const html = renderGuidePage(guide, categoryGuides);
 
 assert.ok(html.startsWith('<!DOCTYPE html>'));
 assert.ok(html.includes('<html lang="ko">'));
-assert.ok(html.includes('<title>' + guide.title + ' | 운세 가이드 | 점집</title>'), 'title must include guide title');
+assert.ok(html.includes('<title>' + guide.title + ' | 운세 가이드 | 가만점방</title>'), 'title must include guide title');
 const canonicalUrl = 'https://nwb010118.github.io/tarot-reading/guides/what-is-tarot.html';
 assert.ok(html.includes('<link rel="canonical" href="' + canonicalUrl + '">'));
-assert.ok(html.includes('<meta property="og:title" content="' + escapeHtml(guide.title + ' | 운세 가이드 | 점집') + '">'));
+assert.ok(html.includes('<meta property="og:title" content="' + escapeHtml(guide.title + ' | 운세 가이드 | 가만점방') + '">'));
 assert.ok(html.includes('<meta property="og:description" content="' + escapeHtml(guide.description) + '">'));
 assert.ok(html.includes('<meta property="og:url" content="' + canonicalUrl + '">'));
 // 본문은 신뢰된 원고이므로 escape 없이 그대로 포함되어야 한다.
@@ -70,6 +70,6 @@ assert.ok(zodiacGuides.length >= 1, 'zodiac category contains at least one guide
 const zodiacHtml = renderGuidePage(zodiacGuide, [zodiacGuide]);
 assert.ok(!zodiacHtml.includes('같은 카테고리의 다른 가이드:'), 'single-guide category must omit sibling list');
 assert.ok(!zodiacHtml.includes('href="what-is-zodiac.html"'), 'single guide must not link to itself');
-assert.ok(zodiacHtml.includes('<a href="../index.html">점집 홈에서 직접 해보기 ↗</a>'), 'zodiac tool link must lead home');
+assert.ok(zodiacHtml.includes('<a href="../index.html">가만점방 홈에서 직접 해보기 ↗</a>'), 'zodiac tool link must lead home');
 
 console.log('render-guides-pages.test.js: all assertions passed');

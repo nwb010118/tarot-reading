@@ -353,7 +353,7 @@
     return '<blockquote class="question-quote">“' + escapeHtml(currentQuestion) + '”<footer>' + escapeHtml(frame) + '</footer></blockquote>';
   }
 
-  // 점집 주인의 도입·마무리 한 줄. 같은 조건이면 같은 문구가 나오도록 시드로 고른다.
+  // 가만점방 주인의 도입·마무리 한 줄. 같은 조건이면 같은 문구가 나오도록 시드로 고른다.
   function renderOwnerIntro(kind, key) {
     return '<p class="owner-intro">' + escapeHtml(getVoiceLine(kind, createRng(['voice-intro', kind, key]))) + '</p>';
   }
@@ -1164,7 +1164,7 @@
       summaryEl.querySelectorAll(SHARE_SELECTOR),
       function (el) { return el.textContent.trim(); }
     );
-    return parts.join('\n\n') + '\n\n점집에서 나도 운세 보러 가기\n' + SITE_URL;
+    return parts.join('\n\n') + '\n\n가만점방에서 나도 운세 보러 가기\n' + SITE_URL;
   }
 
   function copyShareText(text) {
@@ -1204,7 +1204,7 @@
     return renderShareCard(spec).then(function (blob) {
       const file = new File([blob], 'jeomjip-' + todayKey() + '.png', { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        return navigator.share({ files: [file], text: '점집에서 나도 운세 보기', url: link }).catch(function (err) {
+        return navigator.share({ files: [file], text: '가만점방에서 나도 운세 보기', url: link }).catch(function (err) {
           if (!err || err.name !== 'AbortError') throw err;
         });
       }
