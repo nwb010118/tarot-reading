@@ -34,6 +34,28 @@ async function main() {
   assert.ok(zodiac[0].includes('주인의 한마디'), 'owner outro');
   assert.ok(zodiac[0].includes('이 풀이는 어떻게 나왔나요?'), 'evidence panel');
 
+  // 2-2. 같은 별자리라도 기기마다 다른 문장을 받을 수 있고, 그 링크를 열면 보낸 사람과 같은 문장이 나온다
+  const others = [];
+  for (let i = 0; i < 3; i += 1) {
+    const other = await loadApp();
+    others.push(await drawReading(other, 'zodiac'));
+    other.close();
+  }
+  assert.ok(new Set(others.concat(zodiac[0])).size > 1, 'different devices get different zodiac sentences');
+  app.click('.mode-btn[data-mode="zodiac"]');
+  app.click('#draw-button');
+  await wait(60);
+  app.click('#share-link-button');
+  await wait(20);
+  const zLink = app.window.__copied;
+  assert.ok(/[?&#]v=/.test(zLink), 'zodiac link carries the variant');
+  const zOriginal = app.text('#summary').replace(/이 실천을 약속할게요/g, '');
+  const zViewer = await loadApp({ hash: zLink.slice(zLink.indexOf('#')) });
+  assert.strictEqual(zViewer.text('#summary').replace(/이 실천을 약속할게요/g, ''), zOriginal, 'zodiac share link reproduces the same text');
+  zViewer.close();
+  app.click('#new-reading-button');
+  await wait(30);
+
   // 3. 띠: 생일을 넣으면 설날 이전 출생은 전년도 띠
   app.click('.mode-btn[data-mode="ddi"]');
   app.type('#birth-year-input', '2000');

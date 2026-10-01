@@ -38,6 +38,7 @@
   let sharedView = false;
   let readingDateOverride = null;
   let currentTarotSeed = null;
+  let variantOverride = null;
   let currentQuestion = '';
   let questionIntent = null;
   let lastAppliedIntent = '';
@@ -390,6 +391,17 @@
     return readingDateOverride || todayKey();
   }
 
+  // 같은 별자리·띠여도 기기마다 다른 문장이 고르도록 하는 짧은 값. 공유 링크는 보낸 사람의 값을 그대로 쓴다(없으면 예전 링크).
+  function readingVariant() {
+    if (variantOverride !== null) return variantOverride;
+    return (hashString(getDeviceId(storage)) % 1679616).toString(36);
+  }
+
+  function variantParts() {
+    const v = readingVariant();
+    return v ? [v] : [];
+  }
+
   function linkSubChoice() {
     return (selectedCategory && CATEGORY_SUBCHOICES[selectedCategory]) ? selectedSubChoice : null;
   }
@@ -612,7 +624,7 @@
   }
 
   function showZodiacSummary() {
-    activeRng = createRng(['zodiac', selectedZodiac, readingDay(), selectedCategory, selectedSubChoice, selectedPeriod]);
+    activeRng = createRng(['zodiac', selectedZodiac, readingDay()].concat(variantParts(), [selectedCategory, selectedSubChoice, selectedPeriod]));
     const zodiac = getZodiacByKey(selectedZodiac);
     const category = selectedCategory;
     const period = selectedPeriod;
@@ -623,7 +635,7 @@
 
     const evidenceHtml = renderEvidence([
       '선택한 별자리: ' + zodiac.name_kr + ' (' + zodiac.dateRange + ')',
-      '같은 별자리, 주제, 기간이면 오늘은 같은 문장이 나옵니다. 날짜가 바뀌면 새 문장을 고릅니다.',
+      '문장은 별자리, 날짜, 이 기기를 기준으로 골라요. 같은 조건이면 오늘은 같은 문장이고, 같은 별자리여도 기기마다 다른 문장을 받을 수 있어요.',
       '천체의 실제 위치를 계산한 예측이 아니라, 별자리의 전통적인 성향을 바탕으로 준비된 문장입니다.'
     ]);
 
@@ -633,7 +645,7 @@
       extraHtml + renderPracticePlan() + renderOwnerOutro(voiceKey) + evidenceHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
-    setShareState(heading, [], { kind: 'zodiac', z: selectedZodiac, c: selectedCategory, b: linkSubChoice(), p: selectedPeriod, d: readingDay() });
+    setShareState(heading, [], { kind: 'zodiac', z: selectedZodiac, c: selectedCategory, b: linkSubChoice(), p: selectedPeriod, d: readingDay(), v: readingVariant() });
     shareButton.classList.remove('hidden');
   }
 
@@ -653,7 +665,7 @@
 
   function showDdiSummary() {
     const ddi = getDdiByYear(selectedBirthYear);
-    activeRng = createRng(['ddi', ddi.key, readingDay(), selectedCategory, selectedSubChoice, selectedPeriod]);
+    activeRng = createRng(['ddi', ddi.key, readingDay()].concat(variantParts(), [selectedCategory, selectedSubChoice, selectedPeriod]));
     const category = selectedCategory;
     const period = selectedPeriod;
     const heading = ddi.name_kr + ' · ' + (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩';
@@ -665,7 +677,7 @@
       sharedView ? '공유된 띠: ' + ddi.name_kr : '입력한 출생연도: ' + selectedBirthYear + '년 → ' + ddi.name_kr,
       sharedView ? '공유된 링크는 띠만 담고 있어요.' : (selectedDdiNote || '생일을 입력하지 않으면 출생연도만으로 띠를 정해요. 1~2월생은 생일을 함께 입력하면 설날 기준으로 계산합니다.'),
       '띠는 설날, 사주의 연주는 입춘이 기준이라 두 결과가 다를 수 있어요.',
-      '같은 띠, 주제, 기간이면 오늘은 같은 문장이 나옵니다. 날짜가 바뀌면 새 문장을 고릅니다.'
+      '문장은 띠, 날짜, 이 기기를 기준으로 골라요. 같은 조건이면 오늘은 같은 문장이고, 같은 띠여도 기기마다 다른 문장을 받을 수 있어요.'
     ]);
 
     const voiceKey = [ddi.key, readingDay(), selectedCategory, selectedSubChoice, selectedPeriod].join('|');
@@ -674,7 +686,7 @@
       extraHtml + renderPracticePlan() + renderOwnerOutro(voiceKey) + evidenceHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
-    setShareState(heading, [], { kind: 'ddi', a: ddi.key, c: selectedCategory, b: linkSubChoice(), p: selectedPeriod, d: readingDay() });
+    setShareState(heading, [], { kind: 'ddi', a: ddi.key, c: selectedCategory, b: linkSubChoice(), p: selectedPeriod, d: readingDay(), v: readingVariant() });
     shareButton.classList.remove('hidden');
   }
 
@@ -1267,6 +1279,7 @@
     if (sharedView) {
       sharedView = false;
       readingDateOverride = null;
+      variantOverride = null;
       sharedBanner.classList.add('hidden');
       newReadingButton.textContent = '새 리딩 시작';
       if (history.replaceState) history.replaceState(null, '', location.pathname + location.search);
@@ -1551,6 +1564,7 @@
     selectedSubChoice = shared.b || null;
     selectedPeriod = shared.p;
     readingDateOverride = shared.d;
+    variantOverride = shared.v === undefined ? null : shared.v;
     sharedView = true;
     currentQuestion = '';
     questionIntent = null;

@@ -54,10 +54,16 @@ function parseShareHash(hash, ctx) {
     const z = search.get('z');
     if (!z || !ctx.zodiacKeys.has(z)) return null;
     result.z = z;
+    const zv = search.get('v');
+    if (zv && !SHARE_SAFE_TOKEN.test(zv)) return null;
+    result.v = zv || '';
   } else if (kind === 'ddi') {
     const a = search.get('a');
     if (!a || !ctx.ddiKeys.has(a)) return null;
     result.a = a;
+    const dv = search.get('v');
+    if (dv && !SHARE_SAFE_TOKEN.test(dv)) return null;
+    result.v = dv || '';
   } else {
     const k = search.get('k');
     if (!k || !SHARE_SAFE_TOKEN.test(k)) return null;
