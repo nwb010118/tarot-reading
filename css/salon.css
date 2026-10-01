@@ -388,3 +388,12 @@ label, .category-btn, .spread-btn { font-size: 15px; }
 .question-suggest { margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .question-suggest .suggest-label { font-size: 13px; color: var(--muted); }
 .suggest-btn { padding: 6px 14px; border: 1px solid var(--gold); border-radius: 999px; background: transparent; color: var(--gold); cursor: pointer; }
+
+/* 사주 풀이 아코디언 */
+.saju-acc { margin: 18px 0; }
+.saju-acc-toggle { display: block; margin: 0 0 10px auto; padding: 6px 12px; background: transparent; border: 1px solid var(--line); border-radius: 999px; color: var(--gold); font-size: 13px; cursor: pointer; }
+.saju-sec { border: 1px solid var(--line); border-radius: 12px; margin-bottom: 10px; background: rgba(255, 255, 255, 0.02); }
+.saju-sec > summary { cursor: pointer; padding: 14px 16px; color: var(--gold); font-size: 16px; font-weight: 600; }
+.saju-sec[open] > summary { border-bottom: 1px solid var(--line); }
+.saju-sec-body { padding: 8px 16px 14px; }
+.saju-sec-body .reading-body { margin-top: 12px; }

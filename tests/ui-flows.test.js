@@ -119,6 +119,32 @@ async function main() {
   assert.ok(saju.includes('일간'), 'saju summary');
   assert.ok(saju.includes('오행 분포'), 'saju evidence');
 
+  // 4-2. 사주 5섹션 아코디언: 총운과 오행 / 재물과 직업 / 연애와 인간관계 / 건강과 주의할 시기 / 개운법 (본문 1,800~2,200자)
+  {
+    app.click('.mode-btn[data-mode="saju"]');
+    app.type('#saju-date-input', '1990-05-15');
+    app.type('#saju-time-input', '10:30');
+    app.click('#draw-button');
+    await wait(60);
+    const secs = app.qa('#summary .saju-sec');
+    assert.deepStrictEqual(secs.map(function (d) { return d.querySelector('summary').textContent; }),
+      ['총운과 오행', '재물과 직업', '연애와 인간관계', '건강과 주의할 시기', '개운법']);
+    assert.strictEqual(secs[0].open, true, 'first section is open');
+    assert.ok(secs.slice(1).every(function (d) { return !d.open; }), 'other sections start closed');
+    const bodyLen = secs.map(function (d) { return d.querySelector('.saju-sec-body').textContent; }).join(' ').replace(/이번 리딩의 한마디/g, '').replace(/\s+/g, ' ').trim().length;
+    assert.ok(bodyLen >= 1800 && bodyLen <= 2200, 'saju sections length ' + bodyLen);
+    assert.ok(app.text('#summary .saju-sec:nth-of-type(4)').includes('예측하지 않고'), 'saju health disclaimer');
+    app.click('.saju-acc-toggle');
+    assert.ok(app.qa('#summary .saju-sec').every(function (d) { return d.open; }), 'toggle opens every section');
+    app.click('.saju-acc-toggle');
+    assert.ok(app.qa('#summary .saju-sec').every(function (d) { return !d.open; }), 'toggle closes every section');
+    ['태어난 달의 오행', '십성 묶음 분포', '올해 세운과 일간의 관계'].forEach(function (label) {
+      assert.ok(app.text('#summary .evidence').includes(label), 'saju evidence: ' + label);
+    });
+    app.click('#new-reading-button');
+    await wait(30);
+  }
+
   // 5. 궁합 세 가지: 점수 없이 네 부분(개요, 성격 상성, 갈등의 원인과 해결, 관계 유지)과 관계 요소 근거가 보인다
   const checkCompat = function (name) {
     assert.strictEqual(app.q('.compat-score'), null, name + ': no score element');

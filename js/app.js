@@ -1162,8 +1162,52 @@
       '</tbody></table></div>' + legendHtml + chungHtml;
   }
 
+  const SAJU_GROUP_LABEL = { bigeop: '비겁', siksang: '식상', jaeseong: '재성', gwanseong: '관성', inseong: '인성' };
+  const SAJU_CORE_CATEGORIES = ['money', 'career', 'love', 'relationships', 'health'];
+
+  function sajuSection(title, bodyHtml, open) {
+    return '<details class="saju-sec"' + (open ? ' open' : '') + '><summary>' + title + '</summary><div class="saju-sec-body">' + bodyHtml + '</div></details>';
+  }
+
+  function sajuParagraphs(texts) {
+    return texts.filter(Boolean).map(function (t) { return '<p class="reading-body">' + escapeHtml(t) + '</p>'; }).join('');
+  }
+
+  // 사주 풀이 5섹션(아코디언): 총운과 오행, 재물과 직업, 연애와 인간관계, 건강과 주의할 시기, 개운법. 계산 결과는 interp에 있다.
+  function renderSajuSections(ilgan, balanceText, interp, counts) {
+    const t = SAJU_ILGAN_TEXT[ilgan.key];
+    const group = SAJU_GROUP_TEXT[interp.dominantGroup];
+    const season = SAJU_SEASON_RELATION[interp.seasonRelation].replace('{season}', SAJU_SEASON_LABEL[interp.monthElement]);
+
+    const chartLine = SAJU_CHART_LINE.replace('{ilgan}', ilgan.name_kr).replace('{month}', interp.monthElement)
+      .replace('{counts}', ['목', '화', '토', '금', '수'].map(function (el) { return el + ' ' + counts[el]; }).join(' '))
+      .replace('{strong}', interp.strongElement);
+    const overallHtml = renderReadingMeaning(resolveMeaningText(ilgan.trait)) +
+      sajuParagraphs([pickRandom(t.overall), chartLine, balanceText, season, group.lead]);
+    const moneyHtml = sajuParagraphs([daySectionText(ilgan, 'money'), daySectionText(ilgan, 'career'), pickRandom(t.work), SAJU_WORK_ELEMENT[interp.dayElement], group.money]);
+    const loveHtml = sajuParagraphs([daySectionText(ilgan, 'love'), daySectionText(ilgan, 'relationships'), pickRandom(t.bond), SAJU_LOVE_ELEMENT[interp.dayElement], group.love]);
+    const healthHtml = sajuParagraphs([SAJU_HEALTH_DISCLAIMER, SAJU_HEALTH_ELEMENT[interp.healthElement], daySectionText(ilgan, 'health'),
+      interp.currentMonthElement ? SAJU_NOW_CARE[interp.currentMonthElement] : '',
+      interp.yearGroup ? SAJU_GROUP_TEXT[interp.yearGroup].year : '']);
+    const remedy = interp.remedyElement ? SAJU_REMEDY_ELEMENT[interp.remedyElement] : SAJU_REMEDY_BALANCED;
+    const keywordLine = '일간의 키워드는 ‘' + pickKeywords(ilgan.keywords, 3).join('·') + '’입니다. 하루에 한 번 이 말을 떠올리며 오늘의 선택 하나를 정해 보세요.';
+    const remedyHtml = sajuParagraphs([pickAdvice(ilgan.advice), remedy, pickRandom(t.practice), SAJU_ROUTINE_ELEMENT[interp.dayElement], keywordLine]);
+
+    const sections = [
+      sajuSection('총운과 오행', overallHtml, true),
+      sajuSection('재물과 직업', moneyHtml, false),
+      sajuSection('연애와 인간관계', loveHtml, false),
+      sajuSection('건강과 주의할 시기', healthHtml, false)
+    ];
+    if (selectedCategory && SAJU_CORE_CATEGORIES.indexOf(selectedCategory) === -1) {
+      sections.push(sajuSection('고른 주제 · ' + CATEGORY_LABELS[selectedCategory], sajuParagraphs([resolveCategoryMeaning(ilgan, selectedCategory, selectedPeriod, selectedSubChoice)]), false));
+    }
+    sections.push(sajuSection('개운법', remedyHtml, false));
+    return '<div class="saju-acc"><button type="button" class="saju-acc-toggle">모두 펼치기</button>' + sections.join('') + '</div>';
+  }
+
   function showSajuSummary(input, saju) {
-    activeRng = createRng(['saju', JSON.stringify(input), selectedGender, selectedCategory, selectedSubChoice, selectedPeriod]);
+    activeRng = createRng(['saju', JSON.stringify(input), selectedGender, 'sections']);
     const category = selectedCategory;
     const period = selectedPeriod;
     const ilgan = getIlganByIndex(saju.day.stemIdx);
@@ -1222,20 +1266,36 @@
 
     const balance = classifyElementBalance(counts);
     const balanceText = getElementBalanceText(balance);
-    const meaning = resolveCategoryMeaning(ilgan, category, period, selectedSubChoice) + ' ' + balanceText;
-
-    const extraHtml = renderKeywordsAdviceHtml(ilgan.keywords, ilgan.advice);
+    // 올해 세운(입춘 기준 연도)의 천간으로 올해의 십성 묶음을 계산한다
+    const kstNow = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+    const yearStemIdx = getYearPillar(getSajuYear(new Date(), kstNow.getUTCFullYear())).stemIdx;
+    // 오늘이 속한 달의 지지(절기 기준)로 지금 계절을 계산한다
+    const currentBranchIdx = (getMonthOffset(solarLongitude(new Date())) + 2) % 12;
+    const interp = interpretSaju(saju, counts, { getSipsin: getSipsin, getJijanggan: getJijanggan, classifyElementBalance: classifyElementBalance }, yearStemIdx, currentBranchIdx);
+    const sectionsHtml = renderSajuSections(ilgan, balanceText, interp, counts);
 
     const voiceKey = [JSON.stringify(input), selectedGender, selectedCategory, selectedSubChoice, selectedPeriod].join('|');
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' + renderOwnerIntro('saju', voiceKey) +
-      '<div class="reading-detail">' + renderReadingMeaning(meaning) + '</div>' +
+      sectionsHtml +
       myeongsikHtml + elementHtml +
       (daeunHtml ? '<details class="fortune-tables"><summary>대운 · 세운 · 월운 자세히 보기</summary>' + daeunHtml + seunHtml + wolunHtml + '</details>' : '') +
-      extraHtml + renderPracticePlan() + renderOwnerOutro(voiceKey) + renderEvidence([
+      renderPracticePlan() + renderOwnerOutro(voiceKey) + renderEvidence([
         '일간: ' + ilgan.name_kr + ' (오행 ' + ilgan.element + ')',
         '오행 분포: ' + ['목', '화', '토', '금', '수'].map(function (el) { return el + counts[el]; }).join(' '),
-        '입춘 기준 연주와 절기 기준 월주로 명식을 계산했고, 같은 생년월일시와 주제, 기간이면 언제 봐도 같은 문장이 나옵니다.'
+        '태어난 달의 오행: ' + interp.monthElement + ' (일간과의 관계: ' + SAJU_GROUP_LABEL[interp.seasonRelation] + ' 묶음)',
+        '십성 묶음 분포: ' + SAJU_GROUP_ORDER.map(function (g) { return SAJU_GROUP_LABEL[g] + ' ' + interp.groupCounts[g]; }).join(' · ') + ' (천간과 지지의 본기 기준)',
+        '올해 세운과 일간의 관계: ' + (interp.yearGroup ? SAJU_GROUP_LABEL[interp.yearGroup] + ' 묶음' : '계산하지 않음'),
+        '입춘 기준 연주와 절기 기준 월주로 명식을 계산했고, 같은 생년월일시면 같은 해 안에서는 언제 봐도 같은 문장이 나옵니다. 올해 세운 부분만 해가 바뀌면 달라질 수 있어요.'
       ]);
+    const accToggle = summaryEl.querySelector('.saju-acc-toggle');
+    if (accToggle) {
+      accToggle.addEventListener('click', function () {
+        const all = Array.prototype.slice.call(summaryEl.querySelectorAll('.saju-sec'));
+        const open = all.some(function (d) { return !d.open; });
+        all.forEach(function (d) { d.open = open; });
+        accToggle.textContent = open ? '모두 접기' : '모두 펼치기';
+      });
+    }
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     setShareState(heading, [], null);

@@ -12,7 +12,7 @@ const renderer = source.slice(source.indexOf('  function showSajuSummary('),
   source.indexOf('  function saveSajuReading('));
 const input = { year: 2020, month: 10, day: 16, hour: 16, minute: 0, timeUnknown: false };
 function render(now, birth) {
-  const element = function () { return { innerHTML: '', classList: { remove: function () {} } }; };
+  const element = function () { return { innerHTML: '', classList: { remove: function () {} }, querySelector: function () { return null; } }; };
   function FixedDate(value) { return new Date(arguments.length ? value : now); }
   const context = Object.assign({}, calc, {
     createRng: seeded.createRng, todayKey: seeded.todayKey, activeRng: Math.random,
@@ -25,6 +25,9 @@ function render(now, birth) {
     getElementBalanceText: function () { return ''; },
     resolveCategoryMeaning: function () { return ''; },
     renderKeywordsAdviceHtml: function () { return ''; },
+    // 5섹션 해석은 saju-interpret/ui-flows 테스트가 확인하고, 여기서는 표 계산만 본다
+    interpretSaju: require('../js/saju-interpret.js').interpretSaju, renderSajuSections: function () { return ''; },
+    SAJU_GROUP_LABEL: {}, SAJU_GROUP_ORDER: require('../js/saju-interpret.js').SAJU_GROUP_ORDER,
     renderReadingMeaning: function () { return ''; },
     renderPracticePlan: function () { return ''; },
     pillarText: function (p) { return calc.CHEONGAN[p.stemIdx] + calc.JIJI[p.branchIdx]; },
