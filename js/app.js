@@ -295,6 +295,17 @@
     });
   }
 
+  // 점집 주인의 도입·마무리 한 줄. 같은 조건이면 같은 문구가 나오도록 시드로 고른다.
+  function renderOwnerIntro(kind, key) {
+    return '<p class="owner-intro">' + escapeHtml(getVoiceLine(kind, createRng(['voice-intro', kind, key]))) + '</p>';
+  }
+
+  function renderOwnerOutro(key) {
+    const kind = getOutroKind(selectedCategory, selectedSubChoice);
+    return '<aside class="owner-outro"><h4>주인의 한마디</h4><p>' +
+      escapeHtml(getVoiceLine(kind, createRng(['voice-outro', kind, key]))) + '</p></aside>';
+  }
+
   function readingDay() {
     return readingDateOverride || todayKey();
   }
@@ -528,9 +539,10 @@
       '천체의 실제 위치를 계산한 예측이 아니라, 별자리의 전통적인 성향을 바탕으로 준비된 문장입니다.'
     ]);
 
-    summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
+    const voiceKey = [selectedZodiac, readingDay(), selectedCategory, selectedSubChoice, selectedPeriod].join('|');
+    summaryEl.innerHTML = '<h3>' + heading + '</h3>' + renderOwnerIntro('zodiac', voiceKey) +
       '<div class="reading-detail">' + renderReadingMeaning(meaning) + '</div>' +
-      extraHtml + renderPracticePlan() + evidenceHtml;
+      extraHtml + renderPracticePlan() + renderOwnerOutro(voiceKey) + evidenceHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     setShareState(heading, [], { kind: 'zodiac', z: selectedZodiac, c: selectedCategory, b: linkSubChoice(), p: selectedPeriod, d: readingDay() });
@@ -568,9 +580,10 @@
       '같은 띠, 주제, 기간이면 오늘은 같은 문장이 나옵니다. 날짜가 바뀌면 새 문장을 고릅니다.'
     ]);
 
-    summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
+    const voiceKey = [ddi.key, readingDay(), selectedCategory, selectedSubChoice, selectedPeriod].join('|');
+    summaryEl.innerHTML = '<h3>' + heading + '</h3>' + renderOwnerIntro('ddi', voiceKey) +
       '<div class="reading-detail">' + renderReadingMeaning(meaning) + '</div>' +
-      extraHtml + renderPracticePlan() + evidenceHtml;
+      extraHtml + renderPracticePlan() + renderOwnerOutro(voiceKey) + evidenceHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     setShareState(heading, [], { kind: 'ddi', a: ddi.key, c: selectedCategory, b: linkSubChoice(), p: selectedPeriod, d: readingDay() });
@@ -889,11 +902,12 @@
 
     const extraHtml = renderKeywordsAdviceHtml(ilgan.keywords, ilgan.advice);
 
-    summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
+    const voiceKey = [JSON.stringify(input), selectedGender, selectedCategory, selectedSubChoice, selectedPeriod].join('|');
+    summaryEl.innerHTML = '<h3>' + heading + '</h3>' + renderOwnerIntro('saju', voiceKey) +
       '<div class="reading-detail">' + renderReadingMeaning(meaning) + '</div>' +
       myeongsikHtml + elementHtml +
       (daeunHtml ? '<details class="fortune-tables"><summary>대운 · 세운 · 월운 자세히 보기</summary>' + daeunHtml + seunHtml + wolunHtml + '</details>' : '') +
-      extraHtml + renderPracticePlan() + renderEvidence([
+      extraHtml + renderPracticePlan() + renderOwnerOutro(voiceKey) + renderEvidence([
         '일간: ' + ilgan.name_kr + ' (오행 ' + ilgan.element + ')',
         '오행 분포: ' + ['목', '화', '토', '금', '수'].map(function (el) { return el + counts[el]; }).join(' '),
         '입춘 기준 연주와 절기 기준 월주로 명식을 계산했고, 같은 생년월일시와 주제, 기간이면 언제 봐도 같은 문장이 나옵니다.'
@@ -930,11 +944,12 @@
     const chartsHtml = saju1 && saju2 ?
       '<h5 class="table-label">사람 1</h5>' + renderMyeongsikDetailTable(saju1) +
       '<h5 class="table-label">사람 2</h5>' + renderMyeongsikDetailTable(saju2) : '';
-    summaryEl.innerHTML = '<h3>' + heading + '</h3>' +
+    const voiceKey = [selectedCompatSubtype, label1, label2].join('|');
+    summaryEl.innerHTML = '<h3>' + heading + '</h3>' + renderOwnerIntro('compat', voiceKey) +
       '<p class="compat-score">' + tierInfo.score + '%</p>' +
       '<p class="compat-tier-label">' + tierInfo.tierLabel + '</p>' +
       '<div class="reading-detail">' + renderReadingMeaning(tierInfo.text) + '</div>' +
-      extraHtml + chartsHtml + renderEvidence(
+      extraHtml + chartsHtml + renderOwnerOutro(voiceKey) + renderEvidence(
         ['비교한 두 사람: ' + label1 + ' × ' + label2,
           '기본 점수: ' + tierInfo.tierLabel + ' ' + scoreResult.base + '점']
           .concat(scoreResult.factors.map(function (f) { return f.label + ' ' + (f.delta > 0 ? '+' : '') + f.delta + '점'; }))
@@ -1046,7 +1061,7 @@
         return '뽑힌 카드: ' + item.card.name + ' (' + (item.orientation === 'upright' ? '정방향' : '역방향') + ')';
       }).concat(['카드는 78장 덱에서 무작위로 뽑았고, 정방향과 역방향은 각각 절반의 확률입니다. 다시 뽑으면 새 카드가 나옵니다.'])
     );
-    summaryEl.innerHTML = '<h3>' + heading + '</h3>' + details.join('') + renderPracticePlan() + tarotEvidence;
+    summaryEl.innerHTML = '<h3>' + heading + '</h3>' + renderOwnerIntro('tarot', currentTarotSeed) + details.join('') + renderPracticePlan() + renderOwnerOutro(currentTarotSeed) + tarotEvidence;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     setShareState(heading, draw.map(function (item) { return { src: item.card.image, reversed: item.orientation === 'reversed' }; }), {
@@ -1073,7 +1088,7 @@
     currentEntryId = saveReading(storage, entry)[0].id;
   }
 
-  const SHARE_SELECTOR = 'h3, h4, .compat-score, .compat-tier-label, .reading-lead, .reading-body, .card-keywords, .card-advice, .practice-plan p';
+  const SHARE_SELECTOR = 'h3, h4, .compat-score, .compat-tier-label, .reading-lead, .reading-body, .card-keywords, .card-advice, .practice-plan p, .owner-outro p';
   const SITE_URL = 'https://nwb010118.github.io/tarot-reading/';
   const SHARE_BUTTON_LABEL = '공유하기';
 
@@ -1340,6 +1355,7 @@
     body.innerHTML =
       '<img class="daily-card-img' + (orientation === 'reversed' ? ' reversed' : '') + '" src="' + item.card.image + '" alt="' + escapeHtml(item.card.name) + '" width="120" height="206">' +
       '<div class="daily-card-text"><h3>' + escapeHtml(item.card.name) + ' <small>(' + label + ')</small></h3>' +
+      '<p class="owner-intro">' + escapeHtml(getVoiceLine('daily', createRng(['voice-intro', 'daily', owner, day]))) + '</p>' +
       (keywords ? '<p>키워드: ' + escapeHtml(keywords.join(' · ')) + '</p>' : '') +
       (advice ? '<p>조언: ' + escapeHtml(advice) + '</p>' : '') +
       (slug ? '<a class="card-detail-link" href="tarot/' + slug + '.html">이 카드 자세히 보기 →</a>' : '') +

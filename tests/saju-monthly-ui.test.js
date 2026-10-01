@@ -17,7 +17,7 @@ function render(now, birth) {
   const context = Object.assign({}, calc, {
     createRng: seeded.createRng, todayKey: seeded.todayKey, activeRng: Math.random,
     readingDay: seeded.todayKey, setShareState: function () {}, sharedView: false,
-    renderEvidence: function () { return ''; }, getElementCounts: calc.getElementCounts,
+    renderEvidence: function () { return ''; }, renderOwnerIntro: function () { return ''; }, renderOwnerOutro: function () { return ''; }, getElementCounts: calc.getElementCounts,
     Date: FixedDate, selectedCategory: null, selectedPeriod: 'today', selectedGender: 'male',
     selectedSubChoice: null, PERIOD_LABELS: { today: '오늘' }, CATEGORY_LABELS: {},
     getIlganByIndex: function () { return { name_kr: '일간', keywords: [], advice: '' }; },
