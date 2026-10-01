@@ -217,6 +217,30 @@ async function main() {
   assert.ok(streak.text('#daily-card-body').includes('3일 연속 방문'), 'streak of three days');
   streak.close();
 
+  // 12. 3카드: 과거/현재/미래 위치별 본문(약 200~250자)과 하나로 잇는 종합
+  const three = await loadApp();
+  three.click('.mode-btn[data-mode="tarot"]');
+  three.click('.spread-btn[data-spread="3"]');
+  three.click('#category-select button[data-category="career"]');
+  three.click('#draw-button');
+  await wait(60);
+  three.qa('.card').forEach(function (c) { c.click(); });
+  await wait(60);
+  {
+    const blocks = three.qa('#summary .reading-detail');
+    assert.strictEqual(blocks.length, 4, 'three positions plus summary');
+    ['과거', '현재', '미래'].forEach(function (label, i) {
+      assert.ok(blocks[i].querySelector('h4').textContent.startsWith(label + ' · '), 'position heading ' + label);
+      const n = blocks[i].querySelector('.reading-body').textContent.replace(/\s+/g, ' ').trim().length;
+      assert.ok(n >= 185 && n <= 265, label + ' body length ' + n);
+    });
+    assert.ok(blocks[3].querySelector('h4').textContent.includes('하나로'), 'summary heading');
+    assert.ok(blocks[3].querySelector('.reading-lead').textContent.length > 20, 'summary story line');
+    assert.ok(blocks[3].querySelector('.card-action'), 'summary action');
+  }
+  assert.deepStrictEqual(three.errors, [], 'no script errors in three-card session');
+  three.close();
+
   // 모든 흐름에서 스크립트 오류가 없었다
   assert.deepStrictEqual(app.errors, [], 'no script errors in main session');
   console.log('ui-flows ok');

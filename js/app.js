@@ -466,11 +466,96 @@
   }
 
   // 후보 중 글자 수 범위에 드는 것을 시드로 고른다. 범위에 드는 후보가 없으면 가장 가까운 것을 쓴다.
-  function pickWithinRange(candidates) {
-    const fit = candidates.filter(function (t) { return t.length >= ONECARD_RANGE.min && t.length <= ONECARD_RANGE.max; });
+  // 후보가 문자열이 아니면 getText로 본문을 꺼낸다.
+  function pickWithinRange(candidates, range, getText) {
+    const r = range || ONECARD_RANGE;
+    const textOf = getText || function (t) { return t; };
+    const fit = candidates.filter(function (t) { const n = textOf(t).length; return n >= r.min && n <= r.max; });
     if (fit.length) return pickRandom(fit);
-    const center = (ONECARD_RANGE.min + ONECARD_RANGE.max) / 2;
-    return candidates.slice().sort(function (x, y) { return Math.abs(x.length - center) - Math.abs(y.length - center); })[0];
+    const center = (r.min + r.max) / 2;
+    return candidates.slice().sort(function (x, y) { return Math.abs(textOf(x).length - center) - Math.abs(textOf(y).length - center); })[0];
+  }
+
+  const THREECARD_POSITION_RANGE = { min: 200, max: 250 };
+  const THREECARD_SUMMARY_RANGE = { min: 190, max: 260 };
+
+  // 3카드 위치별 본문: 위치 문장 + 카드 상징 + 주제 문장(주제를 고른 경우)
+  function threeCardPositionText(item, posKey, category, sensitiveText) {
+    const extra = TAROT_ONECARD[item.card.cardId][item.orientation];
+    const base = item.orientation === 'upright' ? item.card.upright : item.card.reversed;
+    const frames = THREECARD_FRAMES[posKey];
+    const candidates = [];
+    if (sensitiveText) {
+      frames.forEach(function (f) { candidates.push(f + ' ' + base.a[0] + ' ' + sensitiveText); });
+      return pickRandom(candidates);
+    }
+    const categoryReading = category && item.card.categories && item.card.categories[category];
+    if (categoryReading) {
+      const value = resolveSubchoiceValue(category, categoryReading[item.orientation], selectedSubChoice);
+      const texts = (typeof value === 'string') ? [value] : combineSentences(value.a, value.b).concat(value.a, value.b);
+      frames.forEach(function (f) {
+        base.a.forEach(function (a) {
+          texts.forEach(function (t) { candidates.push(f + ' ' + a + ' ' + extra.deepen + ' ' + t); });
+        });
+      });
+    } else {
+      frames.forEach(function (f) {
+        combineSentences(base.a, base.b).concat(base.a).forEach(function (t) {
+          candidates.push(f + ' ' + t + ' ' + extra.deepen);
+          item.card.advice[item.orientation].forEach(function (adv) { candidates.push(f + ' ' + t + ' ' + extra.deepen + ' ' + adv); });
+        });
+      });
+    }
+    return pickWithinRange(candidates, THREECARD_POSITION_RANGE);
+  }
+
+  // 3카드 결과: 위치별 카드 세 장과 하나의 이야기로 잇는 종합
+  function renderThreeCardDetails(draw, category) {
+    const blocks = draw.map(function (item, index) {
+      const pos = THREECARD_POSITIONS[index];
+      const sensitive = getSensitiveReading(category, selectedSubChoice, item.card.keywords && item.card.keywords[item.orientation]);
+      const text = threeCardPositionText(item, pos.key, category, sensitive);
+      const orientationLabel = item.orientation === 'upright' ? '정방향' : '역방향';
+      const slug = (typeof TAROT_SLUGS !== 'undefined') ? TAROT_SLUGS[item.card.cardId] : null;
+      return '<div class="reading-detail">' +
+        '<h4>' + pos.label + ' · ' + item.card.name + ' (' + orientationLabel + ')</h4>' +
+        '<p class="card-keywords">키워드: ' + pickKeywords(item.card.keywords[item.orientation], 3).join(' · ') + '</p>' +
+        '<p class="reading-body">' + escapeHtml(text) + '</p>' +
+        (slug ? '<a class="card-detail-link" href="tarot/' + slug + '.html">이 카드 자세히 보기 →</a>' : '') +
+        '</div>';
+    });
+
+    const key = draw.map(function (item) { return item.orientation === 'upright' ? 'u' : 'r'; }).join('');
+    const words = draw.map(function (item) { return pickKeywords(item.card.keywords[item.orientation], 1)[0]; });
+    const stories = THREECARD_STORY.map(function (t) {
+      return t.replace('{a}', words[0]).replace('{b}', words[1]).replace('{c}', words[2]);
+    });
+    const patterns = THREECARD_PATTERN[key];
+    const sensitiveAny = draw.some(function (item) {
+      return getSensitiveReading(category, selectedSubChoice, item.card.keywords && item.card.keywords[item.orientation]);
+    });
+    let story;
+    let action = '';
+    if (sensitiveAny) {
+      story = { lead: pickRandom(stories), body: pickRandom(patterns) };
+    } else {
+      const actions = draw.map(function (item) { return TAROT_ONECARD[item.card.cardId][item.orientation].action; });
+      const combos = [];
+      stories.forEach(function (s) {
+        patterns.forEach(function (p) {
+          actions.forEach(function (a) { combos.push({ lead: s, body: p, action: a, text: s + ' ' + p + ' ' + a }); });
+        });
+      });
+      story = pickWithinRange(combos, THREECARD_SUMMARY_RANGE, function (c) { return c.text; });
+      action = story.action;
+    }
+    const summaryHtml = '<div class="reading-detail">' +
+      '<h4>세 장을 하나로 이으면</h4>' +
+      '<p class="reading-lead">' + escapeHtml(story.lead) + '</p>' +
+      '<p class="reading-body">' + escapeHtml(story.body) + '</p>' +
+      (action ? '<p class="reading-lead-label">오늘 해볼 한 걸음</p><p class="card-action">' + escapeHtml(action) + '</p>' : '') +
+      '</div>';
+    return blocks.concat(summaryHtml);
   }
 
   // 원카드 결과: 키워드, 카드 의미 해석(기본 상징 + 그림 해석), 질문에 대한 조언(주제별 문장 + 구체적 행동)
@@ -1187,7 +1272,9 @@
     const period = selectedPeriod;
     const heading = (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩 요약';
 
-    const details = draw.map(function (item) {
+    const useThreeCard = draw.length === 3 && typeof TAROT_ONECARD !== 'undefined' && typeof THREECARD_FRAMES !== 'undefined' &&
+      draw.every(function (item) { return TAROT_ONECARD[item.card.cardId]; });
+    const details = useThreeCard ? renderThreeCardDetails(draw, category) : draw.map(function (item) {
       if (draw.length === 1 && typeof TAROT_ONECARD !== 'undefined' && TAROT_ONECARD[item.card.cardId]) {
         return renderOneCardDetail(item, category, getSensitiveReading(category, selectedSubChoice, item.card.keywords && item.card.keywords[item.orientation]));
       }
