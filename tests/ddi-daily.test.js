@@ -3,7 +3,7 @@ const assert = require('assert');
 const { DDI_DATA } = require('../data/ddi-data.js');
 const { DDI_DAILY } = require('../data/ddi-daily.js');
 const { findBannedPhrases } = require('./helpers/banned-phrases.js');
-const { splitSentences, wordJaccard, trigramJaccard } = require('./helpers/dedup.js');
+const { splitSentences, wordJaccard, trigramJaccard, longestCommonSubstring } = require('./helpers/dedup.js');
 
 const OVERALL = { min: 140, max: 175 };
 const ADVICE = { min: 45, max: 70 };
@@ -83,6 +83,16 @@ entries.forEach(function (e) {
     splitSentences(e.text).forEach(function (sent) {
       if (wordJaccard(sent, s) >= 0.5 || trigramJaccard(sent, s) >= 0.4) problems.push('sentence echoes existing ' + e.where + ' | ' + sent + ' | ' + s);
     });
+  });
+});
+
+// 같은 띠의 기존 문장과 6자 이상 같은 구절을 공유하면 한 화면에서 같은 말이 반복돼 보인다
+const normalize = function (s) { return s.replace(/\s+/g, '').replace(/[.,!?]/g, ''); };
+entries.forEach(function (e) {
+  const own = [].concat(e.ddi.trait.a, e.ddi.trait.b, e.ddi.advice);
+  own.forEach(function (s) {
+    const l = longestCommonSubstring(normalize(e.text), normalize(s));
+    if (l >= 6) problems.push('shares a ' + l + '-char phrase with same-animal text ' + e.where + ' | ' + s);
   });
 });
 

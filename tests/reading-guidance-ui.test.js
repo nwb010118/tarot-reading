@@ -25,6 +25,8 @@ const context = Object.assign({}, guidance, { createRng: seeded.createRng, today
 });
 vm.createContext(context);
 ['pickRandom', 'resolveMeaningText', 'resolveSubchoiceValue', 'resolveCategoryMeaning', 'renderReadingMeaning', 'renderEvidence', 'renderPracticePlan', 'showZodiacSummary', 'renderSubChoices'].forEach(name => vm.runInContext(extract(name), context));
+// 하루 구성 렌더러는 별도 UI 테스트에서 확인하고, 여기서는 주제·기간 선택이 결과 조립에 닿는지만 본다
+vm.runInContext('function renderZodiacDay(zodiac) { return "<div class=\\"reading-detail\\">" + renderReadingMeaning(resolveCategoryMeaning(zodiac, selectedCategory, selectedPeriod, selectedSubChoice)) + "</div>"; }', context);
 vm.runInContext('showZodiacSummary()', context);
 assert.ok(context.summaryEl.innerHTML.includes('분기마다'), 'selected year must reach the actual result');
 assert.ok(context.summaryEl.innerHTML.includes('예측하지 않습니다'));

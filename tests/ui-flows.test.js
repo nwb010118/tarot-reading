@@ -56,6 +56,41 @@ async function main() {
   app.click('#new-reading-button');
   await wait(30);
 
+  // 2-3. 별자리 하루 구성: 마음, 사랑, 관계, 선택의 순간, 조언, 마음 키워드 (400~600자)
+  app.click('.mode-btn[data-mode="zodiac"]');
+  app.click('#draw-button');
+  await wait(60);
+  ['오늘의 마음', '사랑', '관계', '선택의 순간', '마음을 돌보는 한마디', '오늘의 마음 키워드'].forEach(function (label) {
+    assert.ok(app.text('#summary .zodiac-day').includes(label), 'zodiac daily structure: ' + label);
+  });
+  {
+    const dayLen = app.text('#summary .zodiac-day').replace(/이번 리딩의 한마디/g, '').replace(/\s+/g, ' ').trim().length;
+    assert.ok(dayLen >= 400 && dayLen <= 600, 'zodiac daily length ' + dayLen);
+    assert.ok(!app.text('#summary .zodiac-day').includes('재물운'), 'zodiac day does not repeat the ddi money/work sections');
+  }
+  app.click('#new-reading-button');
+  await wait(30);
+
+  // 2-4. 투자·건강처럼 민감한 주제는 하루 구성에서도 예측 문구 대신 안전 문구로 나온다
+  app.click('.mode-btn[data-mode="zodiac"]');
+  app.click('#category-select button[data-category="health"]');
+  app.click('#draw-button');
+  await wait(60);
+  assert.ok(app.text('#summary .zodiac-day').includes('예측하지 않습니다'), 'zodiac health safety text');
+  app.click('#new-reading-button');
+  await wait(30);
+  app.click('.mode-btn[data-mode="ddi"]');
+  app.type('#birth-year-input', '1990');
+  app.click('#category-select button[data-category="money"]');
+  app.click('.subchoice-btn[data-subchoice="invest"]');
+  app.click('#draw-button');
+  await wait(60);
+  assert.ok(app.text('#summary .ddi-day').includes('예측하지 않습니다'), 'ddi invest safety text in the money section');
+  assert.ok(app.text('#summary .ddi-day').includes('투자 결정의 근거로 사용하지 마세요'), 'ddi invest warning');
+  app.click('#new-reading-button');
+  await wait(30);
+  app.click('#category-select button[data-category=""]');
+
   // 3. 띠: 생일을 넣으면 설날 이전 출생은 전년도 띠
   app.click('.mode-btn[data-mode="ddi"]');
   app.type('#birth-year-input', '2000');

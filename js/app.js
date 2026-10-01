@@ -762,15 +762,46 @@
       '</p><p class="editorial-meta">선택한 기간은 실천과 회고를 위한 기간입니다. 사건이 일어날 시점을 예측하지 않습니다. 리딩 문장은 준비된 해석 중에서 고르며, 같은 조건이면 같은 문장이 나오도록 정해져 있습니다.</p></aside>';
   }
 
+  const ZODIAC_CORE_SECTIONS = [
+    { category: 'love', label: '사랑' },
+    { category: 'relationships', label: '관계' }
+  ];
+
+  // 별자리 하루 구성: 오늘의 마음 + 사랑·관계 + 선택의 순간 + (고른 주제가 다르면 그 주제) + 마음 돌봄 조언 + 마음 키워드
+  function renderZodiacDay(zodiac) {
+    const daily = ZODIAC_DAILY[zodiac.key];
+    const overallCandidates = [];
+    combineSentences(zodiac.trait.a, zodiac.trait.b).forEach(function (t) { daily.mood.forEach(function (m) { overallCandidates.push(t + ' ' + m); }); });
+    const overall = pickWithinRange(overallCandidates, DDI_OVERALL_RANGE);
+
+    const sections = ZODIAC_CORE_SECTIONS.map(function (s) { return { label: s.label, text: daySectionText(zodiac, s.category) }; });
+    sections.push({ label: '선택의 순간', text: pickRandom(daily.choice) });
+    const isCore = ZODIAC_CORE_SECTIONS.some(function (s) { return s.category === selectedCategory; });
+    if (selectedCategory && !isCore) {
+      sections.push({ label: CATEGORY_LABELS[selectedCategory], text: resolveCategoryMeaning(zodiac, selectedCategory, selectedPeriod, selectedSubChoice) });
+    }
+
+    const adviceCandidates = [];
+    zodiac.advice.forEach(function (a) { daily.tip.forEach(function (t) { adviceCandidates.push(a + ' ' + t); }); });
+    const advice = pickWithinRange(adviceCandidates, DDI_ADVICE_RANGE);
+    const keywords = pickKeywords(zodiac.keywords, 3);
+
+    return '<div class="reading-detail zodiac-day">' +
+      '<h4>오늘의 마음</h4>' + renderReadingMeaning(overall) +
+      sections.map(function (s) { return '<h4>' + s.label + '</h4><p class="reading-body">' + escapeHtml(s.text) + '</p>'; }).join('') +
+      '<h4>마음을 돌보는 한마디</h4><p class="card-advice">' + escapeHtml(advice) + '</p>' +
+      '<p class="card-keywords">오늘의 마음 키워드 ' + keywords.join(' · ') + '</p>' +
+      '</div>';
+  }
+
   function showZodiacSummary() {
-    activeRng = createRng(['zodiac', selectedZodiac, readingDay()].concat(variantParts(), [selectedCategory, selectedSubChoice, selectedPeriod]));
+    activeRng = createRng(['zodiac', selectedZodiac, readingDay()].concat(variantParts(), ['daily']));
     const zodiac = getZodiacByKey(selectedZodiac);
     const category = selectedCategory;
     const period = selectedPeriod;
     const heading = zodiac.name_kr + ' · ' + (category ? CATEGORY_LABELS[category] : '운세') + ' 리딩';
 
-    const meaning = resolveCategoryMeaning(zodiac, category, period, selectedSubChoice);
-    const extraHtml = renderKeywordsAdviceHtml(zodiac.keywords, zodiac.advice);
+    const dayHtml = renderZodiacDay(zodiac);
 
     const evidenceHtml = renderEvidence([
       '선택한 별자리: ' + zodiac.name_kr + ' (' + zodiac.dateRange + ')',
@@ -780,8 +811,7 @@
 
     const voiceKey = [selectedZodiac, readingDay(), selectedCategory, selectedSubChoice, selectedPeriod].join('|');
     summaryEl.innerHTML = '<h3>' + heading + '</h3>' + renderOwnerIntro('zodiac', voiceKey) +
-      '<div class="reading-detail">' + renderReadingMeaning(meaning) + '</div>' +
-      extraHtml + renderPracticePlan() + renderOwnerOutro(voiceKey) + evidenceHtml;
+      dayHtml + renderPracticePlan() + renderOwnerOutro(voiceKey) + evidenceHtml;
     summaryEl.classList.remove('hidden');
     newReadingButton.classList.remove('hidden');
     setShareState(heading, [], { kind: 'zodiac', z: selectedZodiac, c: selectedCategory, b: linkSubChoice(), p: selectedPeriod, d: readingDay(), v: readingVariant() });
@@ -811,6 +841,17 @@
     { category: 'workplace', label: '직장운' }
   ];
 
+  // 하루 구성의 한 섹션 문장: 고른 주제면 선택한 하위선택을, 아니면 첫 하위선택을 쓴다. 민감 주제는 안전 문구로 대신한다.
+  function daySectionText(entity, category) {
+    if (category === selectedCategory) {
+      const sensitive = getSensitiveReading(category, selectedSubChoice, entity.keywords);
+      if (sensitive) return sensitive;
+    }
+    const sub = (category === selectedCategory) ? selectedSubChoice : (CATEGORY_SUBCHOICES[category] ? CATEGORY_SUBCHOICES[category][0].key : null);
+    const value = resolveSubchoiceValue(category, entity.categories[category], sub);
+    return (typeof value === 'string') ? value : pickWithinRange(combineSentences(value.a, value.b), DDI_SECTION_RANGE);
+  }
+
   // 띠운세 하루 구성: 총운 + 애정·재물·직장 + (고른 주제가 다르면 그 주제) + 조언 + 행운의 숫자·색
   function renderDdiDay(ddi) {
     const daily = DDI_DAILY[ddi.key];
@@ -819,17 +860,7 @@
     traitCombos.forEach(function (t) { daily.daily.forEach(function (d) { overallCandidates.push(t + ' ' + d); }); });
     const overall = pickWithinRange(overallCandidates, DDI_OVERALL_RANGE);
 
-    function sectionText(category) {
-      if (category === selectedCategory) {
-        const sensitive = getSensitiveReading(category, selectedSubChoice, ddi.keywords);
-        if (sensitive) return sensitive;
-      }
-      const sub = (category === selectedCategory) ? selectedSubChoice : (CATEGORY_SUBCHOICES[category] ? CATEGORY_SUBCHOICES[category][0].key : null);
-      const value = resolveSubchoiceValue(category, ddi.categories[category], sub);
-      return (typeof value === 'string') ? value : pickWithinRange(combineSentences(value.a, value.b), DDI_SECTION_RANGE);
-    }
-
-    const sections = DDI_CORE_SECTIONS.map(function (s) { return { label: s.label, text: sectionText(s.category) }; });
+    const sections = DDI_CORE_SECTIONS.map(function (s) { return { label: s.label, text: daySectionText(ddi, s.category) }; });
     const isCore = DDI_CORE_SECTIONS.some(function (s) { return s.category === selectedCategory; });
     if (selectedCategory && !isCore) {
       sections.push({ label: CATEGORY_LABELS[selectedCategory], text: resolveCategoryMeaning(ddi, selectedCategory, selectedPeriod, selectedSubChoice) });
