@@ -1748,6 +1748,8 @@
     renderHistory();
   });
 
+  const HISTORY_MODE_LABELS = { tarot: '타로', zodiac: '별자리', ddi: '띠운세', saju: '사주', compatibility: '궁합' };
+
   const PROMISE_STATUS_LABELS = { pending: '⏳ 확인 대기', done: '✓ 했어요', partial: '△ 조금 했어요', skipped: '✗ 못 했어요' };
 
   function renderHistoryPromise(entry) {
@@ -1784,20 +1786,25 @@
           return c.name + '(' + (c.orientation === 'upright' ? '정' : '역') + ')';
         }).join(', ');
       }
-      const dateText = new Date(entry.date).toLocaleString('ko-KR');
+      const date = new Date(entry.date);
+      const dateText = date.toLocaleString('ko-KR', Object.assign(
+        date.getFullYear() === new Date().getFullYear() ? {} : { year: 'numeric' },
+        { month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }));
       const periodLabel = entry.period && PERIOD_LABELS[entry.period] ? PERIOD_LABELS[entry.period] : '오늘';
-      const categoryLabel = entry.category && CATEGORY_LABELS[entry.category] ? CATEGORY_LABELS[entry.category] : '운세';
+      const categoryLabel = entry.category && CATEGORY_LABELS[entry.category] ? CATEGORY_LABELS[entry.category] : '오늘의 운세';
       const topicText = entry.mode === 'compatibility'
         ? escapeHtml(COMPAT_SUBTYPE_LABELS[entry.subtype] + ' · ' + entry.tierLabel)
-        : escapeHtml(categoryLabel + ' · 실천 기간: ' + periodLabel);
+        : escapeHtml(categoryLabel + ' · 실천 기간 ' + periodLabel);
+      const modeLabel = HISTORY_MODE_LABELS[entry.mode] || '타로';
 
-      return '<div class="history-item">' +
-        '<p class="history-date">' + dateText + '</p>' +
+      return '<div class="history-item" data-mode="' + escapeHtml(entry.mode || 'tarot') + '">' +
+        '<div class="history-head"><span class="history-mode">' + modeLabel + '</span>' +
+        '<span class="history-date">' + escapeHtml(dateText) + '</span></div>' +
         '<p class="history-question">' + topicText + '</p>' +
         '<p class="history-cards">' + cardsText + '</p>' +
         (entry.mode === 'tarot' && entry.question ? '<p class="history-asked">질문: ' + escapeHtml(entry.question) + '</p>' : '') +
         renderHistoryPromise(entry) +
-        '<button type="button" class="history-delete-button" data-index="' + index + '">삭제</button>' +
+        '<button type="button" class="history-delete-button" data-index="' + index + '" aria-label="이 기록 삭제">삭제</button>' +
         '</div>';
     }).join('');
 

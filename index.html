@@ -24,7 +24,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600&display=swap">
 <link rel="stylesheet" href="css/style.css?v=94309ca7">
 <link rel="stylesheet" href="css/salon.css?v=602c12fb">
-<link rel="stylesheet" href="css/refresh.css?v=35dbbf16">
+<link rel="stylesheet" href="css/refresh.css?v=0d7d813a">
 </head>
 <body>
 <div id="app">
@@ -376,12 +376,15 @@
   </section>
 
   <div id="history-modal" class="hidden">
-    <div class="modal-content">
-      <h2>지난 기록</h2>
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="history-title">
+      <div class="modal-head">
+        <h2 id="history-title">지난 기록</h2>
+        <button type="button" id="history-close-button" aria-label="지난 기록 닫기">닫기</button>
+      </div>
+      <p class="modal-note">기록은 이 기기의 브라우저에만 저장됩니다.</p>
       <div id="history-list"></div>
       <div class="modal-actions">
         <button type="button" id="clear-history-button">전체 삭제</button>
-        <button type="button" id="history-close-button">닫기</button>
       </div>
     </div>
   </div>
@@ -436,7 +439,7 @@
 <script src="js/saju-interpret.js?v=8949e683"></script>
 <script src="js/compatibility-calc.js?v=445dd65e"></script>
 <script src="data/reading-guidance.js?v=b344c091"></script>
-<script src="js/app.js?v=01b120db"></script>
+<script src="js/app.js?v=e8d25f8b"></script>
 <script src="js/salon-flow.js?v=89e51729"></script>
 </body>
 </html>
