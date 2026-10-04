@@ -1,7 +1,7 @@
 const { SITE_BASE } = require('./tarot-page-data.js');
 const { GUIDE_CATEGORY_LABELS, GUIDE_CATEGORY_ORDER, GUIDE_CATEGORY_INTROS } = require('../../data/guides-data.js');
 
-var OG_IMAGE_URL = SITE_BASE + 'images/og-image.jpg';
+var OG_IMAGE_URL = SITE_BASE + 'images/og-gamanjeombang.jpg';
 var ADSENSE_SCRIPT_TAG = '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3608292673018037" crossorigin="anonymous"></script>\n';
 
 function escapeHtml(str) {

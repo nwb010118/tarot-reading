@@ -372,7 +372,7 @@ label, .category-btn, .spread-btn { font-size: 15px; }
 .promise-status { color: var(--gold); margin-left: 6px; }
 .streak { color: var(--gold); margin: 6px 0 0; font-size: 13px; }
 .shared-banner { margin: 0 0 14px; padding: 12px 16px; border: 1px dashed var(--gold); border-radius: 10px; color: var(--gold); line-height: 1.7; }
-#share-image-button, #share-link-button, .daily-share { padding: 10px 18px; border: 1px solid var(--line); border-radius: 10px; background: transparent; color: inherit; cursor: pointer; margin: 4px 4px 4px 0; }
+.daily-share { padding: 10px 18px; border: 1px solid var(--line); border-radius: 10px; background: transparent; color: inherit; cursor: pointer; margin: 4px 4px 4px 0; }
 #daily-card .daily-share { margin: 4px 0 0; padding: 5px 12px; font-size: 13px; width: auto; min-height: 0; }
 .owner-intro { margin: 4px 0 14px; color: var(--gold); font-style: italic; line-height: 1.8; }
 .owner-outro { margin-top: 16px; padding: 14px 16px; border-left: 3px solid var(--gold); background: rgba(232, 201, 130, 0.07); border-radius: 0 10px 10px 0; line-height: 1.8; }

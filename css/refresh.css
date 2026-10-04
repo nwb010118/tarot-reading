@@ -600,9 +600,7 @@ html body #daily-card .streak {
 html body #daily-card .daily-more { font-size: 14px; margin: 0 0 12px; }
 html body #daily-card .daily-more summary { color: var(--gold-strong); }
 
-html body #daily-card .daily-share,
-html body #share-image-button,
-html body #share-link-button {
+html body #daily-card .daily-share {
   border: 1px solid #d8c08f55;
   border-radius: 999px;
   color: var(--gold-strong);
@@ -611,9 +609,7 @@ html body #share-link-button {
 }
 
 html body #daily-card .daily-share { padding: 7px 18px; font-size: 13px; }
-html body #daily-card .daily-share:hover,
-html body #share-image-button:hover,
-html body #share-link-button:hover { background: #d8c08f14; }
+html body #daily-card .daily-share:hover { background: #d8c08f14; }
 
 /* ── 홈 · 모드 선택 ─────────────────────── */
 html body .mode-btn .mode-free { display: none; }
@@ -744,8 +740,6 @@ html body #summary .result-links a:hover { border-bottom-color: currentColor; }
 /* 아래쪽 버튼 줄: 공유 버튼은 테두리만, 새 리딩은 금색 주 버튼 */
 html body #screen-reading { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 html body #screen-reading > :not(button) { flex: 1 0 100%; }
-html body #screen-reading > #share-image-button,
-html body #screen-reading > #share-link-button,
 html body #screen-reading > #share-button,
 html body #screen-reading > #new-reading-button {
   flex: 0 0 auto;
@@ -771,6 +765,8 @@ html body #screen-reading > #new-reading-button {
   box-shadow: 0 10px 26px #d8c08f22;
 }
 html body #screen-reading > #new-reading-button:hover { filter: brightness(1.05); }
+/* 작은 둥근 버튼이라 운세 보기 버튼의 ↗ 장식이 글자와 겹친다 */
+html body #screen-reading > #new-reading-button::after { content: none; }
 
 /* ── 지난 기록 창 ───────────────────────── */
 html body #history-modal .modal-content {
@@ -879,8 +875,6 @@ html body #history-modal #clear-history-button:hover { background: #e0808014; }
 
 @media (max-width: 700px) {
   html body #screen-reading > #new-reading-button { flex: 1 0 100%; margin-left: 0; order: 10; }
-  html body #screen-reading > #share-image-button,
-  html body #screen-reading > #share-link-button,
   html body #screen-reading > #share-button { flex: 1 1 0; min-width: 0; padding: 10px 8px; font-size: 13px; white-space: nowrap; }
   html body #summary .reading-detail { padding: 20px 18px; }
   html body #history-modal .modal-content { max-height: 88vh; }

@@ -1,4 +1,4 @@
-var OG_IMAGE_URL = 'https://nwb010118.github.io/tarot-reading/images/og-image.jpg';
+var OG_IMAGE_URL = 'https://nwb010118.github.io/tarot-reading/images/og-gamanjeombang.jpg';
 var ADSENSE_SCRIPT_TAG = '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3608292673018037" crossorigin="anonymous"></script>\n';
 
 function escapeHtml(str) {

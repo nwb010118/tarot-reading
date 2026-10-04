@@ -44,7 +44,9 @@ function parseShareHash(hash, ctx) {
     if (!options || !options.some(function (o) { return o.key === sub; })) return null;
     result.b = sub;
   } else {
-    result.b = null;
+    // 하위 선택이 있는 주제인데 값이 빠진 링크는 첫 하위 선택으로 연다 (빈 화면 방지)
+    const options = ctx.subchoices[result.c];
+    result.b = options && options.length ? options[0].key : null;
   }
   const period = search.get('p');
   if (!period || !Object.prototype.hasOwnProperty.call(ctx.periods, period)) return null;

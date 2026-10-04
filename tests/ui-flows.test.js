@@ -19,6 +19,12 @@ async function drawReading(app, mode, setup) {
   return summary;
 }
 
+// 공유하기는 (공유 시트가 없는 jsdom에서) 제목 + 결과 링크 + 리딩 글을 복사한다. 링크는 둘째 줄.
+function sharedLink(app) {
+  const copied = app.window.__copied || '';
+  return copied.split('\n')[1] || '';
+}
+
 // 모든 결과 맨 아래에는 관련 가이드와 자주 묻는 질문 링크가 있다
 function assertResultLinks(app, guideSlug, name) {
   assert.ok(app.q('#summary .result-links a[href="guides/' + guideSlug + '.html"]'), name + ': guide link ' + guideSlug);
@@ -51,9 +57,9 @@ async function main() {
   app.click('.mode-btn[data-mode="zodiac"]');
   app.click('#draw-button');
   await wait(60);
-  app.click('#share-link-button');
+  app.click('#share-button');
   await wait(20);
-  const zLink = app.window.__copied;
+  const zLink = sharedLink(app);
   assert.ok(/[?&#]v=/.test(zLink), 'zodiac link carries the variant');
   const zOriginal = app.text('#summary').replace(/이 실천을 약속할게요/g, '');
   const zViewer = await loadApp({ hash: zLink.slice(zLink.indexOf('#')) });
@@ -272,10 +278,12 @@ async function main() {
   assert.strictEqual(history[0].promise.status, 'pending');
 
   // 7. 공유 링크: 복사한 주소에 질문이 없고, 그 주소로 열면 같은 결과
-  app.click('#share-link-button');
+  app.click('#share-button');
   await wait(20);
-  const link = app.window.__copied;
+  const link = sharedLink(app);
   assert.ok(link && link.includes('#share=tarot'), 'share link copied');
+  assert.ok(app.window.__copied.includes(app.text('#summary .reading-lead')), 'shared text carries the reading');
+  assert.ok(!app.window.__copied.includes('나도 운세 보'), 'no promo line in shared text');
   assert.ok(!decodeURIComponent(link).includes('이직'), 'question must not be in link');
   const originalSummary = app.text('#summary').replace('이 실천을 약속할게요', '').replace(/약속했어요[^.]*\./, '');
   const hash = link.slice(link.indexOf('#'));
@@ -368,6 +376,36 @@ async function main() {
   }
   assert.deepStrictEqual(three.errors, [], 'no script errors in three-card session');
   three.close();
+
+  // 뒤로 가기: 결과 → 입력 화면 → 운세 선택 순서로 한 단계씩 돌아가고, 고른 별자리는 유지된다
+  const nav = await loadApp();
+  nav.click('.mode-btn[data-mode="zodiac"]');
+  nav.click('.zodiac-btn[data-zodiac="cancer"]');
+  nav.click('#draw-button');
+  await wait(60);
+  assert.ok(nav.text('#summary h3').startsWith('게자리'), 'cancer reading');
+  nav.window.history.back();
+  await wait(60);
+  assert.strictEqual(nav.visible('#screen-reading'), false, 'back hides the result');
+  assert.strictEqual(nav.q('#flow-details').hidden, false, 'back returns to the input step');
+  assert.ok(nav.q('.zodiac-btn[data-zodiac="cancer"]').classList.contains('selected'), 'selection kept');
+  nav.window.history.forward();
+  await wait(60);
+  assert.strictEqual(nav.visible('#screen-reading'), true, 'forward shows the same result again');
+  nav.window.history.back();
+  await wait(60);
+  nav.window.history.back();
+  await wait(60);
+  assert.strictEqual(nav.q('#flow-choice').hidden, false, 'second back returns to the mode choice');
+  nav.click('.mode-btn[data-mode="zodiac"]');
+  nav.click('#draw-button');
+  await wait(60);
+  nav.click('#new-reading-button');
+  await wait(60);
+  assert.strictEqual(nav.window.history.state, null, 'new reading rewinds the pushed screens');
+  assert.strictEqual(nav.q('#flow-choice').hidden, false, 'new reading shows the mode choice');
+  assert.deepStrictEqual(nav.errors, [], 'no script errors in back navigation');
+  nav.close();
 
   // 모든 흐름에서 스크립트 오류가 없었다
   assert.deepStrictEqual(app.errors, [], 'no script errors in main session');

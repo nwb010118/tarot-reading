@@ -119,8 +119,6 @@
   const summaryEl = document.getElementById('summary');
   const newReadingButton = document.getElementById('new-reading-button');
   const shareButton = document.getElementById('share-button');
-  const shareImageButton = document.getElementById('share-image-button');
-  const shareLinkButton = document.getElementById('share-link-button');
   const sharedBanner = document.getElementById('shared-banner');
   const questionSection = document.getElementById('question-section');
   const questionInput = document.getElementById('question-input');
@@ -432,16 +430,20 @@
     return (selectedCategory && CATEGORY_SUBCHOICES[selectedCategory]) ? selectedSubChoice : null;
   }
 
+  // 이미지 카드 본문: 첫 한마디가 짧으면 이어지는 문단을 붙여 카드가 비어 보이지 않게 한다
   function firstLeadText() {
-    const el = summaryEl.querySelector('.reading-lead');
-    return el ? el.textContent.trim() : '';
+    const texts = Array.prototype.map.call(summaryEl.querySelectorAll('.reading-lead, .reading-body'), function (el) { return el.textContent.trim(); })
+      .filter(Boolean);
+    let lead = texts[0] || '';
+    if (lead.length < 70 && texts[1]) lead += ' ' + texts[1];
+    return lead;
   }
 
-  // 이미지 카드와 링크에 쓸 현재 결과를 기억한다 (params가 null이면 링크 없이 이미지만 공유)
+  // 공유에 쓸 현재 결과를 기억한다 (params가 null이면 결과 링크 대신 사이트 주소를 붙인다).
+  // 공유 시트는 클릭 직후에만 열리므로 이미지 카드는 결과가 나올 때 미리 만들어 둔다.
   function setShareState(title, images, params) {
-    shareState = { title: title, lead: firstLeadText(), images: images, params: params };
-    shareImageButton.classList.remove('hidden');
-    shareLinkButton.classList.toggle('hidden', !params);
+    const lead = firstLeadText();
+    shareState = { title: title, lead: lead, images: images, params: params, file: prepareShareFile(cardSpec(title, lead, images)) };
   }
 
   function resolveSubchoiceValue(category, value, selectedSubChoice) {
@@ -777,8 +779,6 @@
     summaryEl.innerHTML = '';
     newReadingButton.classList.add('hidden');
     shareButton.classList.add('hidden');
-    shareImageButton.classList.add('hidden');
-    shareLinkButton.classList.add('hidden');
   });
 
   function renderReadingMeaning(meaning) {
@@ -1557,56 +1557,40 @@
   const SITE_URL = 'https://nwb010118.github.io/tarot-reading/';
   const SHARE_BUTTON_LABEL = '공유하기';
 
-  function buildShareText() {
+  // 메신저 미리보기에서 링크가 잘리지 않도록 제목 바로 아래에 둔다
+  function buildShareText(link) {
     const parts = Array.prototype.map.call(
       summaryEl.querySelectorAll(SHARE_SELECTOR),
       function (el) { return el.textContent.trim(); }
     );
-    return parts.join('\n\n') + '\n\n가만점방에서 나도 운세 보러 가기\n' + SITE_URL;
+    return parts[0] + '\n' + link + (parts.length > 1 ? '\n\n' + parts.slice(1).join('\n\n') : '');
   }
-
-  function copyShareText(text) {
-    if (!navigator.clipboard) return;
-    navigator.clipboard.writeText(text).then(function () {
-      shareButton.textContent = '복사했어요!';
-      setTimeout(function () { shareButton.textContent = SHARE_BUTTON_LABEL; }, 1500);
-    }).catch(function () {
-      shareButton.textContent = '복사에 실패했어요';
-      setTimeout(function () { shareButton.textContent = SHARE_BUTTON_LABEL; }, 1500);
-    });
-  }
-
-  function shareCurrentReading() {
-    const text = buildShareText();
-    if (navigator.share) {
-      navigator.share({ text: text }).catch(function (err) {
-        if (err && err.name === 'AbortError') return;
-        copyShareText(text);
-      });
-    } else {
-      copyShareText(text);
-    }
-  }
-
-  shareButton.addEventListener('click', shareCurrentReading);
 
   function flashButton(button, text, label) {
     button.textContent = text;
     setTimeout(function () { button.textContent = label; }, 1500);
   }
 
-  // 이미지 카드를 만들어 모바일은 공유 시트로, 그 외에는 PNG 다운로드로 내보낸다
-  function shareImageCard(spec, link, button) {
-    const label = button.textContent;
-    button.disabled = true;
-    return renderShareCard(spec).then(function (blob) {
-      const file = new File([blob], 'jeomjip-' + todayKey() + '.png', { type: 'image/png' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        return navigator.share({ files: [file], text: '가만점방에서 나도 운세 보기', url: link }).catch(function (err) {
-          if (!err || err.name !== 'AbortError') throw err;
-        });
-      }
-      const url = URL.createObjectURL(blob);
+  function cardSpec(title, lead, images) {
+    return { title: title, lead: lead, images: images, dateText: readingDay().replace(/-/g, '. '), siteText: SITE_URL.replace('https://', '') };
+  }
+
+  // 이미지 카드 파일을 미리 만든다. 캔버스를 못 쓰는 환경이면 file은 null로 끝난다.
+  function prepareShareFile(spec) {
+    const holder = { file: undefined };
+    holder.promise = Promise.resolve().then(function () { return renderShareCard(spec); }).then(function (blob) {
+      return new File([blob], 'gamanjeombang-' + todayKey() + '.png', { type: 'image/png' });
+    }).catch(function () { return null; }).then(function (file) {
+      holder.file = file;
+      return file;
+    });
+    return holder;
+  }
+
+  // 공유 시트가 없으면 글(링크 포함)은 복사하고 이미지는 내려받는다
+  function shareFallback(text, file, button) {
+    if (file) {
+      const url = URL.createObjectURL(file);
       const a = document.createElement('a');
       a.href = url;
       a.download = file.name;
@@ -1614,29 +1598,48 @@
       a.click();
       a.remove();
       setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-      flashButton(button, '이미지를 저장했어요!', label);
+    }
+    if (!navigator.clipboard) {
+      if (file) flashButton(button, '이미지를 저장했어요!', SHARE_BUTTON_LABEL);
+      return;
+    }
+    navigator.clipboard.writeText(text).then(function () {
+      flashButton(button, file ? '이미지 저장 · 글 복사 완료!' : '복사했어요!', SHARE_BUTTON_LABEL);
     }).catch(function () {
-      flashButton(button, '이미지를 만들지 못했어요', label);
-    }).then(function () { button.disabled = false; });
+      flashButton(button, '복사에 실패했어요', SHARE_BUTTON_LABEL);
+    });
   }
 
-  function cardSpec(title, lead, images) {
-    return { title: title, lead: lead, images: images, dateText: readingDay().replace(/-/g, '. '), siteText: SITE_URL.replace('https://', '') };
+  function sendShare(text, file, button) {
+    const ignoreAbort = function (next) {
+      return function (err) { if (!err || err.name !== 'AbortError') next(); };
+    };
+    if (file && navigator.canShare && navigator.canShare({ files: [file], text: text })) {
+      navigator.share({ files: [file], text: text }).catch(ignoreAbort(function () { shareFallback(text, file, button); }));
+    } else if (navigator.share) {
+      navigator.share({ text: text }).catch(ignoreAbort(function () { shareFallback(text, file, button); }));
+    } else {
+      shareFallback(text, file, button);
+    }
   }
 
-  shareImageButton.addEventListener('click', function () {
+  // 이미지 카드 + 리딩 글 + 링크를 한 번에 보낸다
+  function shareBundle(holder, text, button) {
+    if (holder.file !== undefined) {
+      sendShare(text, holder.file, button);
+      return;
+    }
+    button.disabled = true;
+    holder.promise.then(function (file) {
+      button.disabled = false;
+      sendShare(text, file, button);
+    });
+  }
+
+  shareButton.addEventListener('click', function () {
     if (!shareState) return;
     const link = shareState.params ? SITE_URL + buildShareHash(shareState.params) : SITE_URL;
-    shareImageCard(cardSpec(shareState.title, shareState.lead, shareState.images), link, shareImageButton);
-  });
-
-  shareLinkButton.addEventListener('click', function () {
-    if (!shareState || !shareState.params || !navigator.clipboard) return;
-    navigator.clipboard.writeText(SITE_URL + buildShareHash(shareState.params)).then(function () {
-      flashButton(shareLinkButton, '링크를 복사했어요!', '링크 복사');
-    }).catch(function () {
-      flashButton(shareLinkButton, '복사에 실패했어요', '링크 복사');
-    });
+    shareBundle(shareState.file, buildShareText(link), shareButton);
   });
 
   newReadingButton.addEventListener('click', function () {
@@ -1845,13 +1848,17 @@
       (slug ? '<a class="card-detail-link" href="tarot/' + slug + '.html">이 카드 자세히 보기 →</a>' : '') +
       (shared ? '<p class="streak">친구가 공유한 오늘의 한 장이에요.</p>' : '<p class="editorial-meta">오늘 날짜와 이 기기를 기준으로 뽑았어요. 오늘은 계속 같은 카드이고, 내일이면 새 카드가 나옵니다.</p>') +
       '</details>' +
-      '<button type="button" class="daily-share">이미지로 공유</button></div>';
+      '<button type="button" class="daily-share">공유하기</button></div>';
     const dailyShare = body.querySelector('.daily-share');
+    const title = item.card.name + ' (' + label + ')';
+    const lead = (keywords ? '키워드: ' + keywords.join(' · ') + '. ' : '') + (advice || '');
+    const spec = cardSpec(title, lead, [{ src: item.card.image, reversed: orientation === 'reversed' }]);
+    spec.dateText = day.replace(/-/g, '. ');
+    const holder = prepareShareFile(spec);
     dailyShare.addEventListener('click', function () {
-      const lead = (keywords ? '키워드: ' + keywords.join(' · ') + '. ' : '') + (advice || '');
-      const spec = cardSpec(item.card.name + ' (' + label + ')', lead, [{ src: item.card.image, reversed: orientation === 'reversed' }]);
-      spec.dateText = day.replace(/-/g, '. ');
-      shareImageCard(spec, SITE_URL + buildShareHash({ kind: 'daily', k: owner, d: day }), dailyShare);
+      const link = SITE_URL + buildShareHash({ kind: 'daily', k: owner, d: day });
+      const text = '오늘의 한 장 · ' + title + '\n' + link + '\n\n' + lead;
+      shareBundle(holder, text, dailyShare);
     });
   }
 

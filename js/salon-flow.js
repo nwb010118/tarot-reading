@@ -65,14 +65,46 @@
       document.getElementById('screen-start').scrollIntoView({block: 'start', behavior: 'instant'});
     }
   }
+  // 한 페이지 안의 화면 전환(선택 → 입력 → 결과)을 브라우저 기록에 남겨 뒤로 가기가 직전 화면으로 가게 한다.
+  // gmDepth는 이 페이지가 쌓은 기록 수라서, 처음 화면으로 돌아갈 때 그만큼만 되감는다.
+  const screenStart = document.getElementById('screen-start');
+  const reading = document.getElementById('screen-reading');
+  function depth() { return (history.state && history.state.gmDepth) || 0; }
+  function pushScreen(screen) {
+    history.pushState({ gmScreen: screen, gmDepth: depth() + 1 }, '');
+  }
+  function rewindToStart() {
+    if (depth() > 0) history.go(-depth());
+  }
+  function showScreen(screen) {
+    const hasResult = document.getElementById('summary').innerHTML || document.getElementById('cards-container').innerHTML;
+    const canShowReading = screen === 'reading' && Boolean(hasResult);
+    reading.classList.toggle('hidden', !canShowReading);
+    screenStart.classList.toggle('hidden', Boolean(canShowReading));
+    if (!canShowReading) setStep(screen === 'details' || screen === 'reading', false);
+    (canShowReading ? reading : screenStart).scrollIntoView({block: 'start', behavior: 'instant'});
+  }
+  window.addEventListener('popstate', event => showScreen(event.state && event.state.gmScreen));
   modes.forEach(button => button.addEventListener('click', () => {
     syncMode();
     setStep(true, true);
+    pushScreen('details');
   }));
   document.querySelectorAll('#category-select button, #period-select button, #spread-select button').forEach(button => button.addEventListener('click', syncOptions));
-  back.addEventListener('click', () => setStep(false, true));
-  document.getElementById('new-reading-button').addEventListener('click', () => setStep(false, true));
-  const reading = document.getElementById('screen-reading');
+  back.addEventListener('click', () => {
+    setStep(false, true);
+    rewindToStart();
+  });
+  document.getElementById('new-reading-button').addEventListener('click', () => {
+    setStep(false, true);
+    rewindToStart();
+  });
+  // 결과는 항상 맨 위부터 보여준다 (입력 오류로 결과 화면이 안 열렸으면 그대로 둔다)
+  document.getElementById('draw-button').addEventListener('click', () => {
+    if (reading.classList.contains('hidden')) return;
+    pushScreen('reading');
+    reading.scrollIntoView({block: 'start', behavior: 'instant'});
+  });
   const actions = document.createElement('div');
   actions.className = 'reading-top-actions';
   [['공유하기', 'share-button'], ['새 리딩 시작', 'new-reading-button']].forEach(([label, id]) => {
