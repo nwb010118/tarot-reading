@@ -140,6 +140,8 @@ label, .category-btn, .spread-btn { font-size: 15px; }
 .flow-next:hover { background: #ebd8b7; }
 .flow-heading { margin-bottom: 28px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
 .flow-heading h2 { font-size: 26px; font-weight: 600; letter-spacing: -1px; margin: 20px 0 8px; }
+/* 화면 전환 때 스크립트로 옮긴 초점이라 입력칸처럼 보이는 테두리는 그리지 않는다 */
+.flow-heading h2:focus { outline: none; }
 .flow-heading p { color: #b4bfcd; font-size: 15px; line-height: 1.8; margin: 0; }
 .flow-back { background: none; border: 0; padding: 8px 0; color: var(--gold); font-size: 14px; cursor: pointer; min-height: 44px; }
 [hidden] { display: none !important; }

@@ -458,6 +458,24 @@ async function main() {
   lunar.click('#draw-button');
   await wait(60);
   assert.strictEqual(lunar.visible('#saju-error'), false, 'real leap month accepted');
+  // 아직 오지 않은 날짜는 받지 않는다 (띠 출생연도, 사주 생년월일)
+  const nextYear = new Date().getFullYear() + 1;
+  lunar.click('#new-reading-button');
+  await wait(30);
+  lunar.click('.mode-btn[data-mode="ddi"]');
+  lunar.type('#birth-year-input', String(nextYear));
+  lunar.click('#draw-button');
+  await wait(30);
+  assert.ok(lunar.visible('#ddi-error'), 'future birth year rejected');
+  lunar.click('#new-reading-button');
+  await wait(30);
+  lunar.click('.mode-btn[data-mode="saju"]');
+  lunar.click('#calendar-type-select button[data-calendar-type="solar"]');
+  lunar.type('#saju-date-input', nextYear + '-01-15');
+  lunar.click('#time-unknown-checkbox');
+  lunar.click('#draw-button');
+  await wait(30);
+  assert.ok(lunar.text('#saju-error').includes('오늘 이후의 날짜'), 'future saju date rejected: ' + lunar.text('#saju-error'));
   assert.deepStrictEqual(lunar.errors, [], 'no script errors in lunar input');
   lunar.close();
 

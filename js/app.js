@@ -166,6 +166,27 @@
 
   updateZodiacResult();
 
+  // 아직 오지 않은 날짜로는 운세를 볼 수 없게 한다 (출생연도는 올해까지)
+  const CURRENT_YEAR = new Date().getFullYear();
+  const BIRTH_YEAR_RANGE_TEXT = '1900년부터 ' + CURRENT_YEAR + '년 사이';
+  function isFutureDate(year, month, day) {
+    const now = new Date();
+    const today = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+    return year * 10000 + month * 100 + day > today;
+  }
+  const FUTURE_DATE_MESSAGE = '오늘 이후의 날짜예요. 생년월일을 다시 확인해주세요.';
+  (function limitBirthInputs() {
+    const todayText = todayKey();
+    ['birth-year-input', 'compat-ddi-year1-input', 'compat-ddi-year2-input'].forEach(function (id) {
+      const el = document.getElementById(id);
+      if (el) el.max = String(CURRENT_YEAR);
+    });
+    ['birth-date-input', 'compat-ddi-date1-input', 'compat-ddi-date2-input', 'saju-date-input', 'compat-saju-date1-input', 'compat-saju-date2-input'].forEach(function (id) {
+      const el = document.getElementById(id);
+      if (el && (!el.max || el.max > todayText)) el.max = todayText;
+    });
+  })();
+
   // 연도 입력과 (선택) 생일을 합쳐 설날 기준 띠 연도를 구한다. 생일 연도가 있으면 연도 칸에 맞춘다.
   function resolveDdiYear(yearInput, dateInput, personText) {
     let year = Number(yearInput.value);
@@ -181,7 +202,8 @@
       day = parts[2];
     }
     // 소수(1990.5)나 범위 밖 연도는 띠를 정할 수 없다
-    if (!Number.isInteger(year) || year < 1900 || year > 2100) return null;
+    if (!Number.isInteger(year) || year < 1900 || year > CURRENT_YEAR) return null;
+    if (month && isFutureDate(year, month, day)) return null;
     const effective = getEffectiveDdiYear(year, month, day, lunarToSolar);
     const note = effective.adjusted
       ? personText + year + '년 ' + month + '월 ' + day + '일생은 설날(' + effective.seollal.month + '월 ' + effective.seollal.day + '일) 이전이라 ' + effective.year + '년 ' + getDdiByYear(effective.year).name_kr + '로 계산했어요.'
@@ -712,7 +734,7 @@
     if (selectedMode === 'ddi') {
       if (!selectedBirthYear) {
         ddiErrorEl.textContent = birthYearInput.value
-          ? '태어난 연도를 1900~2100년 사이의 네 자리 숫자로 입력해주세요.'
+          ? '태어난 연도를 ' + BIRTH_YEAR_RANGE_TEXT + '의 네 자리 숫자로 입력해주세요.'
           : '태어난 연도를 입력해주세요.';
         ddiErrorEl.classList.remove('hidden');
         birthYearInput.focus();
@@ -1069,6 +1091,12 @@
       }
     }
 
+    if (isFutureDate(year, month, day)) {
+      sajuErrorEl.textContent = FUTURE_DATE_MESSAGE;
+      sajuErrorEl.classList.remove('hidden');
+      return null;
+    }
+
     let hour = 0;
     let minute = 0;
     if (!selectedTimeUnknown) {
@@ -1083,24 +1111,24 @@
   function resolveCompatDdiInput() {
     compatErrorEl.classList.add('hidden');
     if (!compatDdiYear1Input.value && !compatDdiDate1Input.value) {
-      compatErrorEl.textContent = '사람 1의 태어난 연도를 1900~2100년 사이로 입력해주세요.';
+      compatErrorEl.textContent = '사람 1의 태어난 연도를 ' + BIRTH_YEAR_RANGE_TEXT + '로 입력해주세요.';
       compatErrorEl.classList.remove('hidden');
       return null;
     }
     if (!compatDdiYear2Input.value && !compatDdiDate2Input.value) {
-      compatErrorEl.textContent = '사람 2의 태어난 연도를 1900~2100년 사이로 입력해주세요.';
+      compatErrorEl.textContent = '사람 2의 태어난 연도를 ' + BIRTH_YEAR_RANGE_TEXT + '로 입력해주세요.';
       compatErrorEl.classList.remove('hidden');
       return null;
     }
     const person1 = resolveDdiYear(compatDdiYear1Input, compatDdiDate1Input, '사람 1: ');
     const person2 = resolveDdiYear(compatDdiYear2Input, compatDdiDate2Input, '사람 2: ');
     if (!person1) {
-      compatErrorEl.textContent = '사람 1의 태어난 연도를 1900~2100년 사이로 입력해주세요.';
+      compatErrorEl.textContent = '사람 1의 태어난 연도를 ' + BIRTH_YEAR_RANGE_TEXT + '로 입력해주세요.';
       compatErrorEl.classList.remove('hidden');
       return null;
     }
     if (!person2) {
-      compatErrorEl.textContent = '사람 2의 태어난 연도를 1900~2100년 사이로 입력해주세요.';
+      compatErrorEl.textContent = '사람 2의 태어난 연도를 ' + BIRTH_YEAR_RANGE_TEXT + '로 입력해주세요.';
       compatErrorEl.classList.remove('hidden');
       return null;
     }
@@ -1155,6 +1183,12 @@
         compatErrorEl.classList.remove('hidden');
         return null;
       }
+    }
+
+    if (isFutureDate(year, month, day)) {
+      compatErrorEl.textContent = personLabel + ': ' + FUTURE_DATE_MESSAGE;
+      compatErrorEl.classList.remove('hidden');
+      return null;
     }
 
     return { year: year, month: month, day: day };
