@@ -422,6 +422,30 @@ async function main() {
   assert.ok(sharedLink(nav).includes('#share=zodiac'), 'desktop copies the text with the link');
   nav.close();
 
+  // 음력 입력: 아이폰 숫자 키패드에는 '-'가 없으므로 숫자 8자리도 받는다 (사주·궁합)
+  const lunar = await loadApp();
+  lunar.click('.mode-btn[data-mode="saju"]');
+  lunar.click('#calendar-type-select button[data-calendar-type="lunar"]');
+  lunar.type('#saju-lunar-date-input', '19900215');
+  lunar.click('#time-unknown-checkbox');
+  lunar.click('#draw-button');
+  await wait(60);
+  assert.strictEqual(lunar.visible('#saju-error'), false, 'saju lunar accepts 8 digits: ' + lunar.text('#saju-error'));
+  assert.ok(lunar.text('#summary h3').includes('일간'), 'saju lunar reading shown');
+  lunar.click('#new-reading-button');
+  await wait(30);
+  lunar.click('.mode-btn[data-mode="compatibility"]');
+  lunar.click('.compat-subtype-btn[data-compat-subtype="saju"]');
+  lunar.click('#compat-calendar-type-select button[data-calendar-type="lunar"]');
+  lunar.type('#compat-saju-lunar-date1-input', '1990.2.15');
+  lunar.type('#compat-saju-lunar-date2-input', '19920815');
+  lunar.click('#draw-button');
+  await wait(60);
+  assert.strictEqual(lunar.visible('#compat-error'), false, 'compat lunar accepts dots and 8 digits: ' + lunar.text('#compat-error'));
+  assert.ok(lunar.text('#summary h3').includes('궁합'), 'compat lunar reading shown');
+  assert.deepStrictEqual(lunar.errors, [], 'no script errors in lunar input');
+  lunar.close();
+
   // 모든 흐름에서 스크립트 오류가 없었다
   assert.deepStrictEqual(app.errors, [], 'no script errors in main session');
   console.log('ui-flows ok');

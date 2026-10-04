@@ -104,6 +104,22 @@ function lunarToSolar(lunarYear, lunarMonth, lunarDay, isIntercalation) {
   return { year: solarYear, month: solarMonth, day: solarDay };
 }
 
+// 음력 생년월일 글자를 읽는다. 아이폰 숫자 키패드에는 '-'가 없어서 19900215처럼 숫자만 쓰거나
+// 점·빗금·공백·'년 월 일'로 나눠 써도 받는다. 연도는 네 자리만. 읽을 수 없으면 null.
+function parseLunarDateText(text) {
+  const t = String(text || '').trim();
+  let m = /^(\d{4})(\d{2})(\d{2})$/.exec(t);
+  if (!m) m = /^(\d{4})\D+(\d{1,2})\D+(\d{1,2})\D*$/.exec(t);
+  if (!m) return null;
+  return { year: Number(m[1]), month: Number(m[2]), day: Number(m[3]) };
+}
+
+// 그 해의 윤달(1~12). 윤달이 없거나 표 범위 밖이면 0.
+function getLunarLeapMonth(year) {
+  const data = getLunarRawData(year);
+  return data === undefined ? 0 : getLunarIntercalationMonth(data);
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { lunarToSolar };
+  module.exports = { lunarToSolar, parseLunarDateText, getLunarLeapMonth };
 }

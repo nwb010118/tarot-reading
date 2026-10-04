@@ -977,7 +977,7 @@
   function resolveSajuInput() {
     sajuErrorEl.classList.add('hidden');
 
-    // 음력 입력은 양력 <input type="date">가 아니라 별도의 텍스트 입력(YYYY-MM-DD)을 사용한다.
+    // 음력 입력은 양력 <input type="date">가 아니라 별도의 텍스트 입력(19900215, 1990-02-15 등)을 사용한다.
     // 양력 달력의 일수 제한(예: 2월 28/29일)이 음력(29/30일)에는 적용되지 않기 때문.
     const activeDateInput = selectedCalendarType === 'lunar' ? sajuLunarDateInput : sajuDateInput;
 
@@ -992,16 +992,16 @@
       return null;
     }
 
-    if (selectedCalendarType === 'lunar' && !/^\d{4}-\d{1,2}-\d{1,2}$/.test(activeDateInput.value.trim())) {
-      sajuErrorEl.textContent = '음력 생년월일은 YYYY-MM-DD 형식으로 입력해주세요.';
+    // 양력 칸은 항상 1990-02-15 꼴이라 같은 함수로 읽는다
+    const parsed = parseLunarDateText(activeDateInput.value);
+    if (!parsed) {
+      sajuErrorEl.textContent = '음력 생년월일을 19900215처럼 숫자 8자리로 입력해주세요.';
       sajuErrorEl.classList.remove('hidden');
       return null;
     }
-
-    const dateParts = activeDateInput.value.trim().split('-').map(Number);
-    let year = dateParts[0];
-    let month = dateParts[1];
-    let day = dateParts[2];
+    let year = parsed.year;
+    let month = parsed.month;
+    let day = parsed.day;
 
     if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day) || year < 1900 || year > 2050) {
       sajuErrorEl.textContent = '1900년~2050년 사이의 생년월일만 지원합니다.';
@@ -1077,19 +1077,18 @@
       return null;
     }
 
-    if (selectedCompatCalendarType === 'lunar' && !/^\d{4}-\d{1,2}-\d{1,2}$/.test(activeInput.value.trim())) {
-      compatErrorEl.textContent = personLabel + '의 음력 생년월일은 YYYY-MM-DD 형식으로 입력해주세요.';
+    const parsed = parseLunarDateText(activeInput.value);
+    if (!parsed) {
+      compatErrorEl.textContent = personLabel + '의 음력 생년월일을 19900215처럼 숫자 8자리로 입력해주세요.';
       compatErrorEl.classList.remove('hidden');
       return null;
     }
-
-    const dateParts = activeInput.value.trim().split('-').map(Number);
-    let year = dateParts[0];
-    let month = dateParts[1];
-    let day = dateParts[2];
+    let year = parsed.year;
+    let month = parsed.month;
+    let day = parsed.day;
 
     if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day) || year < 1900 || year > 2050) {
-      compatErrorEl.textContent = personLabel + '은(는) 1900년~2050년 사이의 생년월일만 지원합니다.';
+      compatErrorEl.textContent = personLabel + '의 생년월일은 1900년~2050년 사이만 지원합니다.';
       compatErrorEl.classList.remove('hidden');
       return null;
     }
@@ -1106,7 +1105,7 @@
       day = solar.day;
 
       if (year < 1900 || year > 2050) {
-        compatErrorEl.textContent = personLabel + '은(는) 1900년~2050년 사이의 생년월일만 지원합니다.';
+        compatErrorEl.textContent = personLabel + '의 생년월일은 1900년~2050년 사이만 지원합니다.';
         compatErrorEl.classList.remove('hidden');
         return null;
       }
