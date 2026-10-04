@@ -489,6 +489,23 @@
 
   const ONECARD_RANGE = { min: 150, max: 200 };
 
+  // 한 결과 안에서 '~시기입니다'가 거듭 나오면 단조로워서, 두 번째부터 '때입니다'·'흐름입니다'로 돌려 쓴다
+  const PERIOD_ENDING_ALTERNATIVES = ['때입니다', '흐름입니다'];
+  function varyPeriodEndings(texts) {
+    let seen = 0;
+    return texts.map(function (t) {
+      return t.replace(/시기입니다(?=[.!?])/g, function () {
+        seen += 1;
+        return seen === 1 ? '시기입니다' : PERIOD_ENDING_ALTERNATIVES[(seen - 2) % PERIOD_ENDING_ALTERNATIVES.length];
+      });
+    });
+  }
+
+  function varySectionEndings(sections) {
+    const texts = varyPeriodEndings(sections.map(function (s) { return s.text; }));
+    sections.forEach(function (s, i) { s.text = texts[i]; });
+  }
+
   function combineSentences(listA, listB) {
     const out = [];
     listA.forEach(function (a) { listB.forEach(function (b) { out.push(a + ' ' + b); }); });
@@ -540,10 +557,13 @@
 
   // 3카드 결과: 위치별 카드 세 장과 하나의 이야기로 잇는 종합
   function renderThreeCardDetails(draw, category) {
+    const positionTexts = varyPeriodEndings(draw.map(function (item, index) {
+      const sensitive = getSensitiveReading(category, selectedSubChoice, item.card.keywords && item.card.keywords[item.orientation]);
+      return threeCardPositionText(item, THREECARD_POSITIONS[index].key, category, sensitive);
+    }));
     const blocks = draw.map(function (item, index) {
       const pos = THREECARD_POSITIONS[index];
-      const sensitive = getSensitiveReading(category, selectedSubChoice, item.card.keywords && item.card.keywords[item.orientation]);
-      const text = threeCardPositionText(item, pos.key, category, sensitive);
+      const text = positionTexts[index];
       const orientationLabel = item.orientation === 'upright' ? '정방향' : '역방향';
       const slug = (typeof TAROT_SLUGS !== 'undefined') ? TAROT_SLUGS[item.card.cardId] : null;
       return '<div class="reading-detail">' +
@@ -835,6 +855,7 @@
     zodiac.advice.forEach(function (a) { daily.tip.forEach(function (t) { adviceCandidates.push(a + ' ' + t); }); });
     const advice = pickWithinRange(adviceCandidates, tight ? { min: 45, max: 49 } : DDI_ADVICE_RANGE);
     const keywords = pickKeywords(zodiac.keywords, 3);
+    varySectionEndings(sections);
 
     return '<div class="reading-detail zodiac-day">' +
       '<h4>오늘의 마음</h4>' + renderReadingMeaning(overall) +
@@ -927,6 +948,7 @@
     }
     const numbers = shuffled.slice(0, 2).sort(function (x, y) { return x - y; });
     const color = pickRandom(daily.colors);
+    varySectionEndings(sections);
 
     return '<div class="reading-detail ddi-day">' +
       '<h4>오늘의 총운</h4>' + renderReadingMeaning(overall) +
