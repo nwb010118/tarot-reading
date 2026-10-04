@@ -888,3 +888,6 @@ html body #history-modal #clear-history-button:hover { background: #e0808014; }
   html body #history-modal .modal-actions { padding-left: 18px; padding-right: 18px; }
   html body #history-modal .modal-note { padding-left: 18px; padding-right: 18px; }
 }
+
+/* 사주: 제목 아래 '일간' 풀이 한 줄 */
+html body #summary .saju-plain { margin: -4px auto 14px; max-width: 520px; text-align: center; font-size: 14px; line-height: 1.6; color: var(--muted); }

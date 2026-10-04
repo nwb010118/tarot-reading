@@ -256,7 +256,7 @@ const SAJU_REMEDY_ELEMENT = {
 const SAJU_REMEDY_BALANCED = '오행이 고르게 자리하고 있어 특정한 색이나 방향에 기대기보다 지금의 생활 리듬을 지키는 쪽이 어울립니다. 규칙적인 수면과 식사가 가장 좋은 개운 습관이에요.';
 
 // 총운 섹션의 계산 요약 문장. {ilgan}, {month}, {counts}, {strong}에는 계산된 값이 들어간다.
-const SAJU_CHART_LINE = '이 명식의 일간은 {ilgan}이고 태어난 달의 오행은 {month}입니다. 오행 분포는 {counts}이며, 가장 두드러지는 오행은 {strong}입니다.';
+const SAJU_CHART_LINE = '나를 나타내는 일간은 {ilgan}이고, 태어난 달의 기운은 {month}입니다. 다섯 기운(오행)은 {counts}이며, 가장 두드러지는 기운은 {strong}입니다.';
 
 // 일간 오행별로 일하는 방식과 어울리는 역할의 결(재물과 직업 섹션). 직업을 단정하지 않는 성향 설명이다.
 const SAJU_WORK_ELEMENT = {

@@ -1269,9 +1269,9 @@
     const group = SAJU_GROUP_TEXT[interp.dominantGroup];
     const season = SAJU_SEASON_RELATION[interp.seasonRelation].replace('{season}', SAJU_SEASON_LABEL[interp.monthElement]);
 
-    const chartLine = SAJU_CHART_LINE.replace('{ilgan}', ilgan.name_kr).replace('{month}', interp.monthElement)
-      .replace('{counts}', ['목', '화', '토', '금', '수'].map(function (el) { return el + ' ' + counts[el]; }).join(' '))
-      .replace('{strong}', interp.strongElement);
+    const chartLine = SAJU_CHART_LINE.replace('{ilgan}', ilgan.name_kr).replace('{month}', elementWithMeaning(interp.monthElement))
+      .replace('{counts}', elementCountsText(counts))
+      .replace('{strong}', elementWithMeaning(interp.strongElement));
     const overallHtml = renderReadingMeaning(resolveMeaningText(ilgan.trait)) +
       sajuParagraphs([pickRandom(t.overall), chartLine, balanceText, season, group.lead]);
     const moneyHtml = sajuParagraphs([daySectionText(ilgan, 'money'), daySectionText(ilgan, 'career'), pickRandom(t.work), SAJU_WORK_ELEMENT[interp.dayElement], group.money]);
@@ -1307,7 +1307,7 @@
 
     const counts = getElementCounts(saju);
     const elementHtml = '<p class="element-summary">' +
-      ['목', '화', '토', '금', '수'].map(function (el) { return el + counts[el]; }).join(' ') +
+      ['목', '화', '토', '금', '수'].map(function (el) { return elementWithMeaning(el) + ' ' + counts[el]; }).join(' · ') +
       '</p>';
 
     let daeunHtml = '';
@@ -1365,7 +1365,7 @@
     const sectionsHtml = renderSajuSections(ilgan, balanceText, interp, counts);
 
     const voiceKey = [JSON.stringify(input), selectedGender, selectedCategory, selectedSubChoice, selectedPeriod].join('|');
-    summaryEl.innerHTML = '<h3>' + heading + '</h3>' + renderOwnerIntro('saju', voiceKey) +
+    summaryEl.innerHTML = '<h3>' + heading + '</h3>' + ilganPlainLine(ilgan) + renderOwnerIntro('saju', voiceKey) +
       sectionsHtml +
       myeongsikHtml + elementHtml +
       (daeunHtml ? '<details class="fortune-tables"><summary>대운 · 세운 · 월운 자세히 보기</summary>' + daeunHtml + seunHtml + wolunHtml + '</details>' : '') +
@@ -1390,6 +1390,28 @@
     newReadingButton.classList.remove('hidden');
     setShareState(heading, [], null);
     shareButton.classList.remove('hidden');
+  }
+
+  // 사주를 처음 보는 사람도 읽을 수 있도록 오행에 뜻을 붙이고, 일간을 한 줄로 풀어 준다
+  const ELEMENT_MEANING = { '목': '나무', '화': '불', '토': '흙', '금': '쇠', '수': '물' };
+  const ILGAN_PLAIN = {
+    '갑목': '곧게 자라는 큰 나무', '을목': '풀과 꽃 같은 여린 나무', '병화': '세상을 비추는 태양', '정화': '주변을 밝히는 촛불',
+    '무토': '든든한 큰 산', '기토': '곡식을 키우는 밭흙', '경금': '바위나 무쇠 같은 단단한 쇠', '신금': '다듬어진 보석',
+    '임수': '넓고 깊은 바다', '계수': '땅을 적시는 비와 이슬'
+  };
+  function elementWithMeaning(el) {
+    return ELEMENT_MEANING[el] ? el + '(' + ELEMENT_MEANING[el] + ')' : el;
+  }
+  function elementCountsText(counts) {
+    return ['목', '화', '토', '금', '수'].map(function (el) { return ELEMENT_MEANING[el] + ' ' + counts[el]; }).join(', ');
+  }
+  function topicJosa(word) {
+    const code = word.charCodeAt(word.length - 1) - 0xAC00;
+    return (code >= 0 && code % 28 !== 0) ? '은' : '는';
+  }
+  function ilganPlainLine(ilgan) {
+    const plain = ILGAN_PLAIN[ilgan.name_kr];
+    return '<p class="saju-plain">일간은 사주에서 ‘나’를 나타내는 글자예요.' + (plain ? ' ' + ilgan.name_kr + topicJosa(ilgan.name_kr) + ' ' + plain + '의 기운이에요.' : '') + '</p>';
   }
 
   function saveSajuReading(input, saju) {
