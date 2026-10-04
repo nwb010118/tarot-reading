@@ -417,6 +417,8 @@ async function main() {
   nav.click('#share-button');
   await wait(30);
   assert.strictEqual(sheetUsed, false, 'desktop does not open the OS share sheet');
+  assert.strictEqual(nav.visible('#save-image-button'), true, 'separate save-image button on the result');
+  assert.strictEqual(nav.q('#daily-card-body .daily-save').textContent, '이미지 저장', 'daily card has its own save button');
   assert.ok(sharedLink(nav).includes('#share=zodiac'), 'desktop copies the text with the link');
   nav.close();
 
