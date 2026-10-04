@@ -443,6 +443,21 @@ async function main() {
   await wait(60);
   assert.strictEqual(lunar.visible('#compat-error'), false, 'compat lunar accepts dots and 8 digits: ' + lunar.text('#compat-error'));
   assert.ok(lunar.text('#summary h3').includes('궁합'), 'compat lunar reading shown');
+  // 윤달이 아닌 달에 '윤달이에요'를 고르면 조용히 평달로 계산하지 않고 알려준다 (2023년 윤달은 2월)
+  lunar.click('#new-reading-button');
+  await wait(30);
+  lunar.click('.mode-btn[data-mode="saju"]');
+  lunar.click('#calendar-type-select button[data-calendar-type="lunar"]');
+  lunar.type('#saju-lunar-date-input', '20230310');
+  lunar.click('#intercalation-checkbox');
+  lunar.click('#time-unknown-checkbox');
+  lunar.click('#draw-button');
+  await wait(30);
+  assert.ok(lunar.visible('#saju-error') && lunar.text('#saju-error').includes('2023년의 윤달은 2월'), 'wrong leap month is reported: ' + lunar.text('#saju-error'));
+  lunar.type('#saju-lunar-date-input', '20230210');
+  lunar.click('#draw-button');
+  await wait(60);
+  assert.strictEqual(lunar.visible('#saju-error'), false, 'real leap month accepted');
   assert.deepStrictEqual(lunar.errors, [], 'no script errors in lunar input');
   lunar.close();
 

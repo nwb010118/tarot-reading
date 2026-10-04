@@ -973,6 +973,15 @@
     currentEntryId = saveReading(storage, entry)[0].id;
   }
 
+  // '윤달이에요'를 골랐는데 그 달이 윤달이 아니면 안내 문구를, 맞으면 빈 문자열을 돌려준다
+  function leapMonthMismatch(year, month, personText) {
+    const leap = getLunarLeapMonth(year);
+    if (leap === month) return '';
+    return personText + (leap
+      ? year + '년의 윤달은 ' + leap + '월이에요. 음력 ' + month + '월이 맞다면 ‘윤달이에요’ 체크를 풀어주세요.'
+      : year + '년에는 윤달이 없어요. ‘윤달이에요’ 체크를 풀어주세요.');
+  }
+
   // 입력을 검증하고 calculateSaju에 넘길 형태로 정규화. 실패 시 null을 반환하고 에러 메시지를 표시.
   function resolveSajuInput() {
     sajuErrorEl.classList.add('hidden');
@@ -1010,6 +1019,12 @@
     }
 
     if (selectedCalendarType === 'lunar') {
+      const leapError = selectedIntercalation ? leapMonthMismatch(year, month, '') : '';
+      if (leapError) {
+        sajuErrorEl.textContent = leapError;
+        sajuErrorEl.classList.remove('hidden');
+        return null;
+      }
       const solar = lunarToSolar(year, month, day, selectedIntercalation);
       if (!solar) {
         sajuErrorEl.textContent = '입력한 음력 날짜를 양력으로 변환할 수 없습니다. 날짜를 다시 확인해주세요.';
@@ -1094,6 +1109,12 @@
     }
 
     if (selectedCompatCalendarType === 'lunar') {
+      const leapError = intercalation ? leapMonthMismatch(year, month, personLabel + ': ') : '';
+      if (leapError) {
+        compatErrorEl.textContent = leapError;
+        compatErrorEl.classList.remove('hidden');
+        return null;
+      }
       const solar = lunarToSolar(year, month, day, intercalation);
       if (!solar) {
         compatErrorEl.textContent = personLabel + '의 음력 날짜를 양력으로 변환할 수 없습니다. 날짜를 다시 확인해주세요.';
