@@ -418,6 +418,15 @@ async function main() {
   await wait(30);
   assert.strictEqual(sheetUsed, false, 'desktop does not open the OS share sheet');
   assert.strictEqual(nav.visible('#save-image-button'), true, 'separate save-image button on the result');
+
+  // 휴대폰: 공유 시트로 글과 링크만 보낸다 (이미지 파일은 이미지 저장 버튼으로만)
+  let sheetPayload = null;
+  Object.defineProperty(nav.window.navigator, 'userAgentData', { value: { mobile: true }, configurable: true });
+  nav.window.navigator.share = function (p) { sheetPayload = p; return Promise.resolve(); };
+  nav.click('#share-button');
+  await wait(30);
+  assert.ok(sheetPayload && sheetPayload.text.includes('#share=zodiac'), 'mobile share sends text with link');
+  assert.strictEqual(sheetPayload.files, undefined, 'mobile share never attaches the image file');
   assert.strictEqual(nav.q('#daily-card-body .daily-save').textContent, '이미지 저장', 'daily card has its own save button');
   assert.ok(sharedLink(nav).includes('#share=zodiac'), 'desktop copies the text with the link');
   nav.close();

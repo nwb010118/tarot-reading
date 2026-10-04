@@ -1753,36 +1753,16 @@
     });
   }
 
-  function sendShare(text, file, button) {
-    const ignoreAbort = function (next) {
-      return function (err) { if (!err || err.name !== 'AbortError') next(); };
-    };
-    if (!isMobileDevice()) {
-      shareFallback(text, button);
-    } else if (file && navigator.canShare && navigator.canShare({ files: [file], text: text })) {
-      navigator.share({ files: [file], text: text }).catch(ignoreAbort(function () { shareFallback(text, button); }));
-    } else if (navigator.share) {
-      navigator.share({ text: text }).catch(ignoreAbort(function () { shareFallback(text, button); }));
-    } else {
-      shareFallback(text, button);
-    }
-  }
-
-  // 이미지 카드 + 리딩 글 + 링크를 한 번에 보낸다
-  function shareBundle(holder, text, button) {
-    if (!isMobileDevice()) {
-      shareFallback(text, button);
+  // 공유하기는 글과 링크만 보낸다. 이미지는 '이미지 저장' 버튼으로만 받는다(공유와 저장을 분리).
+  // 휴대폰은 공유 시트, PC는 글·링크 복사(Windows 공유 창은 카카오톡 PC에 글을 넘기지 않는다).
+  function shareText(text, button) {
+    if (isMobileDevice() && navigator.share) {
+      navigator.share({ text: text }).catch(function (err) {
+        if (!err || err.name !== 'AbortError') shareFallback(text, button);
+      });
       return;
     }
-    if (holder.file !== undefined) {
-      sendShare(text, holder.file, button);
-      return;
-    }
-    button.disabled = true;
-    holder.promise.then(function (file) {
-      button.disabled = false;
-      sendShare(text, file, button);
-    });
+    shareFallback(text, button);
   }
 
   saveImageButton.addEventListener('click', function () {
@@ -1792,7 +1772,7 @@
   shareButton.addEventListener('click', function () {
     if (!shareState) return;
     const link = shareState.params ? SITE_URL + buildShareHash(shareState.params) : SITE_URL;
-    shareBundle(shareState.file, buildShareText(link), shareButton);
+    shareText(buildShareText(link), shareButton);
   });
 
   newReadingButton.addEventListener('click', function () {
@@ -2013,7 +1993,7 @@
     dailyShare.addEventListener('click', function () {
       const link = SITE_URL + buildShareHash({ kind: 'daily', k: owner, d: day });
       const text = '오늘의 한 장 · ' + title + '\n' + link + '\n\n' + lead;
-      shareBundle(holder, text, dailyShare);
+      shareText(text, dailyShare);
     });
     dailySave.addEventListener('click', function () { saveShareImage(holder, dailySave); });
   }
