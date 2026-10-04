@@ -24,9 +24,11 @@
   const hint = document.createElement('p');
   heading.append(back, title, hint);
   details.prepend(heading);
-  const options = document.createElement('details');
+  // 실천 기간·스프레드를 고를 수 있다는 걸 알 수 있도록 접지 않고 항상 펼쳐 둔다
+  const options = document.createElement('div');
   options.className = 'reading-options';
-  const optionSummary = document.createElement('summary');
+  const optionSummary = document.createElement('p');
+  optionSummary.className = 'reading-options-title';
   options.appendChild(optionSummary);
   const period = document.getElementById('period-section');
   const spread = document.getElementById('spread-select');
@@ -53,7 +55,6 @@
       ? '두 사람의 정보를 선택하고, 서로의 흐름을 만나보세요.'
       : '궁금한 주제를 골라주세요. 고민이 없다면 오늘의 운으로 시작해도 좋아요.';
     modes.forEach(mode => mode.setAttribute('aria-pressed', String(mode === button)));
-    options.open = false;
     syncOptions();
   }
   function setStep(detail, focus) {

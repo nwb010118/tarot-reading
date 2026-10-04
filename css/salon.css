@@ -106,8 +106,7 @@ input[type='checkbox'] { accent-color: var(--gold); width: 16px; height: 16px; }
 
 /* Reading room: legible typography and one decision at a time. */
 .reading-options { margin-top: 24px; border: 1px solid var(--line); border-radius: 8px; padding: 0 16px; }
-.reading-options summary { min-height: 52px; padding: 14px 0; cursor: pointer; color: #c7d1de; font-size: 14px; }
-.reading-options summary:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+.reading-options-title { margin: 0; padding: 16px 0 14px; color: var(--gold); font-size: 14px; font-weight: 600; border-bottom: 1px solid var(--line); }
 .reading-options #period-section { margin-top: 0; }
 .option-hint { color: #adb9c8; font-size: 14px; line-height: 1.7; margin: 0 0 16px; }
 #summary .reading-lead-label { color: #d8aa95; font-size: 12px; letter-spacing: 1px; margin-bottom: 10px; }
