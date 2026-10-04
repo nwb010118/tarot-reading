@@ -530,7 +530,8 @@
       frames.forEach(function (f) {
         combineSentences(base.a, base.b).concat(base.a).forEach(function (t) {
           candidates.push(f + ' ' + t + ' ' + extra.deepen);
-          item.card.advice[item.orientation].forEach(function (adv) { candidates.push(f + ' ' + t + ' ' + extra.deepen + ' ' + adv); });
+          // 조언 문장 묶음에 기본 의미와 같은 문장이 있어 같은 문장이 두 번 붙지 않게 거른다
+          item.card.advice[item.orientation].forEach(function (adv) { if (t.indexOf(adv) === -1) candidates.push(f + ' ' + t + ' ' + extra.deepen + ' ' + adv); });
         });
       });
     }
@@ -617,7 +618,9 @@
       advice = pickWithinRange(texts.map(function (t) { return t + ' ' + extra.action; }));
       action = extra.action;
     } else {
-      advice = pickWithinRange(item.card.advice[item.orientation].map(function (t) { return t + ' ' + extra.action; }));
+      // 조언 묶음에 본문(기본 의미)과 같은 문장이 있어, 본문에 이미 나온 문장은 조언 후보에서 뺀다
+      const advicePool = item.card.advice[item.orientation].filter(function (t) { return interpretation.indexOf(t) === -1; });
+      advice = pickWithinRange((advicePool.length ? advicePool : item.card.advice[item.orientation]).map(function (t) { return t + ' ' + extra.action; }));
       action = extra.action;
     }
     if (action) advice = advice.slice(0, advice.length - action.length - 1);
