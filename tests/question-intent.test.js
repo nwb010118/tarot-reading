@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { classifyQuestion, QUESTION_FRAME_LINES, QUESTION_SAFETY_MESSAGE } = require('../js/question-intent.js');
+const { classifyQuestion, QUESTION_FRAME_LINES, QUESTION_SAFETY_MESSAGE, QUESTION_HARM_MESSAGE } = require('../js/question-intent.js');
 const { CATEGORY_SUBCHOICES, CATEGORY_LABELS } = require('../data/category-labels.js');
 
 // 주제별 예문 (최소 5개). 하위선택은 지정한 경우만 확인한다.
@@ -100,6 +100,30 @@ assert.strictEqual(classifyQuestion('요즘 연애운이 궁금해요').form, 'g
 ['이직해도 될까요?', '죽도록 열심히 공부했어요', '연애가 어렵네요'].forEach(function (t) {
   assert.strictEqual(classifyQuestion(t).safety, false, 'not safety: ' + t);
 });
+
+// 전체 점검(2026-10-04)에서 놓친 질문들
+[['그 사람이 저를 좋아할까요?', 'love'], ['걔가 나 좋아해?', 'love'], ['호감 있는 사람이 생겼어요', 'love'],
+  ['암일까요', 'health'], ['건강검진 결과가 걱정돼요', 'health'], ['허리 통증이 낫지 않아요', 'health']].forEach(function (c) {
+  assert.strictEqual(classifyQuestion(c[0]).category, c[1], 'category: ' + c[0]);
+});
+assert.strictEqual(classifyQuestion('그 사람이 저를 좋아할까요?').form, 'heart');
+['주식 사도 될까요', '코인 지금 사도 돼?', '로또 당첨될까요'].forEach(function (t) {
+  assert.strictEqual(classifyQuestion(t).subchoice, 'invest', 'invest: ' + t);
+});
+assert.strictEqual(classifyQuestion('이번 달 쇼핑 지출 괜찮을까요').subchoice, 'consumption', '쇼핑·지출은 소비');
+assert.strictEqual(classifyQuestion('암기 과목이 어려워요').category, 'study', '암기는 건강이 아님');
+
+// 다른 사람을 해치려는 표현은 자살 상담 안내가 아니라 별도 안내
+['그 사람 죽었으면 좋겠어', '걔를 죽여버리고 싶어', '그 사람을 해치고 싶어요'].forEach(function (t) {
+  const r = classifyQuestion(t);
+  assert.strictEqual(r.safety, true, 'harm safety: ' + t);
+  assert.strictEqual(r.safetyMessage, QUESTION_HARM_MESSAGE, 'harm message: ' + t);
+});
+assert.strictEqual(classifyQuestion('죽고 싶어요').safetyMessage, QUESTION_SAFETY_MESSAGE);
+['죽도록 열심히 공부했어요', '분위기 죽여주는 데이트 코스'].forEach(function (t) {
+  assert.strictEqual(classifyQuestion(t).safety, false, 'not harm: ' + t);
+});
+assert.ok(QUESTION_HARM_MESSAGE.indexOf('112') !== -1);
 
 // 문구 품질
 assert.ok(QUESTION_SAFETY_MESSAGE.indexOf('109') !== -1);

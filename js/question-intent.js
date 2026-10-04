@@ -1,9 +1,9 @@
 // 규칙 기반 질문 해석: 외부 AI 없이 키워드 점수로 주제·하위선택·실천 기간·질문 형태를 고른다.
 const INTENT_CATEGORIES = {
   love: {
-    words: ['연애', '사랑', '남자친구', '여자친구', '남친', '여친', '짝사랑', '썸', '고백', '이별', '헤어', '재회', '결혼', '소개팅', '애인', '전남친', '전여친', '좋아하는', '커플', '미팅', '인연', '첫사랑', '데이트', '프로포즈', '청혼', '권태기', '읽씹', '짝남', '짝녀', '이성'],
+    words: ['연애', '사랑', '남자친구', '여자친구', '남친', '여친', '짝사랑', '썸', '고백', '이별', '헤어', '재회', '결혼', '소개팅', '애인', '전남친', '전여친', '좋아하는', '커플', '미팅', '인연', '첫사랑', '데이트', '프로포즈', '청혼', '권태기', '읽씹', '짝남', '짝녀', '이성', '좋아할', '좋아해', '좋아하나', '호감', '설레'],
     sub: {
-      solo: ['솔로', '짝사랑', '썸', '소개팅', '고백', '미팅', '인연', '첫사랑', '짝남', '짝녀', '이성'],
+      solo: ['솔로', '짝사랑', '썸', '소개팅', '고백', '미팅', '인연', '첫사랑', '짝남', '짝녀', '이성', '호감'],
       couple: ['남자친구', '여자친구', '남친', '여친', '애인', '커플', '결혼', '이별', '헤어', '재회', '사귀', '권태기', '프로포즈', '청혼']
     }
   },
@@ -37,16 +37,16 @@ const INTENT_CATEGORIES = {
     }
   },
   study: {
-    words: ['시험', '공부', '학업', '수능', '입시', '자격증', '성적', '대학', '편입', '고시', '진로', '전공', '대학원', '유학', '합격', '중간고사', '기말고사', '모의고사', '토익', '공무원', '임용', '로스쿨', '의대', '복학', '휴학', '졸업', '논문', '학점'],
+    words: ['시험', '공부', '학업', '수능', '입시', '자격증', '성적', '대학', '편입', '고시', '진로', '전공', '대학원', '유학', '합격', '중간고사', '기말고사', '모의고사', '토익', '공무원', '임용', '로스쿨', '의대', '복학', '휴학', '졸업', '논문', '학점', '암기', '과목'],
     sub: {
-      exam: ['시험', '수능', '자격증', '성적', '입시', '고시', '합격', '중간고사', '기말고사', '모의고사', '토익', '공무원', '임용', '로스쿨', '의대', '학점'],
+      exam: ['시험', '수능', '자격증', '성적', '입시', '고시', '합격', '중간고사', '기말고사', '모의고사', '토익', '공무원', '임용', '로스쿨', '의대', '학점', '암기', '과목'],
       path: ['진로', '전공', '대학원', '유학', '편입', '적성', '복학', '휴학', '졸업', '논문']
     }
   },
   health: {
-    words: ['건강', '아프', '병원', '다이어트', '운동', '수술', '불면', '우울', '스트레스', '불안', '멘탈', '체력', '번아웃', '몸이', '몸을', '수면', '체중', '두통', '검진', '치료', '입원', '컨디션', '무기력', '공황', '외로움', '피곤'],
+    words: ['건강', '아프', '병원', '다이어트', '운동', '수술', '불면', '우울', '스트레스', '불안', '멘탈', '체력', '번아웃', '몸이', '몸을', '수면', '체중', '두통', '검진', '치료', '입원', '컨디션', '무기력', '공황', '외로움', '피곤', '암일까', '암인지', '암이면', '암진단', '종양', '질병', '통증', '감기', '혈압', '당뇨', '허리', '무릎', '건강검진'],
     sub: {
-      body: ['건강', '아프', '병원', '다이어트', '운동', '수술', '체력', '몸', '체중', '두통', '검진', '치료', '입원', '컨디션', '피곤'],
+      body: ['건강', '아프', '병원', '다이어트', '운동', '수술', '체력', '몸', '체중', '두통', '검진', '치료', '입원', '컨디션', '피곤', '암일까', '암인지', '암이면', '암진단', '종양', '질병', '통증', '감기', '혈압', '당뇨', '허리', '무릎'],
       mind: ['우울', '스트레스', '불안', '멘탈', '불면', '번아웃', '마음', '무기력', '공황', '외로움', '수면']
     }
   },
@@ -72,8 +72,10 @@ const INTENT_PERIODS = [
 ];
 
 const INTENT_SAFETY_WORDS = ['자살', '죽고싶', '죽어버리', '죽을까', '극단적선택', '극단적인선택', '목숨을끊', '스스로목숨', '자해', '사라지고싶', '살기싫', '살고싶지않'];
-const INTENT_THIRD_PARTY = ['그사람', '그가', '그녀', '걔', '쟤', '상대', '남자친구', '여자친구', '남친', '여친', '애인', '썸', '짝사랑', '그분', '전남친', '전여친'];
-const INTENT_HEART_PATTERNS = ['속마음', '나를좋아', '날좋아', '나를생각', '날생각', '나를어떻게', '날어떻게', '나한테마음', '나한테관심', '내게마음', '내게관심', '마음이', '마음은'];
+// 다른 사람을 해치려는 표현: 자살 상담 안내 대신 별도 안내를 보여 준다
+const INTENT_HARM_WORDS = ['죽었으면좋겠', '죽어버렸으면', '죽여버리', '죽이고싶', '죽일까', '죽여버릴', '해치고싶', '다치게하고싶'];
+const INTENT_THIRD_PARTY = ['그사람', '그 사람이', '그가', '그녀', '걔', '쟤', '상대', '남자친구', '여자친구', '남친', '여친', '애인', '썸', '짝사랑', '그분', '전남친', '전여친'];
+const INTENT_HEART_PATTERNS = ['속마음', '나를좋아', '날좋아', '저를좋아', '절좋아', '나좋아', '저좋아', '저를생각', '나를생각', '날생각', '나를어떻게', '날어떻게', '나한테마음', '나한테관심', '내게마음', '내게관심', '마음이', '마음은'];
 
 const QUESTION_FRAME_LINES = {
   decision: '예와 아니오로 답하기보다, 카드가 비추는 조건을 함께 읽어 볼게요.',
@@ -81,6 +83,8 @@ const QUESTION_FRAME_LINES = {
   heart: '다른 사람의 속마음은 카드로 단정할 수 없어요. 내가 할 수 있는 태도를 중심으로 읽어 볼게요.',
   general: '적어 주신 질문을 곁에 두고 카드를 읽어 볼게요.'
 };
+
+const QUESTION_HARM_MESSAGE = '누군가를 향한 마음이 많이 격해져 있는 것 같아요. 지금은 카드를 뽑기보다 잠시 그 자리를 벗어나 숨을 고르고, 믿을 수 있는 사람에게 이야기해 보세요. 누군가 위험한 상황이라면 112에 바로 연락해 주세요.';
 
 const QUESTION_SAFETY_MESSAGE = '많이 힘드셨군요. 지금은 카드를 뽑기보다 마음을 들어줄 사람과 먼저 이야기해 보세요. 자살예방 상담전화 109(24시간)에서 언제든 이야기를 나눌 수 있어요. 위급하다면 112나 119에 바로 연락해 주세요.';
 
@@ -105,10 +109,13 @@ function pickTop(scores) {
 function classifyQuestion(text) {
   const raw = String(text || '').trim();
   const compact = compactText(raw);
-  const result = { category: null, subchoice: null, period: null, form: 'general', safety: false, candidates: [] };
+  const result = { category: null, subchoice: null, period: null, form: 'general', safety: false, safetyMessage: '', candidates: [] };
   if (!compact) return result;
 
-  result.safety = INTENT_SAFETY_WORDS.some(function (w) { return compact.indexOf(w) !== -1; });
+  const selfHarm = INTENT_SAFETY_WORDS.some(function (w) { return compact.indexOf(w) !== -1; });
+  const harmOthers = INTENT_HARM_WORDS.some(function (w) { return compact.indexOf(w) !== -1; });
+  result.safety = selfHarm || harmOthers;
+  result.safetyMessage = selfHarm ? QUESTION_SAFETY_MESSAGE : (harmOthers ? QUESTION_HARM_MESSAGE : '');
 
   const catScores = {};
   Object.keys(INTENT_CATEGORIES).forEach(function (key) {
@@ -125,6 +132,8 @@ function classifyQuestion(text) {
     const subScores = {};
     Object.keys(subs).forEach(function (key) { subScores[key] = countHits(compact, subs[key]); });
     result.subchoice = pickTop(subScores);
+    // '주식 사도 될까요'처럼 투자 대상이 보이면 '사도'(소비)보다 투자를 우선한다
+    if (result.category === 'money' && subScores.invest > 0) result.subchoice = 'invest';
   }
 
   for (let i = 0; i < INTENT_PERIODS.length; i += 1) {
@@ -142,5 +151,5 @@ function classifyQuestion(text) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { classifyQuestion, QUESTION_FRAME_LINES, QUESTION_SAFETY_MESSAGE, INTENT_CATEGORIES };
+  module.exports = { classifyQuestion, QUESTION_FRAME_LINES, QUESTION_SAFETY_MESSAGE, QUESTION_HARM_MESSAGE, INTENT_CATEGORIES };
 }

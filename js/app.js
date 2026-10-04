@@ -316,7 +316,7 @@
   function applyQuestionIntent() {
     const text = questionInput.value.trim();
     questionIntent = classifyQuestion(text);
-    questionSafety.textContent = questionIntent.safety ? QUESTION_SAFETY_MESSAGE : '';
+    questionSafety.textContent = questionIntent.safetyMessage;
     questionSafety.classList.toggle('hidden', !questionIntent.safety);
     if (!text || questionIntent.safety) {
       questionChip.classList.add('hidden');
@@ -765,7 +765,7 @@
     currentQuestion = questionInput.value.trim();
     questionIntent = currentQuestion ? classifyQuestion(currentQuestion) : null;
     if (questionIntent && questionIntent.safety) {
-      questionSafety.textContent = QUESTION_SAFETY_MESSAGE;
+      questionSafety.textContent = questionIntent.safetyMessage;
       questionSafety.classList.remove('hidden');
       questionSafety.scrollIntoView({ block: 'center' });
       return;
