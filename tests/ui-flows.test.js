@@ -405,6 +405,19 @@ async function main() {
   assert.strictEqual(nav.window.history.state, null, 'new reading rewinds the pushed screens');
   assert.strictEqual(nav.q('#flow-choice').hidden, false, 'new reading shows the mode choice');
   assert.deepStrictEqual(nav.errors, [], 'no script errors in back navigation');
+
+  // PC: 공유 시트가 있어도 쓰지 않고(카카오톡 PC가 글·링크를 버림) 글과 링크를 복사한다
+  let sheetUsed = false;
+  nav.window.navigator.share = function () { sheetUsed = true; return Promise.resolve(); };
+  nav.window.navigator.canShare = function () { return true; };
+  nav.window.__copied = null;
+  nav.click('.mode-btn[data-mode="zodiac"]');
+  nav.click('#draw-button');
+  await wait(60);
+  nav.click('#share-button');
+  await wait(30);
+  assert.strictEqual(sheetUsed, false, 'desktop does not open the OS share sheet');
+  assert.ok(sharedLink(nav).includes('#share=zodiac'), 'desktop copies the text with the link');
   nav.close();
 
   // 모든 흐름에서 스크립트 오류가 없었다

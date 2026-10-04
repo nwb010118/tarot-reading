@@ -1587,8 +1587,40 @@
     return holder;
   }
 
-  // 공유 시트가 없으면 글(링크 포함)은 복사하고 이미지는 내려받는다
+  // PC(Windows 등)의 공유 창은 카카오톡에 파일만 넘기고 글·링크를 버리므로 휴대폰에서만 공유 시트를 쓴다
+  function isMobileDevice() {
+    if (navigator.userAgentData && typeof navigator.userAgentData.mobile === 'boolean') return navigator.userAgentData.mobile;
+    const ua = navigator.userAgent || '';
+    return /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  }
+
+  // 클립보드 API가 막힌 환경(권한 거부 등)을 위한 예전 방식 복사. 클릭 직후에 동기로 불러야 한다.
+  function legacyCopy(text) {
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('readonly', '');
+    area.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+    document.body.appendChild(area);
+    area.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+    area.remove();
+    return ok;
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).catch(function (err) {
+        if (legacyCopy(text)) return;
+        throw err;
+      });
+    }
+    return legacyCopy(text) ? Promise.resolve() : Promise.reject(new Error('copy failed'));
+  }
+
+  // 공유 시트를 안 쓰면 글(링크 포함)을 먼저 복사하고 이미지는 내려받는다
   function shareFallback(text, file, button) {
+    const copied = copyText(text);
     if (file) {
       const url = URL.createObjectURL(file);
       const a = document.createElement('a');
@@ -1599,14 +1631,10 @@
       a.remove();
       setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
     }
-    if (!navigator.clipboard) {
-      if (file) flashButton(button, '이미지를 저장했어요!', SHARE_BUTTON_LABEL);
-      return;
-    }
-    navigator.clipboard.writeText(text).then(function () {
-      flashButton(button, file ? '이미지 저장 · 글 복사 완료!' : '복사했어요!', SHARE_BUTTON_LABEL);
+    copied.then(function () {
+      flashButton(button, file ? '글·링크 복사, 이미지 저장 완료!' : '글·링크를 복사했어요!', SHARE_BUTTON_LABEL);
     }).catch(function () {
-      flashButton(button, '복사에 실패했어요', SHARE_BUTTON_LABEL);
+      flashButton(button, file ? '이미지를 저장했어요 (복사 실패)' : '복사에 실패했어요', SHARE_BUTTON_LABEL);
     });
   }
 
@@ -1614,7 +1642,9 @@
     const ignoreAbort = function (next) {
       return function (err) { if (!err || err.name !== 'AbortError') next(); };
     };
-    if (file && navigator.canShare && navigator.canShare({ files: [file], text: text })) {
+    if (!isMobileDevice()) {
+      shareFallback(text, file, button);
+    } else if (file && navigator.canShare && navigator.canShare({ files: [file], text: text })) {
       navigator.share({ files: [file], text: text }).catch(ignoreAbort(function () { shareFallback(text, file, button); }));
     } else if (navigator.share) {
       navigator.share({ text: text }).catch(ignoreAbort(function () { shareFallback(text, file, button); }));
