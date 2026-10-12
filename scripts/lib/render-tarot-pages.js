@@ -85,8 +85,8 @@ function renderCardPage(vm, nav) {
     '<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>\n' +
     '<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
-    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">\n' +
-    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600&display=swap">\n' +
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" media="print" onload="this.media=\'all\'"><noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"></noscript>\n' +
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600&display=swap" media="print" onload="this.media=\'all\'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600&display=swap"></noscript>\n' +
     '<link rel="stylesheet" href="../css/style.css">\n' +
     '<link rel="stylesheet" href="../css/salon.css">\n' +
     '<link rel="stylesheet" href="../css/refresh.css">\n' +
@@ -97,7 +97,7 @@ function renderCardPage(vm, nav) {
     '<main class="card-page-main">\n' +
     '<p class="eyebrow">' + escapeHtml(vm.suitLabel) + ' · 타로 카드 백과사전</p>\n' +
     '<h1>' + escapeHtml(vm.name) + (vm.nameEn ? ' (' + escapeHtml(vm.nameEn) + ')' : '') + '</h1>\n' +
-    '<figure class="card-hero-page"><img src="../' + vm.image + '" alt="' + escapeHtml(vm.name) + ' 타로 카드 이미지" loading="lazy"><figcaption>그림: Pamela Colman Smith · RWS 덱 · <a href="' + escapeHtml(vm.imageSourceUrl) + '">Wikimedia Commons 원본·이용 조건</a></figcaption></figure>\n' +
+    '<figure class="card-hero-page"><img src="../' + vm.image + '" alt="' + escapeHtml(vm.name) + ' 타로 카드 이미지" width="480" height="830" fetchpriority="high"><figcaption>그림: Pamela Colman Smith · RWS 덱 · <a href="' + escapeHtml(vm.imageSourceUrl) + '">Wikimedia Commons 원본·이용 조건</a></figcaption></figure>\n' +
     renderEditorial(vm.editorial) +
     '<p class="reading-context">아래 상황별 문장은 상징을 일상에 연결하는 오락용 해석입니다. 실제 사건·건강 상태·투자 성과를 예측하지 않습니다.</p>\n' +
     renderOrientationSection('정방향', vm.upright) +
@@ -140,7 +140,7 @@ function renderHubPage(allViewModels, canonicalUrl) {
     const cards = allViewModels.filter(function (vm) { return vm.suitKey === suitKey; });
     const gridHtml = cards.map(function (vm) {
       return '<a class="hub-card-link" href="' + vm.slug + '.html">' +
-        '<img src="../' + vm.image + '" alt="" loading="lazy">' +
+        '<img src="../' + vm.image.replace('images/', 'images/thumbs/') + '" alt="" width="180" height="311" loading="lazy">' +
         '<span>' + escapeHtml(vm.name) + '</span>' +
         '</a>';
     }).join('');
@@ -170,8 +170,8 @@ function renderHubPage(allViewModels, canonicalUrl) {
     '<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>\n' +
     '<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
-    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">\n' +
-    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600&display=swap">\n' +
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" media="print" onload="this.media=\'all\'"><noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"></noscript>\n' +
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600&display=swap" media="print" onload="this.media=\'all\'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600&display=swap"></noscript>\n' +
     '<link rel="stylesheet" href="../css/style.css">\n' +
     '<link rel="stylesheet" href="../css/salon.css">\n' +
     '<link rel="stylesheet" href="../css/refresh.css">\n' +

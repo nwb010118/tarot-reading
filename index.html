@@ -20,10 +20,10 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600&display=swap">
-<link rel="stylesheet" href="css/style.css?v=94309ca7">
-<link rel="stylesheet" href="css/salon.css?v=9a0d475f">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"></noscript>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600&display=swap"></noscript>
+<link rel="stylesheet" href="css/style.css?v=b5aca1fe">
+<link rel="stylesheet" href="css/salon.css?v=9c91fefb">
 <link rel="stylesheet" href="css/refresh.css?v=bf530012">
 </head>
 <body>
@@ -80,7 +80,7 @@
     </div>
     <div id="flow-details">
     <div id="zodiac-select" class="hidden">
-      <label>별자리를 선택하세요</label>
+      <p class="group-label">별자리를 선택하세요</p>
       <div class="button-grid">
         <button type="button" class="category-btn zodiac-btn selected" data-zodiac="aries">양자리</button>
         <button type="button" class="category-btn zodiac-btn" data-zodiac="taurus">황소자리</button>
@@ -108,7 +108,7 @@
     </div>
 
     <div id="saju-select" class="hidden">
-      <label>양력/음력을 선택하세요</label>
+      <p class="group-label">양력/음력을 선택하세요</p>
       <div id="calendar-type-select" class="button-grid">
         <button type="button" class="category-btn calendar-type-btn selected" data-calendar-type="solar">양력</button>
         <button type="button" class="category-btn calendar-type-btn" data-calendar-type="lunar">음력</button>
@@ -130,7 +130,7 @@
       <input type="time" id="saju-time-input">
       <label><input type="checkbox" id="time-unknown-checkbox"> 태어난 시간을 몰라요</label>
 
-      <label>성별을 선택하세요</label>
+      <p class="group-label">성별을 선택하세요</p>
       <div id="gender-select" class="button-grid">
         <button type="button" class="category-btn gender-btn selected" data-gender="male">남자</button>
         <button type="button" class="category-btn gender-btn" data-gender="female">여자</button>
@@ -140,7 +140,7 @@
     </div>
 
     <div id="compatibility-select" class="hidden">
-      <label>궁합 종류를 선택하세요</label>
+      <p class="group-label">궁합 종류를 선택하세요</p>
       <div id="compat-subtype-select" class="button-grid">
         <button type="button" class="category-btn compat-subtype-btn selected" data-compat-subtype="zodiac">별자리 궁합</button>
         <button type="button" class="category-btn compat-subtype-btn" data-compat-subtype="ddi">띠 궁합</button>
@@ -149,7 +149,7 @@
 
       <div id="compat-zodiac-group" class="compat-person-group">
         <div class="compat-person-col">
-          <label>사람 1 별자리</label>
+          <p class="group-label">사람 1 별자리</p>
           <div class="button-grid">
             <button type="button" class="category-btn compat-zodiac1-btn selected" data-zodiac="aries">양자리</button>
             <button type="button" class="category-btn compat-zodiac1-btn" data-zodiac="taurus">황소자리</button>
@@ -166,7 +166,7 @@
           </div>
         </div>
         <div class="compat-person-col">
-          <label>사람 2 별자리</label>
+          <p class="group-label">사람 2 별자리</p>
           <div class="button-grid">
             <button type="button" class="category-btn compat-zodiac2-btn selected" data-zodiac="aries">양자리</button>
             <button type="button" class="category-btn compat-zodiac2-btn" data-zodiac="taurus">황소자리</button>
@@ -201,29 +201,29 @@
 
       <div id="compat-saju-group" class="compat-person-group hidden">
         <div class="compat-saju-common">
-          <label>양력/음력을 선택하세요</label>
+          <p class="group-label">양력/음력을 선택하세요</p>
           <div id="compat-calendar-type-select" class="button-grid">
             <button type="button" class="category-btn compat-calendar-type-btn selected" data-calendar-type="solar">양력</button>
             <button type="button" class="category-btn compat-calendar-type-btn" data-calendar-type="lunar">음력</button>
           </div>
         </div>
         <div class="compat-person-col">
-          <label>사람 1 생년월일</label>
+          <label for="compat-saju-date1-input">사람 1 생년월일</label>
           <div id="compat-saju-date1-solar-group">
             <input type="date" id="compat-saju-date1-input" min="1900-01-01" max="2050-12-31">
           </div>
           <div id="compat-saju-date1-lunar-group" class="hidden">
-            <input type="text" id="compat-saju-lunar-date1-input" inputmode="numeric" placeholder="예: 19900230">
+            <input type="text" id="compat-saju-lunar-date1-input" aria-label="사람 1 음력 생년월일 (숫자 8자리)" inputmode="numeric" placeholder="예: 19900230">
             <label><input type="checkbox" id="compat-intercalation1-checkbox"> 윤달이에요</label>
           </div>
         </div>
         <div class="compat-person-col">
-          <label>사람 2 생년월일</label>
+          <label for="compat-saju-date2-input">사람 2 생년월일</label>
           <div id="compat-saju-date2-solar-group">
             <input type="date" id="compat-saju-date2-input" min="1900-01-01" max="2050-12-31">
           </div>
           <div id="compat-saju-date2-lunar-group" class="hidden">
-            <input type="text" id="compat-saju-lunar-date2-input" inputmode="numeric" placeholder="예: 19920815">
+            <input type="text" id="compat-saju-lunar-date2-input" aria-label="사람 2 음력 생년월일 (숫자 8자리)" inputmode="numeric" placeholder="예: 19920815">
             <label><input type="checkbox" id="compat-intercalation2-checkbox"> 윤달이에요</label>
           </div>
         </div>
@@ -242,7 +242,7 @@
     </div>
 
     <div id="category-section">
-      <label>어떤 운이 궁금하신가요?</label>
+      <p class="group-label">어떤 운이 궁금하신가요?</p>
       <div id="category-select">
         <button type="button" class="category-btn selected" data-category="">오늘의운</button>
         <button type="button" class="category-btn" data-category="love">연애운</button>
@@ -262,7 +262,7 @@
     <div id="subchoice-select" class="hidden"></div>
 
     <div id="period-section">
-      <label>리딩을 실천하고 돌아볼 기간을 골라주세요</label>
+      <p class="group-label">리딩을 실천하고 돌아볼 기간을 골라주세요</p>
       <p class="option-hint">선택한 기간에 맞춰 실천 방법을 안내합니다. 미래의 사건이나 발생 시점을 예측하는 기간이 아닙니다.</p>
       <div id="period-select">
         <button type="button" class="category-btn selected" data-period="today">오늘</button>
@@ -323,28 +323,28 @@
     <h2>타로 카드 둘러보기</h2>
     <p class="hero-copy">메이저 아르카나 22장의 의미를 미리 읽어볼 수 있습니다. 카드를 누르면 정방향·역방향 키워드와 상황별 운세를 바로 확인할 수 있어요.</p>
     <div class="hub-grid">
-      <a class="hub-card-link" href="tarot/major-0-fool.html"><img src="images/RWS_Tarot_00_Fool.webp" alt="" loading="lazy"><span>바보</span></a>
-      <a class="hub-card-link" href="tarot/major-1-magician.html"><img src="images/RWS_Tarot_01_Magician.webp" alt="" loading="lazy"><span>마법사</span></a>
-      <a class="hub-card-link" href="tarot/major-2-high-priestess.html"><img src="images/RWS_Tarot_02_High_Priestess.webp" alt="" loading="lazy"><span>여사제</span></a>
-      <a class="hub-card-link" href="tarot/major-3-empress.html"><img src="images/RWS_Tarot_03_Empress.webp" alt="" loading="lazy"><span>여황제</span></a>
-      <a class="hub-card-link" href="tarot/major-4-emperor.html"><img src="images/RWS_Tarot_04_Emperor.webp" alt="" loading="lazy"><span>황제</span></a>
-      <a class="hub-card-link" href="tarot/major-5-hierophant.html"><img src="images/RWS_Tarot_05_Hierophant.webp" alt="" loading="lazy"><span>교황</span></a>
-      <a class="hub-card-link" href="tarot/major-6-lovers.html"><img src="images/RWS_Tarot_06_Lovers.webp" alt="" loading="lazy"><span>연인</span></a>
-      <a class="hub-card-link" href="tarot/major-7-chariot.html"><img src="images/RWS_Tarot_07_Chariot.webp" alt="" loading="lazy"><span>전차</span></a>
-      <a class="hub-card-link" href="tarot/major-8-strength.html"><img src="images/RWS_Tarot_08_Strength.webp" alt="" loading="lazy"><span>힘</span></a>
-      <a class="hub-card-link" href="tarot/major-9-hermit.html"><img src="images/RWS_Tarot_09_Hermit.webp" alt="" loading="lazy"><span>은둔자</span></a>
-      <a class="hub-card-link" href="tarot/major-10-wheel-of-fortune.html"><img src="images/RWS_Tarot_10_Wheel_of_Fortune.webp" alt="" loading="lazy"><span>운명의 수레바퀴</span></a>
-      <a class="hub-card-link" href="tarot/major-11-justice.html"><img src="images/RWS_Tarot_11_Justice.webp" alt="" loading="lazy"><span>정의</span></a>
-      <a class="hub-card-link" href="tarot/major-12-hanged-man.html"><img src="images/RWS_Tarot_12_Hanged_Man.webp" alt="" loading="lazy"><span>매달린 사람</span></a>
-      <a class="hub-card-link" href="tarot/major-13-death.html"><img src="images/RWS_Tarot_13_Death.webp" alt="" loading="lazy"><span>죽음</span></a>
-      <a class="hub-card-link" href="tarot/major-14-temperance.html"><img src="images/RWS_Tarot_14_Temperance.webp" alt="" loading="lazy"><span>절제</span></a>
-      <a class="hub-card-link" href="tarot/major-15-devil.html"><img src="images/RWS_Tarot_15_Devil.webp" alt="" loading="lazy"><span>악마</span></a>
-      <a class="hub-card-link" href="tarot/major-16-tower.html"><img src="images/RWS_Tarot_16_Tower.webp" alt="" loading="lazy"><span>탑</span></a>
-      <a class="hub-card-link" href="tarot/major-17-star.html"><img src="images/RWS_Tarot_17_Star.webp" alt="" loading="lazy"><span>별</span></a>
-      <a class="hub-card-link" href="tarot/major-18-moon.html"><img src="images/RWS_Tarot_18_Moon.webp" alt="" loading="lazy"><span>달</span></a>
-      <a class="hub-card-link" href="tarot/major-19-sun.html"><img src="images/RWS_Tarot_19_Sun.webp" alt="" loading="lazy"><span>태양</span></a>
-      <a class="hub-card-link" href="tarot/major-20-judgement.html"><img src="images/RWS_Tarot_20_Judgement.webp" alt="" loading="lazy"><span>심판</span></a>
-      <a class="hub-card-link" href="tarot/major-21-world.html"><img src="images/RWS_Tarot_21_World.webp" alt="" loading="lazy"><span>세계</span></a>
+      <a class="hub-card-link" href="tarot/major-0-fool.html"><img src="images/thumbs/RWS_Tarot_00_Fool.webp" alt="" width="180" height="311" loading="lazy"><span>바보</span></a>
+      <a class="hub-card-link" href="tarot/major-1-magician.html"><img src="images/thumbs/RWS_Tarot_01_Magician.webp" alt="" width="180" height="311" loading="lazy"><span>마법사</span></a>
+      <a class="hub-card-link" href="tarot/major-2-high-priestess.html"><img src="images/thumbs/RWS_Tarot_02_High_Priestess.webp" alt="" width="180" height="311" loading="lazy"><span>여사제</span></a>
+      <a class="hub-card-link" href="tarot/major-3-empress.html"><img src="images/thumbs/RWS_Tarot_03_Empress.webp" alt="" width="180" height="311" loading="lazy"><span>여황제</span></a>
+      <a class="hub-card-link" href="tarot/major-4-emperor.html"><img src="images/thumbs/RWS_Tarot_04_Emperor.webp" alt="" width="180" height="311" loading="lazy"><span>황제</span></a>
+      <a class="hub-card-link" href="tarot/major-5-hierophant.html"><img src="images/thumbs/RWS_Tarot_05_Hierophant.webp" alt="" width="180" height="311" loading="lazy"><span>교황</span></a>
+      <a class="hub-card-link" href="tarot/major-6-lovers.html"><img src="images/thumbs/RWS_Tarot_06_Lovers.webp" alt="" width="180" height="311" loading="lazy"><span>연인</span></a>
+      <a class="hub-card-link" href="tarot/major-7-chariot.html"><img src="images/thumbs/RWS_Tarot_07_Chariot.webp" alt="" width="180" height="311" loading="lazy"><span>전차</span></a>
+      <a class="hub-card-link" href="tarot/major-8-strength.html"><img src="images/thumbs/RWS_Tarot_08_Strength.webp" alt="" width="180" height="311" loading="lazy"><span>힘</span></a>
+      <a class="hub-card-link" href="tarot/major-9-hermit.html"><img src="images/thumbs/RWS_Tarot_09_Hermit.webp" alt="" width="180" height="311" loading="lazy"><span>은둔자</span></a>
+      <a class="hub-card-link" href="tarot/major-10-wheel-of-fortune.html"><img src="images/thumbs/RWS_Tarot_10_Wheel_of_Fortune.webp" alt="" width="180" height="311" loading="lazy"><span>운명의 수레바퀴</span></a>
+      <a class="hub-card-link" href="tarot/major-11-justice.html"><img src="images/thumbs/RWS_Tarot_11_Justice.webp" alt="" width="180" height="311" loading="lazy"><span>정의</span></a>
+      <a class="hub-card-link" href="tarot/major-12-hanged-man.html"><img src="images/thumbs/RWS_Tarot_12_Hanged_Man.webp" alt="" width="180" height="311" loading="lazy"><span>매달린 사람</span></a>
+      <a class="hub-card-link" href="tarot/major-13-death.html"><img src="images/thumbs/RWS_Tarot_13_Death.webp" alt="" width="180" height="311" loading="lazy"><span>죽음</span></a>
+      <a class="hub-card-link" href="tarot/major-14-temperance.html"><img src="images/thumbs/RWS_Tarot_14_Temperance.webp" alt="" width="180" height="311" loading="lazy"><span>절제</span></a>
+      <a class="hub-card-link" href="tarot/major-15-devil.html"><img src="images/thumbs/RWS_Tarot_15_Devil.webp" alt="" width="180" height="311" loading="lazy"><span>악마</span></a>
+      <a class="hub-card-link" href="tarot/major-16-tower.html"><img src="images/thumbs/RWS_Tarot_16_Tower.webp" alt="" width="180" height="311" loading="lazy"><span>탑</span></a>
+      <a class="hub-card-link" href="tarot/major-17-star.html"><img src="images/thumbs/RWS_Tarot_17_Star.webp" alt="" width="180" height="311" loading="lazy"><span>별</span></a>
+      <a class="hub-card-link" href="tarot/major-18-moon.html"><img src="images/thumbs/RWS_Tarot_18_Moon.webp" alt="" width="180" height="311" loading="lazy"><span>달</span></a>
+      <a class="hub-card-link" href="tarot/major-19-sun.html"><img src="images/thumbs/RWS_Tarot_19_Sun.webp" alt="" width="180" height="311" loading="lazy"><span>태양</span></a>
+      <a class="hub-card-link" href="tarot/major-20-judgement.html"><img src="images/thumbs/RWS_Tarot_20_Judgement.webp" alt="" width="180" height="311" loading="lazy"><span>심판</span></a>
+      <a class="hub-card-link" href="tarot/major-21-world.html"><img src="images/thumbs/RWS_Tarot_21_World.webp" alt="" width="180" height="311" loading="lazy"><span>세계</span></a>
     </div>
     <p class="hero-copy"><a href="tarot/index.html">타로 78장 전체 보기 →</a></p>
   </section>

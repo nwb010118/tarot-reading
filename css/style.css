@@ -15,7 +15,8 @@ header h1 { text-align: center; letter-spacing: 2px; color: #d4af37; }
 
 .hidden { display: none !important; }
 
-label { display: block; margin-bottom: 8px; color: #c9bde0; }
+label, .group-label { display: block; margin-bottom: 8px; color: #c9bde0; }
+.group-label { margin-top: 0; }
 
 #birth-year-input {
   width: 100%;
@@ -35,7 +36,7 @@ label { display: block; margin-bottom: 8px; color: #c9bde0; }
   display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
 }
 
-#zodiac-select label, #ddi-select label { margin-top: -8px; }
+#zodiac-select label, #ddi-select label, #zodiac-select .group-label, #ddi-select .group-label { margin-top: -8px; }
 
 .category-btn {
   padding: 8px 14px;
@@ -387,8 +388,9 @@ label { display: block; margin-bottom: 8px; color: #c9bde0; }
 
 #site-footer {
   display: flex;
+  flex-wrap: wrap; /* 320px 화면에서 마지막 링크가 화면 밖으로 밀려나지 않게 */
   justify-content: center;
-  gap: 16px;
+  gap: 8px 16px;
   margin-top: 32px;
   padding-top: 16px;
   border-top: 1px solid #4a3a68;
